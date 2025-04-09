@@ -1,0 +1,14 @@
+composer.phar
+/vendor/
+
+.env
+.env.backup
+
+.phpunit.result.cache
+.php-cs-fixer.cache
+.phpunit.cache
+
+# For your customizations
+.php-cs-fixer.php
+phpstan.neon
+phpunit.xml

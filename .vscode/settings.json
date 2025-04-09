@@ -1,0 +1,62 @@
+{
+    // editor settings
+    "editor.formatOnSave": true,
+    "editor.formatOnPaste": false,
+    "[php]": {
+        "editor.defaultFormatter": "junstyle.php-cs-fixer"
+    },
+    // php-cs-fixer settings
+    "php-cs-fixer.config": ".php-cs-fixer.dist.php",
+    "php-cs-fixer.executablePath": "${extensionPath}/php-cs-fixer.phar",
+    // HACK: PHP8.4 に PHP-CS-Fixer が対応していないが強制的に実行するための設定
+    // TODO: PHP-CS-Fixer が PHP8.4 に対応したら削除すること！！！！
+    "php-cs-fixer.ignorePHPVersion": true,
+    // PHPStan settings
+    "phpstan.binPath": "vendor/bin/phpstan",
+    "phpstan.configFile": "phpstan.neon.dist",
+    "phpstan.singleFileMode": true,
+    "phpstan.showProgress": true,
+    "phpstan.checkValidity": false,
+    "phpstan.showTypeOnHover": false,
+    // NOTE: https://github.com/SanderRonde/phpstan-vscode/issues/26
+    "phpstan.ignoreErrors": [
+        "XDebug: .*",
+        "! .*",
+        "[Step Debug] .*"
+    ],
+    // PHPUnit settings
+    "phpunit.phpunit": "vendor/bin/phpunit",
+    "phpunit.args": [
+        "-c",
+        "phpunit.xml.dist"
+    ],
+    // githubPullRequests settings
+    "githubPullRequests.assignCreated": "endou-mame",
+    // vscode visualize settings
+    "todohighlight.defaultStyle": {
+        "border": "1px solid #FFF",
+        "borderRadius": "3px"
+    },
+    "todohighlight.keywords": [
+        {
+            "text": "BUG:",
+            "color": "#FFFFFF",
+            "backgroundColor": "#DC3545"
+        },
+        {
+            "text": "NOTE:",
+            "color": "#FFFFFF",
+            "backgroundColor": "#98C379"
+        },
+        {
+            "text": "HACK:",
+            "color": "#FFFFFF",
+            "backgroundColor": "#C678DD"
+        },
+        {
+            "text": "DEBUG:",
+            "color": "#FFFFFF",
+            "backgroundColor": "#61AFEF"
+        }
+    ],
+}
