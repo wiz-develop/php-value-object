@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace WizDevelop\PhpValueObject\Examples;
+namespace WizDevelop\PhpValueObject\Examples\String;
 
 use Override;
 use WizDevelop\PhpValueObject\String\StringValue;

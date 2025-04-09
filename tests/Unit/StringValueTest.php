@@ -9,12 +9,12 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
-use WizDevelop\PhpValueObject\Examples\FullName;
+use WizDevelop\PhpValueObject\Examples\String\FullName;
 use WizDevelop\PhpValueObject\String\StringValueError;
 
-#[TestDox('FullNameクラスのテスト')]
+#[TestDox('StringValueクラスのテスト')]
 #[CoversClass(FullName::class)]
-final class FullNameTest extends TestCase
+final class StringValueTest extends TestCase
 {
     #[Test]
     public function 有効な氏名でインスタンスが作成できる(): void
