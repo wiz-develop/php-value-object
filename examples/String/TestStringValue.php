@@ -9,10 +9,10 @@ use WizDevelop\PhpValueObject\String\StringValue;
 use WizDevelop\PhpValueObject\ValueObjectMeta;
 
 /**
- * 氏名を表す値オブジェクト
+ * 文字列の値オブジェクトの例
  */
-#[ValueObjectMeta(displayName: '氏名', description: 'ユーザーの氏名を表します')]
-final readonly class FullName extends StringValue
+#[ValueObjectMeta(displayName: '文字列', description: '文字列の値オブジェクトの例')]
+final readonly class TestStringValue extends StringValue
 {
     #[Override]
     public static function minLength(): int

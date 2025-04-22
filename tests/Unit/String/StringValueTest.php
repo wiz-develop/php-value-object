@@ -2,41 +2,41 @@
 
 declare(strict_types=1);
 
-namespace WizDevelop\PhpValueObject\Tests\Unit;
+namespace WizDevelop\PhpValueObject\Tests\Unit\String;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
-use WizDevelop\PhpValueObject\Examples\String\FullName;
+use WizDevelop\PhpValueObject\Examples\String\TestStringValue;
 use WizDevelop\PhpValueObject\String\StringValueError;
 
 #[TestDox('StringValueクラスのテスト')]
-#[CoversClass(FullName::class)]
+#[CoversClass(TestStringValue::class)]
 final class StringValueTest extends TestCase
 {
     #[Test]
-    public function 有効な氏名でインスタンスが作成できる(): void
+    public function 有効な文字列でインスタンスが作成できる(): void
     {
-        $name = FullName::from('山田 太郎');
+        $name = TestStringValue::from('山田 太郎');
 
         $this->assertEquals('山田 太郎', $name->value);
     }
 
     #[Test]
-    public function 最小長の氏名でインスタンスが作成できる(): void
+    public function 最小長の文字列でインスタンスが作成できる(): void
     {
-        $name = FullName::from('太');
+        $name = TestStringValue::from('太');
 
         $this->assertEquals('太', $name->value);
     }
 
     #[Test]
-    public function 最大長の氏名でインスタンスが作成できる(): void
+    public function 最大長の文字列でインスタンスが作成できる(): void
     {
         $value = str_repeat('あ', 50);
-        $name = FullName::from($value);
+        $name = TestStringValue::from($value);
 
         $this->assertEquals($value, $name->value);
     }
@@ -44,27 +44,27 @@ final class StringValueTest extends TestCase
     #[Test]
     public function 空文字の場合はエラーになる(): void
     {
-        $result = FullName::tryFrom('');
+        $result = TestStringValue::tryFrom('');
 
         $this->assertFalse($result->isOk());
         $this->assertInstanceOf(StringValueError::class, $result->unwrapErr());
 
-        // エラーメッセージに「氏名」（ValueObjectMetaで指定した表示名）が含まれていることを確認
-        $this->assertStringContainsString('氏名', $result->unwrapErr()->getMessage());
+        // エラーメッセージに「文字列」（ValueObjectMetaで指定した表示名）が含まれていることを確認
+        $this->assertStringContainsString('文字列', $result->unwrapErr()->getMessage());
     }
 
     #[Test]
     public function 最大長を超える値はエラーになる(): void
     {
         $value = str_repeat('あ', 51);
-        $result = FullName::tryFrom($value);
+        $result = TestStringValue::tryFrom($value);
 
         $this->assertFalse($result->isOk());
         $this->assertInstanceOf(StringValueError::class, $result->unwrapErr());
 
         // エラーメッセージにメタ情報の表示名と長さ情報が含まれていることを確認
         $errorMessage = $result->unwrapErr()->getMessage();
-        $this->assertStringContainsString('氏名', $errorMessage);
+        $this->assertStringContainsString('文字列', $errorMessage);
         $this->assertStringContainsString('50文字以下', $errorMessage);
     }
 
@@ -85,13 +85,13 @@ final class StringValueTest extends TestCase
     #[DataProvider('無効な文字列のパターンを提供')]
     public function 正規表現に一致しない値はエラーになる(string $invalidValue): void
     {
-        $result = FullName::tryFrom($invalidValue);
+        $result = TestStringValue::tryFrom($invalidValue);
 
         $this->assertFalse($result->isOk());
         $this->assertInstanceOf(StringValueError::class, $result->unwrapErr());
 
         // エラーメッセージに表示名が含まれていることを確認
-        $this->assertStringContainsString('氏名', $result->unwrapErr()->getMessage());
+        $this->assertStringContainsString('文字列', $result->unwrapErr()->getMessage());
     }
 
     /**
@@ -113,7 +113,7 @@ final class StringValueTest extends TestCase
     #[DataProvider('有効な文字列のパターンを提供')]
     public function 正規表現に一致する値はインスタンスが作成できる(string $validValue): void
     {
-        $result = FullName::tryFrom($validValue);
+        $result = TestStringValue::tryFrom($validValue);
 
         $this->assertTrue($result->isOk());
         $this->assertEquals($validValue, $result->unwrap()->value);
@@ -123,25 +123,25 @@ final class StringValueTest extends TestCase
     public function メタ情報がエラーメッセージに反映される(): void
     {
         // 文字列長エラーのケース
-        $lengthErrorResult = FullName::tryFrom('');
+        $lengthErrorResult = TestStringValue::tryFrom('');
         $lengthErrorMessage = $lengthErrorResult->unwrapErr()->getMessage();
 
         // 正規表現エラーのケース
-        $regexErrorResult = FullName::tryFrom('@@@');
+        $regexErrorResult = TestStringValue::tryFrom('@@@');
         $regexErrorMessage = $regexErrorResult->unwrapErr()->getMessage();
 
-        // どちらのエラーメッセージにも「氏名」という表示名が含まれていることを確認
-        $this->assertStringContainsString('氏名', $lengthErrorMessage);
-        $this->assertStringContainsString('氏名', $regexErrorMessage);
+        // どちらのエラーメッセージにも「文字列」という表示名が含まれていることを確認
+        $this->assertStringContainsString('文字列', $lengthErrorMessage);
+        $this->assertStringContainsString('文字列', $regexErrorMessage);
     }
 
     #[Test]
     public function NullableメソッドでNullを扱える(): void
     {
-        $option = FullName::fromNullable(null);
+        $option = TestStringValue::fromNullable(null);
         $this->assertTrue($option->isNone());
 
-        $result = FullName::tryFromNullable(null);
+        $result = TestStringValue::tryFromNullable(null);
         $this->assertTrue($result->isOk());
         $this->assertTrue($result->unwrap()->isNone());
     }
