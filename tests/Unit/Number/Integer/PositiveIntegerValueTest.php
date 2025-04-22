@@ -37,9 +37,9 @@ final class PositiveIntegerValueTest extends TestCase
         $this->assertFalse($result->isOk());
         $this->assertInstanceOf(NumberValueError::class, $result->unwrapErr());
 
-        // エラーメッセージに「正の数」が含まれるか
+        // エラーメッセージに「正の整数」が含まれるか
         $errorMessage = $result->unwrapErr()->getMessage();
-        $this->assertStringContainsString('正の数', $errorMessage);
+        $this->assertStringContainsString('正の整数', $errorMessage);
     }
 
     #[Test]
@@ -49,19 +49,19 @@ final class PositiveIntegerValueTest extends TestCase
         $this->assertFalse($result->isOk());
         $this->assertInstanceOf(NumberValueError::class, $result->unwrapErr());
 
-        // エラーメッセージに「正の数」が含まれるか
+        // エラーメッセージに「正の整数」が含まれるか
         $errorMessage = $result->unwrapErr()->getMessage();
-        $this->assertStringContainsString('正の数', $errorMessage);
+        $this->assertStringContainsString('正の整数', $errorMessage);
     }
 
     #[Test]
     public function isZeroAllowed関数が適切に動作する(): void
     {
         // 標準の実装ではゼロは許容しない
-        $this->assertFalse(TestPositiveIntegerValue::isZeroAllowed());
+        $this->assertFalse(TestPositiveIntegerValue::includeZero());
 
         // ゼロを許容するよう設定された実装
-        $this->assertTrue(TestZeroAllowedPositiveIntegerValue::isZeroAllowed());
+        $this->assertTrue(TestZeroAllowedPositiveIntegerValue::includeZero());
     }
 
     #[Test]

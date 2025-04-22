@@ -27,7 +27,7 @@ final readonly class TestZeroAllowedPositiveIntegerValue extends PositiveInteger
      * ゼロを許容する
      */
     #[Override]
-    public static function isZeroAllowed(): bool
+    public static function includeZero(): bool
     {
         return true;
     }

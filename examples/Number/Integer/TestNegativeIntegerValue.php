@@ -28,7 +28,7 @@ final readonly class TestNegativeIntegerValue extends NegativeIntegerValue
      * ゼロを許容しない
      */
     #[Override]
-    public static function isZeroAllowed(): bool
+    public static function includeZero(): bool
     {
         return false;
     }

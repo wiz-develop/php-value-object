@@ -14,7 +14,7 @@ use WizDevelop\PhpValueObject\Number\NumberValueError;
 abstract readonly class NegativeIntegerValue extends IntegerValue implements INegativeIntegerValue
 {
     #[Override]
-    public static function isZeroAllowed(): bool
+    public static function includeZero(): bool
     {
         return false;
     }
@@ -22,18 +22,18 @@ abstract readonly class NegativeIntegerValue extends IntegerValue implements INe
     #[Override]
     public static function max(): int
     {
-        return static::isZeroAllowed() ? 0 : -1;
+        return static::includeZero() ? 0 : -1;
     }
 
     #[Override]
-    final public static function isValid(int $value): Result
+    final public static function isNegative(int $value): Result
     {
-        $max = static::isZeroAllowed() ? 0 : -1;
+        $max = static::includeZero() ? 0 : -1;
 
         if ($value > $max) {
             return Result\err(NumberValueError::invalidNegative(
                 className: static::class,
-                includeZero: static::isZeroAllowed(),
+                includeZero: static::includeZero(),
                 value: $value,
             ));
         }

@@ -14,7 +14,7 @@ use WizDevelop\PhpValueObject\Number\NumberValueError;
 abstract readonly class PositiveIntegerValue extends IntegerValue implements IPositiveIntegerValue
 {
     #[Override]
-    public static function isZeroAllowed(): bool
+    public static function includeZero(): bool
     {
         return false;
     }
@@ -22,18 +22,18 @@ abstract readonly class PositiveIntegerValue extends IntegerValue implements IPo
     #[Override]
     public static function min(): int
     {
-        return static::isZeroAllowed() ? 0 : 1;
+        return static::includeZero() ? 0 : 1;
     }
 
     #[Override]
-    final public static function isValid(int $value): Result
+    final public static function isPositive(int $value): Result
     {
-        $min = static::isZeroAllowed() ? 0 : 1;
+        $min = static::includeZero() ? 0 : 1;
 
         if ($value < $min) {
             return Result\err(NumberValueError::invalidPositive(
                 className: static::class,
-                includeZero: static::isZeroAllowed(),
+                includeZero: static::includeZero(),
                 value: $value,
             ));
         }
