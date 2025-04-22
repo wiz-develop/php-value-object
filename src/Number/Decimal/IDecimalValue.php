@@ -7,12 +7,13 @@ namespace WizDevelop\PhpValueObject\Number\Decimal;
 use BcMath\Number;
 use WizDevelop\PhpMonad\Option;
 use WizDevelop\PhpMonad\Result;
+use WizDevelop\PhpValueObject\IValueObject;
 use WizDevelop\PhpValueObject\Number\NumberValueError;
 
 /**
  * 小数の値オブジェクト インターフェイス
  */
-interface IDecimalValue
+interface IDecimalValue extends IValueObject
 {
     public const MIN_VALUE = PHP_INT_MIN;
     public const MAX_VALUE = PHP_INT_MAX;
@@ -40,6 +41,13 @@ interface IDecimalValue
      * @return Result<bool,NumberValueError>
      */
     public static function isRangeValid(Number $value): Result;
+
+    /**
+     * 有効なスケールかどうか
+     * NOTE: 実装クラスでのオーバーライド用メソッド
+     * @return Result<bool,NumberValueError>
+     */
+    public static function isScaleValid(Number $value): Result;
 
     /**
      * 有効な値かどうか

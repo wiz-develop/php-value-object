@@ -27,27 +27,29 @@ abstract readonly class NegativeDecimalValue implements IDecimalValue, INegative
     {
         assert(self::min() <= self::max());
         assert(self::isRangeValid($value)->isOk());
+        assert(self::isScaleValid($value)->isOk());
         assert(self::isNegative($value)->isOk());
         assert(self::isValid($value)->isOk());
     }
 
     #[Override]
-    public static function tryFrom(Number $value): Result
+    final public static function tryFrom(Number $value): Result
     {
         return static::isValid($value)
             ->andThen(static fn () => static::isRangeValid($value))
+            ->andThen(static fn () => static::isScaleValid($value))
             ->andThen(static fn () => static::isNegative($value))
             ->andThen(static fn () => Result\ok(static::from($value)));
     }
 
     #[Override]
-    public function value(): Number
+    final public function value(): Number
     {
         return $this->value;
     }
 
     #[Override]
-    public function isZero(): bool
+    final public function isZero(): bool
     {
         return $this->value->compare(0) === 0;
     }

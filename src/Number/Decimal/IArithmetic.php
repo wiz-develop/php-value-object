@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace WizDevelop\PhpValueObject\Number\Decimal;
 
+use WizDevelop\PhpMonad\Result;
+use WizDevelop\PhpValueObject\Number\NumberValueError;
+
 /**
  * 算術演算可能な小数の値オブジェクト
  */
@@ -15,9 +18,21 @@ interface IArithmetic
     public function add(IDecimalValue $other): IDecimalValue;
 
     /**
+     * 加算（例外を投げない）
+     * @return Result<static,NumberValueError>
+     */
+    public function tryAdd(IDecimalValue $other): Result;
+
+    /**
      * 減算
      */
     public function sub(IDecimalValue $other): IDecimalValue;
+
+    /**
+     * 減算（例外を投げない）
+     * @return Result<static,NumberValueError>
+     */
+    public function trySub(IDecimalValue $other): Result;
 
     /**
      * 乗算
@@ -25,7 +40,19 @@ interface IArithmetic
     public function mul(IDecimalValue $other): IDecimalValue;
 
     /**
+     * 乗算（例外を投げない）
+     * @return Result<static,NumberValueError>
+     */
+    public function tryMul(IDecimalValue $other): Result;
+
+    /**
      * 除算
      */
     public function div(IDecimalValue $other): IDecimalValue;
+
+    /**
+     * 除算（例外を投げない）
+     * @return Result<static,NumberValueError>
+     */
+    public function tryDiv(IDecimalValue $other): Result;
 }

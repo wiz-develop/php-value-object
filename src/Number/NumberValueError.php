@@ -85,4 +85,21 @@ final readonly class NumberValueError extends ValueObjectError
             message: "{$displayName}はゼロによる除算ができません。",
         );
     }
+
+    /**
+     * @param class-string $className
+     */
+    public static function invalidScale(
+        string $className,
+        int $expectedScale,
+        int $actualScale,
+        Number|int|float $value,
+    ): static {
+        $displayName = self::getDisplayName($className);
+
+        return new static(
+            code: __METHOD__,
+            message: "{$displayName}は小数点以下{$expectedScale}桁まで許容されますが、{$actualScale}桁の値が指定されました。(値:{$value})",
+        );
+    }
 }
