@@ -7,7 +7,7 @@ namespace WizDevelop\PhpValueObject\String;
 use WizDevelop\PhpValueObject\ValueObjectError;
 
 /**
- * StringValue ドメインエラー
+ * StringValue エラー
  */
 final readonly class StringValueError extends ValueObjectError
 {
