@@ -6,38 +6,47 @@ namespace WizDevelop\PhpValueObject\Number\Integer;
 
 use Override;
 use WizDevelop\PhpMonad\Result;
-use WizDevelop\PhpValueObject\Number\NumberValueError;
+use WizDevelop\PhpValueObject\ValueObjectDefault;
 
 /**
  * 正の整数の値オブジェクト
  */
-abstract readonly class PositiveIntegerValue extends IntegerValue implements IPositiveIntegerValue
+abstract readonly class PositiveIntegerValue implements IPositiveIntegerValue, IArithmetic, IComparison
 {
-    #[Override]
-    public static function includeZero(): bool
+    use Arithmetic;
+    use Comparison;
+    use PositiveIntegerValueDefault;
+    use ValueObjectDefault;
+
+    /**
+     * Avoid new() operator.
+     */
+    final private function __construct(private int $value)
     {
-        return false;
+        assert(static::min() <= static::max());
+        assert(static::includeZero() ? static::min() >= 0 : static::min() > 0);
+        assert(self::isRangeValid($value)->isOk());
+        assert(static::isValid($value)->isOk());
     }
 
     #[Override]
-    public static function min(): int
+    final public static function tryFrom(int $value): Result
     {
-        return static::includeZero() ? 0 : 1;
+        return self::isRangeValid($value)
+            ->andThen(static fn () => static::isPositive($value))
+            ->andThen(static fn () => static::isValid($value))
+            ->andThen(static fn () => Result\ok(static::from($value)));
     }
 
     #[Override]
-    final public static function isPositive(int $value): Result
+    final public function value(): int
     {
-        $min = static::includeZero() ? 0 : 1;
+        return $this->value;
+    }
 
-        if ($value < $min) {
-            return Result\err(NumberValueError::invalidPositive(
-                className: static::class,
-                includeZero: static::includeZero(),
-                value: $value,
-            ));
-        }
-
-        return Result\ok(true);
+    #[Override]
+    final public function isZero(): bool
+    {
+        return $this->value === 0;
     }
 }

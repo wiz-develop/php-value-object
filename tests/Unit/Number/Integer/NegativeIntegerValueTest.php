@@ -114,16 +114,16 @@ final class NegativeIntegerValueTest extends TestCase
     }
 
     #[Test]
-    public function isValid関数で有効な値かどうかを判定できる(): void
+    public function isNegative関数で有効な値かどうかを判定できる(): void
     {
         // ゼロを許容しない場合
-        $this->assertTrue(TestNegativeIntegerValue::isValid(-10)->isOk());
-        $this->assertFalse(TestNegativeIntegerValue::isValid(0)->isOk());
-        $this->assertFalse(TestNegativeIntegerValue::isValid(10)->isOk());
+        $this->assertTrue(TestNegativeIntegerValue::isNegative(-10)->isOk());
+        $this->assertFalse(TestNegativeIntegerValue::isNegative(0)->isOk());
+        $this->assertFalse(TestNegativeIntegerValue::isNegative(10)->isOk());
 
         // ゼロを許容する場合
-        $this->assertTrue(TestZeroAllowedNegativeIntegerValue::isValid(-10)->isOk());
-        $this->assertTrue(TestZeroAllowedNegativeIntegerValue::isValid(0)->isOk());
-        $this->assertFalse(TestZeroAllowedNegativeIntegerValue::isValid(10)->isOk());
+        $this->assertTrue(TestZeroAllowedNegativeIntegerValue::isNegative(-10)->isOk());
+        $this->assertTrue(TestZeroAllowedNegativeIntegerValue::isNegative(0)->isOk());
+        $this->assertFalse(TestZeroAllowedNegativeIntegerValue::isNegative(10)->isOk());
     }
 }
