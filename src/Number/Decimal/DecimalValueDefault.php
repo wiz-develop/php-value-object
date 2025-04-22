@@ -23,7 +23,7 @@ trait DecimalValueDefault
     }
 
     #[Override]
-    final private static function isRangeValid(Number $value): Result
+    final public static function isRangeValid(Number $value): Result
     {
         $min = new Number(IDecimalValue::MIN_VALUE);
         $max = new Number(IDecimalValue::MAX_VALUE);
@@ -43,7 +43,7 @@ trait DecimalValueDefault
     }
 
     #[Override]
-    final private static function isScaleValid(Number $value): Result
+    final public static function isScaleValid(Number $value): Result
     {
         // スケールが設定値以内かチェック
         if ($value->scale > static::scale()) {

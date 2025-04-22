@@ -37,14 +37,12 @@ interface IDecimalValue extends IValueObject
 
     /**
      * 有効な範囲かどうか
-     * NOTE: 実装クラスでのオーバーライド用メソッド
      * @return Result<bool,NumberValueError>
      */
     public static function isRangeValid(Number $value): Result;
 
     /**
      * 有効なスケールかどうか
-     * NOTE: 実装クラスでのオーバーライド用メソッド
      * @return Result<bool,NumberValueError>
      */
     public static function isScaleValid(Number $value): Result;

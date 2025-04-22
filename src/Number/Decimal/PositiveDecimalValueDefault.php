@@ -26,7 +26,7 @@ trait PositiveDecimalValueDefault
      * includeZeroがtrueの場合は0も許容する
      */
     #[Override]
-    final private static function isPositive(Number $value): Result
+    final public static function isPositive(Number $value): Result
     {
         $includeZero = static::includeZero();
         $compareResult = $value->compare(0);
