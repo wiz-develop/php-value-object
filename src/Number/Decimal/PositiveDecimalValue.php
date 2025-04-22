@@ -25,11 +25,24 @@ abstract readonly class PositiveDecimalValue implements IDecimalValue, IPositive
      */
     final private function __construct(private Number $value)
     {
-        assert(self::min() <= self::max());
-        assert(self::isRangeValid($value)->isOk());
-        assert(self::isScaleValid($value)->isOk());
-        assert(self::isPositive($value)->isOk());
-        assert(self::isValid($value)->isOk());
+        assert(static::min() <= static::max());
+        assert(static::includeZero() ? static::min() >= new Number(0) : static::min() > new Number(0));
+        assert(static::isRangeValid($value)->isOk());
+        assert(static::isScaleValid($value)->isOk());
+        assert(static::isPositive($value)->isOk());
+        assert(static::isValid($value)->isOk());
+    }
+
+    #[Override]
+    public static function min(): Number
+    {
+        return new Number(0);
+    }
+
+    #[Override]
+    public static function max(): Number
+    {
+        return new Number(IDecimalValue::MAX_VALUE);
     }
 
     #[Override]

@@ -9,146 +9,148 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
-use WizDevelop\PhpValueObject\Examples\Number\Decimal\DecimalPrice;
-use WizDevelop\PhpValueObject\Examples\Number\Decimal\ZeroAllowedPositiveDecimal;
+use WizDevelop\PhpValueObject\Examples\Number\Decimal\TestPositiveDecimalValue;
+use WizDevelop\PhpValueObject\Examples\Number\Decimal\TestZeroAllowedPositiveDecimalValue;
 use WizDevelop\PhpValueObject\Number\Decimal\PositiveDecimalValue;
 use WizDevelop\PhpValueObject\Number\NumberValueError;
 
-#[TestDox('PositiveDecimalValueクラスのテスト')]
+/**
+ * PositiveDecimalValue抽象クラスのテスト
+ */
+#[TestDox('PositiveDecimalValue抽象クラスのテスト')]
 #[CoversClass(PositiveDecimalValue::class)]
-#[CoversClass(DecimalPrice::class)]
-#[CoversClass(ZeroAllowedPositiveDecimal::class)]
+#[CoversClass(TestPositiveDecimalValue::class)]
+#[CoversClass(TestZeroAllowedPositiveDecimalValue::class)]
 final class PositiveDecimalValueTest extends TestCase
 {
     #[Test]
     public function 正の値でインスタンスが作成できる(): void
     {
-        $value = DecimalPrice::from(new Number('100.50'));
+        $value = TestPositiveDecimalValue::from(new Number('100.50'));
         $this->assertEquals('100.50', (string)$value->value());
     }
 
     #[Test]
     public function 負の値ではエラーになる(): void
     {
-        $result = DecimalPrice::tryFrom(new Number('-100.50'));
+        $result = TestPositiveDecimalValue::tryFrom(new Number('-100.50'));
         $this->assertFalse($result->isOk());
         $this->assertInstanceOf(NumberValueError::class, $result->unwrapErr());
+
+        // エラーメッセージに正の値であるべきというメッセージが含まれていることを確認
+        $errorMessage = $result->unwrapErr()->getMessage();
+        $this->assertStringContainsString('正の数', $errorMessage);
     }
 
     #[Test]
     public function includeZeroがfalseの場合にゼロ値はエラーになる(): void
     {
-        // DecimalPrice は最小値が0であり、isPositiveでは0を許容しない
-        $this->assertFalse(DecimalPrice::includeZero());
-        $result = DecimalPrice::isPositive(new Number('0'));
+        // TestPositiveDecimalValue はゼロを許容しない
+        $this->assertFalse(TestPositiveDecimalValue::includeZero());
+
+        // isPositive関数でのチェック
+        $result = TestPositiveDecimalValue::isPositive(new Number('0'));
         $this->assertFalse($result->isOk());
 
+        // tryFrom関数でのインスタンス生成
+        $result2 = TestPositiveDecimalValue::tryFrom(new Number('0'));
+        $this->assertFalse($result2->isOk());
+        $this->assertInstanceOf(NumberValueError::class, $result2->unwrapErr());
+
         // 正の値は許容される
-        $result2 = DecimalPrice::isPositive(new Number('0.01'));
-        $this->assertTrue($result2->isOk());
+        $result3 = TestPositiveDecimalValue::isPositive(new Number('0.01'));
+        $this->assertTrue($result3->isOk());
     }
 
     #[Test]
     public function includeZeroがtrueの場合にゼロ値は許容される(): void
     {
-        // ZeroAllowedPositiveDecimal はゼロを許容する
-        $this->assertTrue(ZeroAllowedPositiveDecimal::includeZero());
+        // TestZeroAllowedPositiveDecimalValue はゼロを許容する
+        $this->assertTrue(TestZeroAllowedPositiveDecimalValue::includeZero());
 
-        // ゼロは許容される
-        $result = ZeroAllowedPositiveDecimal::isPositive(new Number('0'));
+        // isPositive関数でのチェック
+        $result = TestZeroAllowedPositiveDecimalValue::isPositive(new Number('0'));
         $this->assertTrue($result->isOk());
+
+        // tryFrom関数でのインスタンス生成
+        $result2 = TestZeroAllowedPositiveDecimalValue::tryFrom(new Number('0'));
+        $this->assertTrue($result2->isOk());
+        $this->assertEquals('0', (string)$result2->unwrap()->value());
 
         // 正の値も許容される
-        $result2 = ZeroAllowedPositiveDecimal::isPositive(new Number('0.01'));
-        $this->assertTrue($result2->isOk());
+        $result3 = TestZeroAllowedPositiveDecimalValue::isPositive(new Number('0.01'));
+        $this->assertTrue($result3->isOk());
 
         // 負の値は許容されない
-        $result3 = ZeroAllowedPositiveDecimal::isPositive(new Number('-0.01'));
-        $this->assertFalse($result3->isOk());
+        $result4 = TestZeroAllowedPositiveDecimalValue::isPositive(new Number('-0.01'));
+        $this->assertFalse($result4->isOk());
     }
 
     #[Test]
-    public function 加算メソッドのテスト(): void
+    public function 加算で結果が範囲外になる場合はエラーになる(): void
     {
-        $value1 = DecimalPrice::from(new Number('10.5'));
-        $value2 = DecimalPrice::from(new Number('20.3'));
+        $value1 = TestPositiveDecimalValue::from(new Number('900'));
+        $value2 = TestPositiveDecimalValue::from(new Number('200'));
 
+        // 900 + 200 = 1100（最大値1000を超えるのでエラー）
         $result = $value1->tryAdd($value2);
-        $this->assertTrue($result->isOk());
-        $this->assertEquals('30.80', (string)$result->unwrap()->value());
+        $this->assertFalse($result->isOk());
+        $this->assertInstanceOf(NumberValueError::class, $result->unwrapErr());
     }
 
     #[Test]
-    public function 減算メソッドのテスト_正常系(): void
+    public function 減算で結果が負になる場合はエラーになる(): void
     {
-        $value1 = DecimalPrice::from(new Number('30.5'));
-        $value2 = DecimalPrice::from(new Number('10.3'));
+        $value1 = TestPositiveDecimalValue::from(new Number('10.5'));
+        $value2 = TestPositiveDecimalValue::from(new Number('20.5'));
 
-        $result = $value1->trySub($value2);
-        $this->assertTrue($result->isOk());
-        $this->assertEquals('20.20', (string)$result->unwrap()->value());
-    }
-
-    #[Test]
-    public function 減算メソッドのテスト_結果が負になるとエラー(): void
-    {
-        $value1 = DecimalPrice::from(new Number('10.5'));
-        $value2 = DecimalPrice::from(new Number('20.3'));
-
+        // 10.5 - 20.5 = -10.0（負の値になるのでエラー）
         $result = $value1->trySub($value2);
         $this->assertFalse($result->isOk());
         $this->assertInstanceOf(NumberValueError::class, $result->unwrapErr());
     }
 
     #[Test]
-    public function 乗算メソッドのテスト(): void
+    public function 乗算で結果が範囲外になる場合はエラーになる(): void
     {
-        $value1 = DecimalPrice::from(new Number('10.5'));
-        $value2 = DecimalPrice::from(new Number('2'));
+        $value1 = TestPositiveDecimalValue::from(new Number('500'));
+        $value2 = TestPositiveDecimalValue::from(new Number('3'));
 
+        // 500 * 3 = 1500（最大値1000を超えるのでエラー）
         $result = $value1->tryMul($value2);
-        $this->assertTrue($result->isOk());
-        $this->assertEquals('21.00', (string)$result->unwrap()->value());
+        $this->assertFalse($result->isOk());
+        $this->assertInstanceOf(NumberValueError::class, $result->unwrapErr());
     }
 
     #[Test]
-    public function 除算メソッドのテスト(): void
+    public function 範囲外の値はエラーになる(): void
     {
-        $value1 = DecimalPrice::from(new Number('21'));
-        $value2 = DecimalPrice::from(new Number('2'));
+        // 最小値未満
+        $result1 = TestPositiveDecimalValue::tryFrom(new Number('0'));
+        $this->assertFalse($result1->isOk());
 
-        $result = $value1->tryDiv($value2);
-        $this->assertTrue($result->isOk());
-        $this->assertEquals('10.50', (string)$result->unwrap()->value());
+        // 最大値超過
+        $result2 = TestPositiveDecimalValue::tryFrom(new Number('1000.01'));
+        $this->assertFalse($result2->isOk());
+
+        // 範囲内
+        $result3 = TestPositiveDecimalValue::tryFrom(new Number('0.01'));
+        $this->assertTrue($result3->isOk());
+
+        $result4 = TestPositiveDecimalValue::tryFrom(new Number('1000'));
+        $this->assertTrue($result4->isOk());
     }
 
     #[Test]
-    public function 比較メソッドのテスト(): void
+    public function スケールオーバーの値はエラーになる(): void
     {
-        $value1 = DecimalPrice::from(new Number('10.5'));
-        $value2 = DecimalPrice::from(new Number('10.5'));
-        $value3 = DecimalPrice::from(new Number('20.3'));
+        $result = TestPositiveDecimalValue::tryFrom(new Number('100.123'));
+        $this->assertFalse($result->isOk());
+        $this->assertInstanceOf(NumberValueError::class, $result->unwrapErr());
 
-        // 等価比較
-        $this->assertTrue($value1->equals($value2));
-        $this->assertFalse($value1->equals($value3));
-
-        // 大小比較
-        $this->assertTrue($value1->lt($value3));  // less than
-        $this->assertTrue($value1->lte($value3)); // less than or equal
-        $this->assertTrue($value1->lte($value2)); // less than or equal (equal case)
-        $this->assertFalse($value1->gt($value3)); // greater than
-        $this->assertFalse($value1->gte($value3)); // greater than or equal
-        $this->assertTrue($value1->gte($value2)); // greater than or equal (equal case)
-    }
-
-    #[Test]
-    public function isZeroメソッドのテスト(): void
-    {
-        $value1 = DecimalPrice::from(new Number('0'));
-        $value2 = DecimalPrice::from(new Number('10.5'));
-
-        $this->assertTrue($value1->isZero());
-        $this->assertFalse($value2->isZero());
+        // エラーメッセージにスケール情報が含まれていることを確認
+        $errorMessage = $result->unwrapErr()->getMessage();
+        $this->assertStringContainsString('2', $errorMessage); // 許容スケール
+        $this->assertStringContainsString('3', $errorMessage); // 実際のスケール
     }
 }

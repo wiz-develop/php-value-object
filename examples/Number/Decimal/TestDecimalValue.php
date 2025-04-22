@@ -6,17 +6,18 @@ namespace WizDevelop\PhpValueObject\Examples\Number\Decimal;
 
 use BCMath\Number;
 use Override;
-use WizDevelop\PhpValueObject\Number\Decimal\PositiveDecimalValue;
+use WizDevelop\PhpValueObject\Number\Decimal\DecimalValue;
 use WizDevelop\PhpValueObject\ValueObjectMeta;
 
 /**
- * 金額を表す小数値オブジェクト
+ * DecimalValue抽象クラスのテスト用実装
+ * 単にDecimalValueを実装するだけのシンプルなクラス
  */
-#[ValueObjectMeta(displayName: '金額')]
-final readonly class DecimalPrice extends PositiveDecimalValue
+#[ValueObjectMeta(displayName: '数値')]
+final readonly class TestDecimalValue extends DecimalValue
 {
     /**
-     * 小数点以下2桁まで許容する（通貨の表現に対応）
+     * 小数点以下2桁まで許容する
      */
     #[Override]
     public static function scale(): int
@@ -25,20 +26,20 @@ final readonly class DecimalPrice extends PositiveDecimalValue
     }
 
     /**
-     * 最小値は0
+     * 最小値は-1000
      */
     #[Override]
     public static function min(): Number
     {
-        return new Number('0');
+        return new Number('-1000');
     }
 
     /**
-     * 最大値は1,000,000（100万）
+     * 最大値は1000
      */
     #[Override]
     public static function max(): Number
     {
-        return new Number('1000000');
+        return new Number('1000');
     }
 }

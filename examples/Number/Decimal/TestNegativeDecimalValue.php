@@ -10,10 +10,11 @@ use WizDevelop\PhpValueObject\Number\Decimal\NegativeDecimalValue;
 use WizDevelop\PhpValueObject\ValueObjectMeta;
 
 /**
- * 負の小数値オブジェクト（ゼロを含まない）
+ * NegativeDecimalValue抽象クラスのテスト用実装
+ * ゼロを含まない負の小数値オブジェクト
  */
-#[ValueObjectMeta(displayName: '負数')]
-final readonly class NegativeDecimal extends NegativeDecimalValue
+#[ValueObjectMeta(displayName: '負の数値')]
+final readonly class TestNegativeDecimalValue extends NegativeDecimalValue
 {
     /**
      * 小数点以下2桁まで許容する
@@ -43,7 +44,7 @@ final readonly class NegativeDecimal extends NegativeDecimalValue
     }
 
     /**
-     * ゼロを許容しない（falseを返す）
+     * ゼロを許容しない
      */
     #[Override]
     public static function includeZero(): bool

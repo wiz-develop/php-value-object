@@ -23,24 +23,12 @@ trait DecimalValueDefault
     }
 
     #[Override]
-    public static function min(): Number
-    {
-        return new Number(IDecimalValue::MIN_VALUE);
-    }
-
-    #[Override]
-    public static function max(): Number
-    {
-        return new Number(IDecimalValue::MAX_VALUE);
-    }
-
-    #[Override]
     final public static function isRangeValid(Number $value): Result
     {
-        $min = new Number(IDecimalValue::MAX_VALUE);
-        $max = new Number(IDecimalValue::MIN_VALUE);
-        $minValue = static::min() < $min ? static::min() : $min;
-        $maxValue = static::max() > $max ? static::max() : $max;
+        $min = new Number(IDecimalValue::MIN_VALUE);
+        $max = new Number(IDecimalValue::MAX_VALUE);
+        $minValue = static::min() > $min ? static::min() : $min;
+        $maxValue = static::max() < $max ? static::max() : $max;
 
         if ($value < $minValue || $value > $maxValue) {
             return Result\err(NumberValueError::invalidRange(

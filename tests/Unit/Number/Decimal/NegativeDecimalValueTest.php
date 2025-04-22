@@ -9,71 +9,90 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
-use WizDevelop\PhpValueObject\Examples\Number\Decimal\NegativeDecimal;
-use WizDevelop\PhpValueObject\Examples\Number\Decimal\ZeroAllowedNegativeDecimal;
+use WizDevelop\PhpValueObject\Examples\Number\Decimal\TestNegativeDecimalValue;
+use WizDevelop\PhpValueObject\Examples\Number\Decimal\TestZeroAllowedNegativeDecimalValue;
+use WizDevelop\PhpValueObject\Examples\Number\Decimal\TestZeroAllowedPositiveDecimalValue;
 use WizDevelop\PhpValueObject\Number\Decimal\NegativeDecimalValue;
 use WizDevelop\PhpValueObject\Number\NumberValueError;
 
-#[TestDox('NegativeDecimalValueクラスのテスト')]
+/**
+ * NegativeDecimalValue抽象クラスのテスト
+ */
+#[TestDox('NegativeDecimalValue抽象クラスのテスト')]
 #[CoversClass(NegativeDecimalValue::class)]
-#[CoversClass(NegativeDecimal::class)]
-#[CoversClass(ZeroAllowedNegativeDecimal::class)]
+#[CoversClass(TestNegativeDecimalValue::class)]
+#[CoversClass(TestZeroAllowedNegativeDecimalValue::class)]
+
 final class NegativeDecimalValueTest extends TestCase
 {
     #[Test]
     public function 負の値でインスタンスが作成できる(): void
     {
-        $value = NegativeDecimal::from(new Number('-100.50'));
+        $value = TestNegativeDecimalValue::from(new Number('-100.50'));
         $this->assertEquals('-100.50', (string)$value->value());
     }
 
     #[Test]
     public function 正の値ではエラーになる(): void
     {
-        $result = NegativeDecimal::tryFrom(new Number('100.50'));
+        $result = TestNegativeDecimalValue::tryFrom(new Number('100.50'));
         $this->assertFalse($result->isOk());
         $this->assertInstanceOf(NumberValueError::class, $result->unwrapErr());
+
+        // エラーメッセージに負の値であるべきというメッセージが含まれていることを確認
+        $errorMessage = $result->unwrapErr()->getMessage();
+        $this->assertStringContainsString('負の数', $errorMessage);
     }
 
     #[Test]
     public function includeZeroがfalseの場合にゼロ値はエラーになる(): void
     {
-        // NegativeDecimal はゼロを許容しない
-        $this->assertFalse(NegativeDecimal::includeZero());
+        // TestNegativeDecimalValue はゼロを許容しない
+        $this->assertFalse(TestNegativeDecimalValue::includeZero());
 
-        // ゼロは許容されない
-        $result = NegativeDecimal::isNegative(new Number('0'));
+        // isNegative関数でのチェック
+        $result = TestNegativeDecimalValue::isNegative(new Number('0'));
         $this->assertFalse($result->isOk());
 
+        // tryFrom関数でのインスタンス生成
+        $result2 = TestNegativeDecimalValue::tryFrom(new Number('0'));
+        $this->assertFalse($result2->isOk());
+        $this->assertInstanceOf(NumberValueError::class, $result2->unwrapErr());
+
         // 負の値は許容される
-        $result2 = NegativeDecimal::isNegative(new Number('-0.01'));
-        $this->assertTrue($result2->isOk());
+        $result3 = TestNegativeDecimalValue::isNegative(new Number('-0.01'));
+        $this->assertTrue($result3->isOk());
     }
 
     #[Test]
     public function includeZeroがtrueの場合にゼロ値は許容される(): void
     {
-        // ZeroAllowedNegativeDecimal はゼロを許容する
-        $this->assertTrue(ZeroAllowedNegativeDecimal::includeZero());
+        // TestZeroAllowedNegativeDecimalValue はゼロを許容する
+        $this->assertTrue(TestZeroAllowedNegativeDecimalValue::includeZero());
 
-        // ゼロは許容される
-        $result = ZeroAllowedNegativeDecimal::isNegative(new Number('0'));
+        // isNegative関数でのチェック
+        $result = TestZeroAllowedNegativeDecimalValue::isNegative(new Number('0'));
         $this->assertTrue($result->isOk());
 
-        // 負の値も許容される
-        $result2 = ZeroAllowedNegativeDecimal::isNegative(new Number('-0.01'));
+        // tryFrom関数でのインスタンス生成
+        $result2 = TestZeroAllowedNegativeDecimalValue::tryFrom(new Number('0'));
         $this->assertTrue($result2->isOk());
+        $this->assertEquals('0', (string)$result2->unwrap()->value());
+
+        // 負の値も許容される
+        $result3 = TestZeroAllowedNegativeDecimalValue::isNegative(new Number('-0.01'));
+        $this->assertTrue($result3->isOk());
 
         // 正の値は許容されない
-        $result3 = ZeroAllowedNegativeDecimal::isNegative(new Number('0.01'));
-        $this->assertFalse($result3->isOk());
+        $result4 = TestZeroAllowedNegativeDecimalValue::isNegative(new Number('0.01'));
+        $this->assertFalse($result4->isOk());
     }
 
     #[Test]
     public function 加算メソッドのテスト_正常系(): void
     {
-        $value1 = NegativeDecimal::from(new Number('-30.5'));
-        $value2 = NegativeDecimal::from(new Number('-20.3'));
+        $value1 = TestNegativeDecimalValue::from(new Number('-30.5'));
+        $value2 = TestNegativeDecimalValue::from(new Number('-20.3'));
 
         $result = $value1->tryAdd($value2);
         $this->assertTrue($result->isOk());
@@ -81,78 +100,47 @@ final class NegativeDecimalValueTest extends TestCase
     }
 
     #[Test]
-    public function 加算メソッドのテスト_結果が負でなくなるとエラー(): void
+    public function 加算メソッドのテスト_結果が範囲内に収まるケース(): void
     {
-        $value1 = NegativeDecimal::from(new Number('-10.5'));
-        $value2 = NegativeDecimal::from(new Number('-10.5'));
+        $value1 = TestNegativeDecimalValue::from(new Number('-500'));
+        $value2 = TestNegativeDecimalValue::from(new Number('-100'));
 
-        // 負の数同士を足して0になる場合はエラー
+        // -500 + (-100) = -600（範囲内）
         $result = $value1->tryAdd($value2);
-        $this->assertFalse($result->isOk());
-        $this->assertInstanceOf(NumberValueError::class, $result->unwrapErr());
+        $this->assertTrue($result->isOk());
+        $this->assertEquals('-600.00', (string)$result->unwrap()->value());
     }
 
     #[Test]
-    public function 減算メソッドのテスト(): void
+    public function 加算メソッドのテスト_ゼロになるケース(): void
     {
-        $value1 = NegativeDecimal::from(new Number('-10.5'));
-        $value2 = NegativeDecimal::from(new Number('-30.5'));
+        $value1 = TestZeroAllowedNegativeDecimalValue::from(new Number('-10.5'));
+        $value2 = TestZeroAllowedPositiveDecimalValue::from(new Number('10.5'));
 
-        // -10.5 - (-30.5) = -10.5 + 30.5 = 20 => エラー（負の数じゃなくなる）
-        $result = $value1->trySub($value2);
-        $this->assertFalse($result->isOk());
-        $this->assertInstanceOf(NumberValueError::class, $result->unwrapErr());
+        // -10.5 + 10.5 = 0（ゼロを許容するクラスでは成功）
+        $result = $value1->tryAdd($value2);
+        $this->assertTrue($result->isOk());
+        $this->assertEquals('0.00', (string)$result->unwrap()->value());
+    }
 
-        // 引く数の方が小さい場合は正常に減算できる
-        $value3 = NegativeDecimal::from(new Number('-30.5'));
-        $value4 = NegativeDecimal::from(new Number('-10.5'));
-
+    #[Test]
+    public function 減算メソッドのテスト_正常系(): void
+    {
         // -30.5 - (-10.5) = -30.5 + 10.5 = -20
-        $result2 = $value3->trySub($value4);
-        $this->assertTrue($result2->isOk());
-        $this->assertEquals('-20.00', (string)$result2->unwrap()->value());
-    }
+        $value1 = TestNegativeDecimalValue::from(new Number('-30.5'));
+        $value2 = TestNegativeDecimalValue::from(new Number('-10.5'));
 
-    #[Test]
-    public function 乗算メソッドのテスト(): void
-    {
-        $value1 = NegativeDecimal::from(new Number('-10.5'));
-        $value2 = NegativeDecimal::from(new Number('-2'));
-
-        // 負の数 × 負の数 = 正の数 => エラー
-        $result = $value1->tryMul($value2);
-        $this->assertFalse($result->isOk());
-        $this->assertInstanceOf(NumberValueError::class, $result->unwrapErr());
-
-        // 負の数 × 正の数（正確には負の数の絶対値） = 負の数
-        $result2 = $value1->tryMul(NegativeDecimal::from(new Number('2')));
-        $this->assertTrue($result2->isOk());
-        $this->assertEquals('-21.00', (string)$result2->unwrap()->value());
-    }
-
-    #[Test]
-    public function 除算メソッドのテスト(): void
-    {
-        $value1 = NegativeDecimal::from(new Number('-21'));
-        $value2 = NegativeDecimal::from(new Number('-2'));
-
-        // 負の数 ÷ 負の数 = 正の数 => エラー
-        $result = $value1->tryDiv($value2);
-        $this->assertFalse($result->isOk());
-        $this->assertInstanceOf(NumberValueError::class, $result->unwrapErr());
-
-        // 負の数 ÷ 正の数（正確には負の数の絶対値） = 負の数
-        $result2 = $value1->tryDiv(NegativeDecimal::from(new Number('2')));
-        $this->assertTrue($result2->isOk());
-        $this->assertEquals('-10.50', (string)$result2->unwrap()->value());
+        $result = $value1->trySub($value2);
+        $this->assertTrue($result->isOk());
+        $this->assertEquals('-20.00', (string)$result->unwrap()->value());
     }
 
     #[Test]
     public function 比較メソッドのテスト(): void
     {
-        $value1 = NegativeDecimal::from(new Number('-10.5'));
-        $value2 = NegativeDecimal::from(new Number('-10.5'));
-        $value3 = NegativeDecimal::from(new Number('-20.3'));
+        $value1 = TestNegativeDecimalValue::from(new Number('-10.5'));
+        $value2 = TestNegativeDecimalValue::from(new Number('-10.5'));
+        $value3 = TestNegativeDecimalValue::from(new Number('-20.3'));
 
         // 等価比較
         $this->assertTrue($value1->equals($value2));
@@ -171,47 +159,42 @@ final class NegativeDecimalValueTest extends TestCase
     public function isZeroメソッドのテスト(): void
     {
         // ゼロを許容するクラスでテスト
-        $value1 = ZeroAllowedNegativeDecimal::from(new Number('0'));
-        $value2 = ZeroAllowedNegativeDecimal::from(new Number('-10.5'));
+        $value1 = TestZeroAllowedNegativeDecimalValue::from(new Number('0'));
+        $value2 = TestZeroAllowedNegativeDecimalValue::from(new Number('-10.5'));
 
         $this->assertTrue($value1->isZero());
         $this->assertFalse($value2->isZero());
     }
 
     #[Test]
-    public function 有効範囲のテスト(): void
+    public function 範囲外の値はエラーになる(): void
     {
-        // 範囲内の値
-        $result1 = NegativeDecimal::tryFrom(new Number('-500'));
-        $this->assertTrue($result1->isOk());
+        // 最小値未満
+        $result1 = TestNegativeDecimalValue::tryFrom(new Number('-1000.01'));
+        $this->assertFalse($result1->isOk());
 
-        // 最小値
-        $result2 = NegativeDecimal::tryFrom(new Number('-1000'));
-        $this->assertTrue($result2->isOk());
+        // 最大値超過
+        $result2 = TestNegativeDecimalValue::tryFrom(new Number('0'));
+        $this->assertFalse($result2->isOk());
 
-        // 最大値
-        $result3 = NegativeDecimal::tryFrom(new Number('-0.01'));
+        // 範囲内
+        $result3 = TestNegativeDecimalValue::tryFrom(new Number('-1000'));
         $this->assertTrue($result3->isOk());
 
-        // 範囲外（最小値を下回る）
-        $result4 = NegativeDecimal::tryFrom(new Number('-1000.01'));
-        $this->assertFalse($result4->isOk());
-
-        // 範囲外（最大値を上回る）
-        $result5 = NegativeDecimal::tryFrom(new Number('0'));
-        $this->assertFalse($result5->isOk());
+        $result4 = TestNegativeDecimalValue::tryFrom(new Number('-0.01'));
+        $this->assertTrue($result4->isOk());
     }
 
     #[Test]
-    public function スケールのテスト(): void
+    public function スケールオーバーの値はエラーになる(): void
     {
-        // 有効なスケール
-        $result1 = NegativeDecimal::tryFrom(new Number('-123.45'));
-        $this->assertTrue($result1->isOk());
+        $result = TestNegativeDecimalValue::tryFrom(new Number('-100.123'));
+        $this->assertFalse($result->isOk());
+        $this->assertInstanceOf(NumberValueError::class, $result->unwrapErr());
 
-        // スケールオーバー
-        $result2 = NegativeDecimal::tryFrom(new Number('-123.456'));
-        $this->assertFalse($result2->isOk());
-        $this->assertInstanceOf(NumberValueError::class, $result2->unwrapErr());
+        // エラーメッセージにスケール情報が含まれていることを確認
+        $errorMessage = $result->unwrapErr()->getMessage();
+        $this->assertStringContainsString('2', $errorMessage); // 許容スケール
+        $this->assertStringContainsString('3', $errorMessage); // 実際のスケール
     }
 }

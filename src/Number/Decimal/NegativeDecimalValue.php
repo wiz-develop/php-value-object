@@ -25,11 +25,24 @@ abstract readonly class NegativeDecimalValue implements IDecimalValue, INegative
      */
     final private function __construct(private Number $value)
     {
-        assert(self::min() <= self::max());
-        assert(self::isRangeValid($value)->isOk());
-        assert(self::isScaleValid($value)->isOk());
-        assert(self::isNegative($value)->isOk());
-        assert(self::isValid($value)->isOk());
+        assert(static::min() <= static::max());
+        assert(static::includeZero() ? static::max() <= new Number(0) : static::max() < new Number(0));
+        assert(static::isRangeValid($value)->isOk());
+        assert(static::isScaleValid($value)->isOk());
+        assert(static::isNegative($value)->isOk());
+        assert(static::isValid($value)->isOk());
+    }
+
+    #[Override]
+    public static function min(): Number
+    {
+        return new Number(IDecimalValue::MIN_VALUE);
+    }
+
+    #[Override]
+    public static function max(): Number
+    {
+        return new Number(0);
     }
 
     #[Override]
