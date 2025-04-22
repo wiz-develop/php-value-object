@@ -11,10 +11,12 @@ use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
 use WizDevelop\PhpValueObject\Examples\Number\Decimal\DecimalPrice;
+use WizDevelop\PhpValueObject\Examples\Number\Decimal\ZeroAllowedPositiveDecimal;
 use WizDevelop\PhpValueObject\Number\NumberValueError;
 
 #[TestDox('DecimalValueクラスのテスト')]
 #[CoversClass(DecimalPrice::class)]
+#[CoversClass(ZeroAllowedPositiveDecimal::class)]
 final class DecimalValueTest extends TestCase
 {
     #[Test]
@@ -246,5 +248,59 @@ final class DecimalValueTest extends TestCase
         $result = DecimalPrice::tryFromNullable(null);
         $this->assertTrue($result->isOk());
         $this->assertTrue($result->unwrap()->isNone());
+    }
+
+    #[Test]
+    public function includeZeroメソッドの値によってゼロ値の扱いが変わる(): void
+    {
+        // DecimalPrice はincludeZero()がfalseなのでゼロを許容しない
+        $this->assertFalse(DecimalPrice::includeZero());
+        $result1 = DecimalPrice::tryFrom(new Number('0'));
+        $this->assertTrue($result1->isOk(), 'DecimalPriceの最小値は0なので、0は有効な値として許容される');
+
+        // ZeroAllowedPositiveDecimal はincludeZero()がtrueなのでゼロを許容する
+        $this->assertTrue(ZeroAllowedPositiveDecimal::includeZero());
+        $result2 = ZeroAllowedPositiveDecimal::tryFrom(new Number('0'));
+        $this->assertTrue($result2->isOk(), 'ZeroAllowedPositiveDecimalはゼロを許容する');
+    }
+
+    #[Test]
+    public function isPositiveメソッドはincludeZeroの値に応じてゼロ値を判定する(): void
+    {
+        // DecimalPrice (includeZero = false)
+        $result1 = DecimalPrice::isPositive(new Number('0'));
+        $this->assertFalse($result1->isOk(), 'DecimalPriceはincludeZero=falseなので、0は正の値として許容されない');
+
+        $result2 = DecimalPrice::isPositive(new Number('0.01'));
+        $this->assertTrue($result2->isOk(), '正の値は許容される');
+
+        $result3 = DecimalPrice::isPositive(new Number('-0.01'));
+        $this->assertFalse($result3->isOk(), '負の値は許容されない');
+
+        // ZeroAllowedPositiveDecimal (includeZero = true)
+        $result4 = ZeroAllowedPositiveDecimal::isPositive(new Number('0'));
+        $this->assertTrue($result4->isOk(), 'ZeroAllowedPositiveDecimalはincludeZero=trueなので、0は正の値として許容される');
+
+        $result5 = ZeroAllowedPositiveDecimal::isPositive(new Number('0.01'));
+        $this->assertTrue($result5->isOk(), '正の値は許容される');
+
+        $result6 = ZeroAllowedPositiveDecimal::isPositive(new Number('-0.01'));
+        $this->assertFalse($result6->isOk(), '負の値は許容されない');
+    }
+
+    #[Test]
+    public function isScaleValidメソッドのテスト(): void
+    {
+        // スケール内の値の場合
+        $result1 = DecimalPrice::isScaleValid(new Number('123.45'));
+        $this->assertTrue($result1->isOk(), 'スケール2以内の値は有効');
+
+        // スケールを超えた値の場合
+        $result2 = DecimalPrice::isScaleValid(new Number('123.456'));
+        $this->assertFalse($result2->isOk(), 'スケール2を超える値は無効');
+
+        // スケールがちょうど境界値の場合
+        $result3 = DecimalPrice::isScaleValid(new Number('123.45'));
+        $this->assertTrue($result3->isOk(), 'スケール2の値は有効');
     }
 }
