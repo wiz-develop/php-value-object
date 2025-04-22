@@ -22,7 +22,7 @@ trait NegativeDecimalValueDefault
     }
 
     #[Override]
-    final public static function isNegative(Number $value): Result
+    final private static function isNegative(Number $value): Result
     {
         $includeZero = static::includeZero();
         $compareResult = $value->compare(0);

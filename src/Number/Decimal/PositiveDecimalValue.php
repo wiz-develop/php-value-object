@@ -27,9 +27,9 @@ abstract readonly class PositiveDecimalValue implements IDecimalValue, IPositive
     {
         assert(static::min() <= static::max());
         assert(static::includeZero() ? static::min() >= new Number(0) : static::min() > new Number(0));
-        assert(static::isRangeValid($value)->isOk());
-        assert(static::isScaleValid($value)->isOk());
-        assert(static::isPositive($value)->isOk());
+        assert(self::isRangeValid($value)->isOk());
+        assert(self::isScaleValid($value)->isOk());
+        assert(self::isPositive($value)->isOk());
         assert(static::isValid($value)->isOk());
     }
 
@@ -48,10 +48,10 @@ abstract readonly class PositiveDecimalValue implements IDecimalValue, IPositive
     #[Override]
     final public static function tryFrom(Number $value): Result
     {
-        return static::isValid($value)
-            ->andThen(static fn () => static::isRangeValid($value))
-            ->andThen(static fn () => static::isScaleValid($value))
-            ->andThen(static fn () => static::isPositive($value))
+        return self::isRangeValid($value)
+            ->andThen(static fn () => self::isScaleValid($value))
+            ->andThen(static fn () => self::isPositive($value))
+            ->andThen(static fn () => static::isValid($value))
             ->andThen(static fn () => Result\ok(static::from($value)));
     }
 

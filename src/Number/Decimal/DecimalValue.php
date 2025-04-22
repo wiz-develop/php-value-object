@@ -25,8 +25,8 @@ abstract readonly class DecimalValue implements IDecimalValue, IArithmetic, ICom
     final private function __construct(private Number $value)
     {
         assert(static::min() <= static::max());
-        assert(static::isRangeValid($value)->isOk());
-        assert(static::isScaleValid($value)->isOk());
+        assert(self::isRangeValid($value)->isOk());
+        assert(self::isScaleValid($value)->isOk());
         assert(static::isValid($value)->isOk());
     }
 
@@ -45,9 +45,9 @@ abstract readonly class DecimalValue implements IDecimalValue, IArithmetic, ICom
     #[Override]
     final public static function tryFrom(Number $value): Result
     {
-        return static::isValid($value)
-            ->andThen(static fn () => static::isRangeValid($value))
-            ->andThen(static fn () => static::isScaleValid($value))
+        return self::isRangeValid($value)
+            ->andThen(static fn () => self::isScaleValid($value))
+            ->andThen(static fn () => static::isValid($value))
             ->andThen(static fn () => Result\ok(static::from($value)));
     }
 
