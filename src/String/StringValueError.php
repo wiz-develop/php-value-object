@@ -21,6 +21,7 @@ final readonly class StringValueError extends ValueObjectError
     }
 
     /**
+     * 文字列の長さが無効
      * @param class-string $className
      */
     public static function invalidLength(
@@ -38,6 +39,7 @@ final readonly class StringValueError extends ValueObjectError
     }
 
     /**
+     * 文字列の正規表現が無効
      * @param class-string $className
      */
     public static function invalidRegex(
