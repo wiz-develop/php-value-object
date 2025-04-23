@@ -7,63 +7,54 @@ namespace WizDevelop\PhpValueObject\Number\Decimal;
 use BcMath\Number;
 use Override;
 use WizDevelop\PhpMonad\Result;
-use WizDevelop\PhpValueObject\ValueObjectDefault;
+use WizDevelop\PhpValueObject\Number\NumberValueError;
 
 /**
- * 正の小数の値オブジェクト
+ * 正の少数の値オブジェクト
  */
-abstract readonly class PositiveDecimalValue implements IDecimalValue, IPositiveDecimalValue, IArithmetic, IComparison
+abstract readonly class PositiveDecimalValue extends DecimalValueBase
 {
-    use Arithmetic;
-    use Comparison;
-    use DecimalValueDefault;
-    use PositiveDecimalValueDefault;
-    use ValueObjectDefault;
+    use DecimalValueFactory;
 
     /**
      * Avoid new() operator.
      */
-    final private function __construct(private Number $value)
+    final private function __construct(Number $value)
     {
-        assert(static::min() <= static::max());
-        assert(static::includeZero() ? static::min() >= new Number(0) : static::min() > new Number(0));
-        assert(self::isRangeValid($value)->isOk());
-        assert(self::isScaleValid($value)->isOk());
-        assert(self::isPositive($value)->isOk());
-        assert(static::isValid($value)->isOk());
+        assert(static::min() > new Number(0));
+        parent::__construct($value);
     }
 
     #[Override]
-    public static function min(): Number
+    protected static function min(): Number
     {
-        return new Number(0);
+        return new Number('0.0000000000000000000000000001');
     }
 
     #[Override]
-    public static function max(): Number
+    protected static function max(): Number
     {
-        return new Number(IDecimalValue::MAX_VALUE);
+        return new Number(DecimalValueBase::MAX_VALUE);
     }
 
     #[Override]
-    final public static function tryFrom(Number $value): Result
+    final protected static function isRangeValid(Number $value): Result
     {
-        return self::isRangeValid($value)
-            ->andThen(static fn () => self::isScaleValid($value))
-            ->andThen(static fn () => self::isPositive($value))
-            ->andThen(static fn () => static::isValid($value))
-            ->andThen(static fn () => Result\ok(static::from($value)));
-    }
+        $min = new Number(0);
+        $max = new Number(DecimalValueBase::MAX_VALUE);
+        $minValue = static::min() > $min ? static::min() : $min;
+        $maxValue = static::max() < $max ? static::max() : $max;
 
-    #[Override]
-    final public function value(): Number
-    {
-        return $this->value;
-    }
+        if ($value < $minValue || $value > $maxValue) {
+            return Result\err(NumberValueError::invalidRange(
+                className: static::class,
+                min: $minValue,
+                max: $maxValue,
+                value: $value,
+                isMinInclusive: false,
+            ));
+        }
 
-    #[Override]
-    final public function isZero(): bool
-    {
-        return $this->value->compare(0) === 0;
+        return Result\ok(true);
     }
 }

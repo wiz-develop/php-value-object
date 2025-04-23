@@ -8,11 +8,10 @@ use BCMath\Number;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestDox;
-use PHPUnit\Framework\TestCase;
 use WizDevelop\PhpValueObject\Examples\Number\Decimal\TestPositiveDecimalValue;
-use WizDevelop\PhpValueObject\Examples\Number\Decimal\TestZeroAllowedPositiveDecimalValue;
 use WizDevelop\PhpValueObject\Number\Decimal\PositiveDecimalValue;
 use WizDevelop\PhpValueObject\Number\NumberValueError;
+use WizDevelop\PhpValueObject\Tests\TestCase;
 
 /**
  * PositiveDecimalValue抽象クラスのテスト
@@ -20,14 +19,13 @@ use WizDevelop\PhpValueObject\Number\NumberValueError;
 #[TestDox('PositiveDecimalValue抽象クラスのテスト')]
 #[CoversClass(PositiveDecimalValue::class)]
 #[CoversClass(TestPositiveDecimalValue::class)]
-#[CoversClass(TestZeroAllowedPositiveDecimalValue::class)]
 final class PositiveDecimalValueTest extends TestCase
 {
     #[Test]
     public function 正の値でインスタンスが作成できる(): void
     {
         $value = TestPositiveDecimalValue::from(new Number('100.50'));
-        $this->assertEquals('100.50', (string)$value->value());
+        $this->assertEquals('100.50', (string)$value->value);
     }
 
     #[Test]
@@ -40,50 +38,6 @@ final class PositiveDecimalValueTest extends TestCase
         // エラーメッセージに正の値であるべきというメッセージが含まれていることを確認
         $errorMessage = $result->unwrapErr()->getMessage();
         $this->assertStringContainsString('正の数', $errorMessage);
-    }
-
-    #[Test]
-    public function includeZeroがfalseの場合にゼロ値はエラーになる(): void
-    {
-        // TestPositiveDecimalValue はゼロを許容しない
-        $this->assertFalse(TestPositiveDecimalValue::includeZero());
-
-        // isPositive関数でのチェック
-        $result = TestPositiveDecimalValue::isPositive(new Number('0'));
-        $this->assertFalse($result->isOk());
-
-        // tryFrom関数でのインスタンス生成
-        $result2 = TestPositiveDecimalValue::tryFrom(new Number('0'));
-        $this->assertFalse($result2->isOk());
-        $this->assertInstanceOf(NumberValueError::class, $result2->unwrapErr());
-
-        // 正の値は許容される
-        $result3 = TestPositiveDecimalValue::isPositive(new Number('0.01'));
-        $this->assertTrue($result3->isOk());
-    }
-
-    #[Test]
-    public function includeZeroがtrueの場合にゼロ値は許容される(): void
-    {
-        // TestZeroAllowedPositiveDecimalValue はゼロを許容する
-        $this->assertTrue(TestZeroAllowedPositiveDecimalValue::includeZero());
-
-        // isPositive関数でのチェック
-        $result = TestZeroAllowedPositiveDecimalValue::isPositive(new Number('0'));
-        $this->assertTrue($result->isOk());
-
-        // tryFrom関数でのインスタンス生成
-        $result2 = TestZeroAllowedPositiveDecimalValue::tryFrom(new Number('0'));
-        $this->assertTrue($result2->isOk());
-        $this->assertEquals('0', (string)$result2->unwrap()->value());
-
-        // 正の値も許容される
-        $result3 = TestZeroAllowedPositiveDecimalValue::isPositive(new Number('0.01'));
-        $this->assertTrue($result3->isOk());
-
-        // 負の値は許容されない
-        $result4 = TestZeroAllowedPositiveDecimalValue::isPositive(new Number('-0.01'));
-        $this->assertFalse($result4->isOk());
     }
 
     #[Test]

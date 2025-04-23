@@ -15,21 +15,9 @@ use WizDevelop\PhpValueObject\ValueObjectMeta;
 #[ValueObjectMeta(displayName: '負の整数')]
 final readonly class TestNegativeIntegerValue extends NegativeIntegerValue
 {
-    /**
-     * 最小値は-1000
-     */
     #[Override]
-    public static function min(): int
+    protected static function min(): int
     {
         return -1000;
-    }
-
-    /**
-     * ゼロを許容しない
-     */
-    #[Override]
-    public static function includeZero(): bool
-    {
-        return false;
     }
 }

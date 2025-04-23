@@ -6,47 +6,57 @@ namespace WizDevelop\PhpValueObject\Number\Integer;
 
 use Override;
 use WizDevelop\PhpMonad\Result;
-use WizDevelop\PhpValueObject\ValueObjectDefault;
+use WizDevelop\PhpValueObject\Number\NumberValueError;
 
 /**
  * 負の整数の値オブジェクト
  */
-abstract readonly class NegativeIntegerValue implements INegativeIntegerValue, IArithmetic, IComparison
+abstract readonly class NegativeIntegerValue extends IntegerValueBase implements IIntegerValueFactory
 {
-    use Arithmetic;
-    use Comparison;
-    use NegativeIntegerValueDefault;
-    use ValueObjectDefault;
+    use IntegerValueFactory;
 
     /**
      * Avoid new() operator.
      */
-    final private function __construct(private int $value)
+    final private function __construct(int $value)
     {
-        assert(static::min() <= static::max());
-        assert(static::includeZero() ? static::max() <= 0 : static::max() < 0);
-        assert(self::isRangeValid($value)->isOk());
-        assert(static::isValid($value)->isOk());
+        assert(static::max() < 0);
+        parent::__construct($value);
     }
 
     #[Override]
-    final public static function tryFrom(int $value): Result
+    protected static function min(): int
     {
-        return self::isRangeValid($value)
-            ->andThen(static fn () => static::isNegative($value))
-            ->andThen(static fn () => static::isValid($value))
-            ->andThen(static fn () => Result\ok(static::from($value)));
+        return IntegerValueBase::MIN_VALUE;
     }
 
     #[Override]
-    final public function value(): int
+    protected static function max(): int
     {
-        return $this->value;
+        return -1;
     }
 
     #[Override]
-    final public function isZero(): bool
+    final protected static function isRangeValid(int $value): Result
     {
-        return $this->value === 0;
+        $minValue = max(static::min(), IntegerValueBase::MIN_VALUE);
+        $maxValue = min(static::max(), 0);
+
+        if ($value < $minValue || $value > $maxValue) {
+            return Result\err(NumberValueError::invalidRange(
+                className: static::class,
+                min: $minValue,
+                max: $maxValue,
+                value: $value,
+            ));
+        }
+
+        return Result\ok(true);
+    }
+
+    #[Override]
+    protected static function isValid(int $value): Result
+    {
+        return Result\ok(true);
     }
 }

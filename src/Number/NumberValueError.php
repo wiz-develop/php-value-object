@@ -22,57 +22,29 @@ final readonly class NumberValueError extends ValueObjectError
     }
 
     /**
+     * 数値の範囲が無効
      * @param class-string $className
      */
     public static function invalidRange(
         string $className,
-        Number|int|float $min,
-        Number|int|float $max,
-        Number|int|float $value,
+        Number|int $min,
+        Number|int $max,
+        Number|int $value,
+        bool $isMinInclusive = true,
+        bool $isMaxInclusive = true,
     ): static {
         $displayName = self::getDisplayName($className);
+        $minText = $isMinInclusive ? '以上' : 'より大きい';
+        $maxText = $isMaxInclusive ? '以下' : '未満';
 
         return new static(
             code: __METHOD__,
-            message: "{$displayName}は{$min}以上{$max}以下である必要があります。(値:{$value})",
+            message: "{$displayName}は{$min}{$minText}かつ{$max}{$maxText}である必要があります。(値:{$value})",
         );
     }
 
     /**
-     * @param class-string $className
-     */
-    public static function invalidPositive(
-        string $className,
-        bool $includeZero,
-        Number|int|float $value,
-    ): static {
-        $displayName = self::getDisplayName($className);
-        $zeroText = $includeZero ? 'または0' : '';
-
-        return new static(
-            code: __METHOD__,
-            message: "{$displayName}は正の数{$zeroText}である必要があります。(値:{$value})",
-        );
-    }
-
-    /**
-     * @param class-string $className
-     */
-    public static function invalidNegative(
-        string $className,
-        bool $includeZero,
-        Number|int|float $value,
-    ): static {
-        $displayName = self::getDisplayName($className);
-        $zeroText = $includeZero ? 'または0' : '';
-
-        return new static(
-            code: __METHOD__,
-            message: "{$displayName}は負の数{$zeroText}である必要があります。(値:{$value})",
-        );
-    }
-
-    /**
+     * ゼロによる除算は無効
      * @param class-string $className
      */
     public static function invalidDivideByZero(
@@ -87,19 +59,38 @@ final readonly class NumberValueError extends ValueObjectError
     }
 
     /**
+     * 数値のスケールが無効
      * @param class-string $className
      */
     public static function invalidScale(
         string $className,
         int $expectedScale,
         int $actualScale,
-        Number|int|float $value,
+        Number|int $value,
     ): static {
         $displayName = self::getDisplayName($className);
 
         return new static(
             code: __METHOD__,
             message: "{$displayName}は小数点以下{$expectedScale}桁まで許容されますが、{$actualScale}桁の値が指定されました。(値:{$value})",
+        );
+    }
+
+    /**
+     * 数値の桁数が無効
+     * @param class-string $className
+     */
+    public static function invalidDigits(
+        string $className,
+        int $maxDigits,
+        int $actualDigits,
+        Number|int $value,
+    ): static {
+        $displayName = self::getDisplayName($className);
+
+        return new static(
+            code: __METHOD__,
+            message: "{$displayName}は桁数{$maxDigits}桁まで許容されますが、{$actualDigits}桁の値が指定されました。(値:{$value})",
         );
     }
 }

@@ -15,21 +15,9 @@ use WizDevelop\PhpValueObject\ValueObjectMeta;
 #[ValueObjectMeta(displayName: '正の整数')]
 final readonly class TestPositiveIntegerValue extends PositiveIntegerValue
 {
-    /**
-     * 最大値は1000
-     */
     #[Override]
-    public static function max(): int
+    protected static function max(): int
     {
         return 1000;
-    }
-
-    /**
-     * ゼロを許容しない
-     */
-    #[Override]
-    public static function includeZero(): bool
-    {
-        return false;
     }
 }

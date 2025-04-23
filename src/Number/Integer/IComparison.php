@@ -12,20 +12,20 @@ interface IComparison
     /**
      * 大きいか
      */
-    public function gt(IIntegerValue $other): bool;
+    public function gt(IntegerValueBase $other): bool;
 
     /**
      * 大きいか同じ
      */
-    public function gte(IIntegerValue $other): bool;
+    public function gte(IntegerValueBase $other): bool;
 
     /**
      * 小さいか
      */
-    public function lt(IIntegerValue $other): bool;
+    public function lt(IntegerValueBase $other): bool;
 
     /**
      * 小さいか同じ
      */
-    public function lte(IIntegerValue $other): bool;
+    public function lte(IntegerValueBase $other): bool;
 }

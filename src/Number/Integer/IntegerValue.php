@@ -6,57 +6,50 @@ namespace WizDevelop\PhpValueObject\Number\Integer;
 
 use Override;
 use WizDevelop\PhpMonad\Result;
-use WizDevelop\PhpValueObject\ValueObjectDefault;
+use WizDevelop\PhpValueObject\Number\NumberValueError;
 
 /**
  * 整数の値オブジェクト
  */
-abstract readonly class IntegerValue implements IIntegerValue, IArithmetic, IComparison
+abstract readonly class IntegerValue extends IntegerValueBase
 {
-    use Arithmetic;
-    use Comparison;
-    use IntegerValueDefault;
-    use ValueObjectDefault;
+    use IntegerValueFactory;
 
     /**
      * Avoid new() operator.
      */
-    final private function __construct(private int $value)
+    final private function __construct(int $value)
     {
-        assert(static::min() <= static::max());
-        assert(self::isRangeValid($value)->isOk());
-        assert(static::isValid($value)->isOk());
+        parent::__construct($value);
     }
 
     #[Override]
-    public static function min(): int
+    protected static function min(): int
     {
-        return IIntegerValue::MIN_VALUE;
+        return IntegerValueBase::MIN_VALUE;
     }
 
     #[Override]
-    public static function max(): int
+    protected static function max(): int
     {
-        return IIntegerValue::MAX_VALUE;
+        return IntegerValueBase::MAX_VALUE;
     }
 
     #[Override]
-    final public static function tryFrom(int $value): Result
+    final protected static function isRangeValid(int $value): Result
     {
-        return self::isRangeValid($value)
-            ->andThen(static fn () => static::isValid($value))
-            ->andThen(static fn () => Result\ok(static::from($value)));
-    }
+        $minValue = max(static::min(), IntegerValueBase::MIN_VALUE);
+        $maxValue = min(static::max(), IntegerValueBase::MAX_VALUE);
 
-    #[Override]
-    final public function value(): int
-    {
-        return $this->value;
-    }
+        if ($value < $minValue || $value > $maxValue) {
+            return Result\err(NumberValueError::invalidRange(
+                className: static::class,
+                min: $minValue,
+                max: $maxValue,
+                value: $value,
+            ));
+        }
 
-    #[Override]
-    final public function isZero(): bool
-    {
-        return $this->value === 0;
+        return Result\ok(true);
     }
 }

@@ -15,44 +15,44 @@ interface IArithmetic
     /**
      * 加算
      */
-    public function add(IIntegerValue $other): IIntegerValue;
+    public function add(IntegerValueBase $other): IntegerValueBase;
 
     /**
      * 加算（例外を投げない）
      * @return Result<static,NumberValueError>
      */
-    public function tryAdd(IIntegerValue $other): Result;
+    public function tryAdd(IntegerValueBase $other): Result;
 
     /**
      * 減算
      */
-    public function sub(IIntegerValue $other): IIntegerValue;
+    public function sub(IntegerValueBase $other): IntegerValueBase;
 
     /**
      * 減算（例外を投げない）
      * @return Result<static,NumberValueError>
      */
-    public function trySub(IIntegerValue $other): Result;
+    public function trySub(IntegerValueBase $other): Result;
 
     /**
      * 乗算
      */
-    public function mul(IIntegerValue $other): IIntegerValue;
+    public function mul(IntegerValueBase $other): IntegerValueBase;
 
     /**
      * 乗算（例外を投げない）
      * @return Result<static,NumberValueError>
      */
-    public function tryMul(IIntegerValue $other): Result;
+    public function tryMul(IntegerValueBase $other): Result;
 
     /**
      * 除算
      */
-    public function div(IIntegerValue $other): IIntegerValue;
+    public function div(IntegerValueBase $other): IntegerValueBase;
 
     /**
      * 除算（例外を投げない）
      * @return Result<static,NumberValueError>
      */
-    public function tryDiv(IIntegerValue $other): Result;
+    public function tryDiv(IntegerValueBase $other): Result;
 }

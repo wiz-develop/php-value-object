@@ -7,38 +7,14 @@ namespace WizDevelop\PhpValueObject\Number\Integer;
 use Override;
 use WizDevelop\PhpMonad\Option;
 use WizDevelop\PhpMonad\Result;
-use WizDevelop\PhpValueObject\Number\NumberValueError;
 
 /**
- * Default implementation of IIntegerValue
- * @see WizDevelop\PhpValueObject\Number\Integer\IIntegerValue
+ * Default implementation of IIntegerValueFactory
+ * @see WizDevelop\PhpValueObject\Number\Integer\IntegerValueBase
+ * @see WizDevelop\PhpValueObject\Number\Integer\IIntegerValueFactory
  */
-trait IntegerValueDefault
+trait IntegerValueFactory
 {
-    #[Override]
-    final public static function isRangeValid(int $value): Result
-    {
-        $minValue = max(static::min(), IIntegerValue::MIN_VALUE);
-        $maxValue = min(static::max(), IIntegerValue::MAX_VALUE);
-
-        if ($value < $minValue || $value > $maxValue) {
-            return Result\err(NumberValueError::invalidRange(
-                className: static::class,
-                min: $minValue,
-                max: $maxValue,
-                value: $value,
-            ));
-        }
-
-        return Result\ok(true);
-    }
-
-    #[Override]
-    public static function isValid(int $value): Result
-    {
-        return Result\ok(true);
-    }
-
     #[Override]
     final public static function from(int $value): static
     {

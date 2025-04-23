@@ -16,39 +16,21 @@ use WizDevelop\PhpValueObject\ValueObjectMeta;
 #[ValueObjectMeta(displayName: '負の数値')]
 final readonly class TestNegativeDecimalValue extends NegativeDecimalValue
 {
-    /**
-     * 小数点以下2桁まで許容する
-     */
     #[Override]
-    public static function scale(): int
+    protected static function scale(): int
     {
         return 2;
     }
 
-    /**
-     * 最小値は-1000
-     */
     #[Override]
-    public static function min(): Number
+    protected static function min(): Number
     {
         return new Number('-1000');
     }
 
-    /**
-     * 最大値は-0.01（ゼロは含まない）
-     */
     #[Override]
-    public static function max(): Number
+    protected static function max(): Number
     {
         return new Number('-0.01');
-    }
-
-    /**
-     * ゼロを許容しない
-     */
-    #[Override]
-    public static function includeZero(): bool
-    {
-        return false;
     }
 }

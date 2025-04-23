@@ -16,39 +16,21 @@ use WizDevelop\PhpValueObject\ValueObjectMeta;
 #[ValueObjectMeta(displayName: '正の数値')]
 final readonly class TestPositiveDecimalValue extends PositiveDecimalValue
 {
-    /**
-     * 小数点以下2桁まで許容する
-     */
     #[Override]
-    public static function scale(): int
+    protected static function scale(): int
     {
         return 2;
     }
 
-    /**
-     * 最小値は0.01
-     */
     #[Override]
-    public static function min(): Number
+    protected static function min(): Number
     {
         return new Number('0.01');
     }
 
-    /**
-     * 最大値は1000
-     */
     #[Override]
-    public static function max(): Number
+    protected static function max(): Number
     {
         return new Number('1000');
-    }
-
-    /**
-     * ゼロを許容しない
-     */
-    #[Override]
-    public static function includeZero(): bool
-    {
-        return false;
     }
 }

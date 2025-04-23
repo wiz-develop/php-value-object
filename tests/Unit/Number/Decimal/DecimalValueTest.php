@@ -11,13 +11,13 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestDox;
-use PHPUnit\Framework\TestCase;
 use Throwable;
 use WizDevelop\PhpMonad\Result;
 use WizDevelop\PhpValueObject\Examples\Number\Decimal\TestDecimalValue;
 use WizDevelop\PhpValueObject\Number\Decimal\DecimalValue;
-use WizDevelop\PhpValueObject\Number\Decimal\IDecimalValue;
+use WizDevelop\PhpValueObject\Number\Decimal\DecimalValueBase;
 use WizDevelop\PhpValueObject\Number\NumberValueError;
+use WizDevelop\PhpValueObject\Tests\TestCase;
 
 /**
  * DecimalValue抽象クラスのテスト
@@ -35,28 +35,28 @@ final class DecimalValueTest extends TestCase
     public function 有効な値でインスタンスが作成できる(): void
     {
         $decimal = TestDecimalValue::from(new Number('100.50'));
-        $this->assertEquals('100.50', (string)$decimal->value());
+        $this->assertEquals('100.50', (string)$decimal->value);
     }
 
     #[Test]
     public function 最小値でインスタンスが作成できる(): void
     {
         $decimal = TestDecimalValue::from(new Number('-1000'));
-        $this->assertEquals('-1000', (string)$decimal->value());
+        $this->assertEquals('-1000', (string)$decimal->value);
     }
 
     #[Test]
     public function 最大値でインスタンスが作成できる(): void
     {
         $decimal = TestDecimalValue::from(new Number('1000'));
-        $this->assertEquals('1000', (string)$decimal->value());
+        $this->assertEquals('1000', (string)$decimal->value);
     }
 
     #[Test]
     public function value関数で内部値を取得できる(): void
     {
         $decimalValue = TestDecimalValue::from(new Number('123.45'));
-        $this->assertEquals('123.45', (string)$decimalValue->value());
+        $this->assertEquals('123.45', (string)$decimalValue->value);
     }
 
     #[Test]
@@ -93,7 +93,7 @@ final class DecimalValueTest extends TestCase
     {
         $result = TestDecimalValue::tryFrom(new Number($validValue));
         $this->assertTrue($result->isOk());
-        $this->assertEquals($validValue, (string)$result->unwrap()->value());
+        $this->assertEquals($validValue, (string)$result->unwrap()->value);
     }
 
     /**
@@ -155,72 +155,12 @@ final class DecimalValueTest extends TestCase
     }
 
     #[Test]
-    public function scale関数でスケールを取得できる(): void
-    {
-        $this->assertEquals(2, TestDecimalValue::scale());
-    }
-
-    #[Test]
-    public function min関数とmax関数で最小値と最大値を取得できる(): void
-    {
-        $min = TestDecimalValue::min();
-        $max = TestDecimalValue::max();
-
-        $this->assertEquals('-1000', (string)$min);
-        $this->assertEquals('1000', (string)$max);
-    }
-
-    #[Test]
-    public function isScaleValid関数でスケールの妥当性をチェックできる(): void
-    {
-        // 有効なスケール
-        $result1 = TestDecimalValue::isScaleValid(new Number('123.45'));
-        $this->assertTrue($result1->isOk(), 'スケール2以内の値は有効');
-
-        // 無効なスケール
-        $result2 = TestDecimalValue::isScaleValid(new Number('123.456'));
-        $this->assertFalse($result2->isOk(), 'スケール2を超える値は無効');
-
-        // スケールがちょうど境界値の場合
-        $result3 = TestDecimalValue::isScaleValid(new Number('123.45'));
-        $this->assertTrue($result3->isOk(), 'スケール2の値は有効');
-
-        // エラーメッセージにスケール情報が含まれていることを確認
-        $errorMessage = $result2->unwrapErr()->getMessage();
-        $this->assertStringContainsString('2', $errorMessage); // 期待されるスケール
-        $this->assertStringContainsString('3', $errorMessage); // 実際のスケール
-    }
-
-    #[Test]
-    public function isRangeValid関数で範囲の妥当性をチェックできる(): void
-    {
-        // 有効な範囲
-        $result1 = TestDecimalValue::isRangeValid(new Number('500'));
-        $this->assertTrue($result1->isOk());
-
-        // 範囲外（下限以下）
-        $result2 = TestDecimalValue::isRangeValid(new Number('-1001'));
-        $this->assertFalse($result2->isOk());
-        $this->assertInstanceOf(NumberValueError::class, $result2->unwrapErr());
-
-        // 範囲外（上限以上）
-        $result3 = TestDecimalValue::isRangeValid(new Number('1001'));
-        $this->assertFalse($result3->isOk());
-        $this->assertInstanceOf(NumberValueError::class, $result3->unwrapErr());
-
-        // エラーメッセージに範囲情報が含まれていることを確認
-        $errorMessage = $result3->unwrapErr()->getMessage();
-        $this->assertStringContainsString('-1000', $errorMessage); // 最小値
-        $this->assertStringContainsString('1000', $errorMessage);  // 最大値
-    }
-
-    #[Test]
     public function tryFrom関数で有効な値を検証してインスタンス化できる(): void
     {
         // 有効な値
         $result1 = TestDecimalValue::tryFrom(new Number('123.45'));
         $this->assertTrue($result1->isOk());
-        $this->assertEquals('123.45', (string)$result1->unwrap()->value());
+        $this->assertEquals('123.45', (string)$result1->unwrap()->value);
 
         // 無効な値（スケールオーバー）
         $result2 = TestDecimalValue::tryFrom(new Number('123.456'));
@@ -247,7 +187,7 @@ final class DecimalValueTest extends TestCase
         // 非Null値の場合
         $option2 = TestDecimalValue::fromNullable(new Number('123.45'));
         $this->assertTrue($option2->isSome());
-        $this->assertEquals('123.45', (string)$option2->unwrap()->value());
+        $this->assertEquals('123.45', (string)$option2->unwrap()->value);
     }
 
     #[Test]
@@ -262,7 +202,7 @@ final class DecimalValueTest extends TestCase
         $result2 = TestDecimalValue::tryFromNullable(new Number('123.45'));
         $this->assertTrue($result2->isOk());
         $this->assertTrue($result2->unwrap()->isSome());
-        $this->assertEquals('123.45', (string)$result2->unwrap()->unwrap()->value());
+        $this->assertEquals('123.45', (string)$result2->unwrap()->unwrap()->value);
 
         // 無効な非Null値の場合
         $result3 = TestDecimalValue::tryFromNullable(new Number('1001')); // 範囲外
@@ -282,7 +222,7 @@ final class DecimalValueTest extends TestCase
 
         $result = $value1->tryAdd($value2);
         $this->assertTrue($result->isOk());
-        $this->assertEquals('300.75', (string)$result->unwrap()->value());
+        $this->assertEquals('300.75', (string)$result->unwrap()->value);
     }
 
     #[Test]
@@ -293,7 +233,7 @@ final class DecimalValueTest extends TestCase
 
         $result = $value1->trySub($value2);
         $this->assertTrue($result->isOk());
-        $this->assertEquals('100.25', (string)$result->unwrap()->value());
+        $this->assertEquals('100.25', (string)$result->unwrap()->value);
     }
 
     #[Test]
@@ -304,7 +244,7 @@ final class DecimalValueTest extends TestCase
 
         $result = $value->tryMul($multiplier);
         $this->assertTrue($result->isOk());
-        $this->assertEquals('201.00', (string)$result->unwrap()->value());
+        $this->assertEquals('201.00', (string)$result->unwrap()->value);
     }
 
     #[Test]
@@ -315,7 +255,7 @@ final class DecimalValueTest extends TestCase
 
         $result = $value->tryDiv($divisor);
         $this->assertTrue($result->isOk());
-        $this->assertEquals('50.25', (string)$result->unwrap()->value());
+        $this->assertEquals('50.25', (string)$result->unwrap()->value);
     }
 
     #[Test]
@@ -379,13 +319,13 @@ final class DecimalValueTest extends TestCase
         // tryXxx系のメソッドを使用
         $tryMethodName = 'try' . ucfirst($operation);
 
-        /** @var Result<IDecimalValue,NumberValueError> */
+        /** @var Result<DecimalValueBase,NumberValueError> */
         $result = $decimal1->{$tryMethodName}($decimal2);
         $this->assertInstanceOf(Result::class, $result);
 
         if ($shouldSucceed) {
             $this->assertTrue($result->isOk(), "演算 {$value1} {$operation} {$value2} は成功するべき");
-            $this->assertEquals($expected, (string)$result->unwrap()->value());
+            $this->assertEquals($expected, (string)$result->unwrap()->value);
         } else {
             $this->assertFalse($result->isOk(), "演算 {$value1} {$operation} {$value2} は失敗するべき");
             $this->assertInstanceOf(NumberValueError::class, $result->unwrapErr());
@@ -394,10 +334,10 @@ final class DecimalValueTest extends TestCase
         // 例外を投げる通常メソッドのテスト
         if ($shouldSucceed) {
             try {
-                /** @var IDecimalValue */
+                /** @var DecimalValueBase */
                 $methodResult = $decimal1->{$operation}($decimal2);
-                $this->assertInstanceOf(IDecimalValue::class, $methodResult);
-                $this->assertEquals($expected, (string)$methodResult->value());
+                $this->assertInstanceOf(DecimalValueBase::class, $methodResult);
+                $this->assertEquals($expected, (string)$methodResult->value);
             } catch (Exception $e) {
                 $this->fail("演算 {$value1} {$operation} {$value2} は例外を投げるべきでない: " . $e->getMessage());
             }

@@ -8,20 +8,22 @@ use DivisionByZeroError;
 use Exception;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestDox;
-use PHPUnit\Framework\TestCase;
 use Throwable;
 use WizDevelop\PhpMonad\Result;
 use WizDevelop\PhpValueObject\Examples\Number\Integer\TestIntegerValue;
-use WizDevelop\PhpValueObject\Number\Integer\IIntegerValue;
 use WizDevelop\PhpValueObject\Number\Integer\IntegerValue;
+use WizDevelop\PhpValueObject\Number\Integer\IntegerValueBase;
 use WizDevelop\PhpValueObject\Number\NumberValueError;
+use WizDevelop\PhpValueObject\Tests\TestCase;
 
 /**
  * IntegerValue抽象クラスのテスト
  */
 #[TestDox('IntegerValue抽象クラスのテスト')]
+#[Group('IntegerValue')]
 #[CoversClass(IntegerValue::class)]
 #[CoversClass(TestIntegerValue::class)]
 final class IntegerValueTest extends TestCase
@@ -34,38 +36,28 @@ final class IntegerValueTest extends TestCase
     public function 有効な値でインスタンスが作成できる(): void
     {
         $integer = TestIntegerValue::from(100);
-        $this->assertEquals(100, $integer->value());
+        $this->assertEquals(100, $integer->value);
     }
 
     #[Test]
     public function 最小値でインスタンスが作成できる(): void
     {
         $integer = TestIntegerValue::from(-1000);
-        $this->assertEquals(-1000, $integer->value());
+        $this->assertEquals(-1000, $integer->value);
     }
 
     #[Test]
     public function 最大値でインスタンスが作成できる(): void
     {
         $integer = TestIntegerValue::from(1000);
-        $this->assertEquals(1000, $integer->value());
+        $this->assertEquals(1000, $integer->value);
     }
 
     #[Test]
     public function value関数で内部値を取得できる(): void
     {
         $integerValue = TestIntegerValue::from(123);
-        $this->assertEquals(123, $integerValue->value());
-    }
-
-    #[Test]
-    public function isZero関数でゼロかどうかを判定できる(): void
-    {
-        $zeroValue = TestIntegerValue::from(0);
-        $nonZeroValue = TestIntegerValue::from(123);
-
-        $this->assertTrue($zeroValue->isZero());
-        $this->assertFalse($nonZeroValue->isZero());
+        $this->assertEquals(123, $integerValue->value);
     }
 
     /**
@@ -88,7 +80,7 @@ final class IntegerValueTest extends TestCase
     {
         $result = TestIntegerValue::tryFrom($validValue);
         $this->assertTrue($result->isOk());
-        $this->assertEquals($validValue, $result->unwrap()->value());
+        $this->assertEquals($validValue, $result->unwrap()->value);
     }
 
     /**
@@ -136,45 +128,12 @@ final class IntegerValueTest extends TestCase
     }
 
     #[Test]
-    public function min関数とmax関数で最小値と最大値を取得できる(): void
-    {
-        $min = TestIntegerValue::min();
-        $max = TestIntegerValue::max();
-
-        $this->assertEquals(-1000, $min);
-        $this->assertEquals(1000, $max);
-    }
-
-    #[Test]
-    public function isRangeValid関数で範囲の妥当性をチェックできる(): void
-    {
-        // 有効な範囲
-        $result1 = TestIntegerValue::isRangeValid(500);
-        $this->assertTrue($result1->isOk());
-
-        // 範囲外（下限以下）
-        $result2 = TestIntegerValue::isRangeValid(-1001);
-        $this->assertFalse($result2->isOk());
-        $this->assertInstanceOf(NumberValueError::class, $result2->unwrapErr());
-
-        // 範囲外（上限以上）
-        $result3 = TestIntegerValue::isRangeValid(1001);
-        $this->assertFalse($result3->isOk());
-        $this->assertInstanceOf(NumberValueError::class, $result3->unwrapErr());
-
-        // エラーメッセージに範囲情報が含まれていることを確認
-        $errorMessage = $result3->unwrapErr()->getMessage();
-        $this->assertStringContainsString('-1000', $errorMessage); // 最小値
-        $this->assertStringContainsString('1000', $errorMessage);  // 最大値
-    }
-
-    #[Test]
     public function tryFrom関数で有効な値を検証してインスタンス化できる(): void
     {
         // 有効な値
         $result1 = TestIntegerValue::tryFrom(123);
         $this->assertTrue($result1->isOk());
-        $this->assertEquals(123, $result1->unwrap()->value());
+        $this->assertEquals(123, $result1->unwrap()->value);
 
         // 無効な値（範囲外）
         $result2 = TestIntegerValue::tryFrom(1001);
@@ -196,7 +155,7 @@ final class IntegerValueTest extends TestCase
         // 非Null値の場合
         $option2 = TestIntegerValue::fromNullable(123);
         $this->assertTrue($option2->isSome());
-        $this->assertEquals(123, $option2->unwrap()->value());
+        $this->assertEquals(123, $option2->unwrap()->value);
     }
 
     #[Test]
@@ -211,7 +170,7 @@ final class IntegerValueTest extends TestCase
         $result2 = TestIntegerValue::tryFromNullable(123);
         $this->assertTrue($result2->isOk());
         $this->assertTrue($result2->unwrap()->isSome());
-        $this->assertEquals(123, $result2->unwrap()->unwrap()->value());
+        $this->assertEquals(123, $result2->unwrap()->unwrap()->value);
 
         // 無効な非Null値の場合
         $result3 = TestIntegerValue::tryFromNullable(1001); // 範囲外
@@ -231,7 +190,7 @@ final class IntegerValueTest extends TestCase
 
         $result = $value1->tryAdd($value2);
         $this->assertTrue($result->isOk());
-        $this->assertEquals(300, $result->unwrap()->value());
+        $this->assertEquals(300, $result->unwrap()->value);
     }
 
     #[Test]
@@ -242,7 +201,7 @@ final class IntegerValueTest extends TestCase
 
         $result = $value1->trySub($value2);
         $this->assertTrue($result->isOk());
-        $this->assertEquals(100, $result->unwrap()->value());
+        $this->assertEquals(100, $result->unwrap()->value);
     }
 
     #[Test]
@@ -253,7 +212,7 @@ final class IntegerValueTest extends TestCase
 
         $result = $value->tryMul($multiplier);
         $this->assertTrue($result->isOk());
-        $this->assertEquals(200, $result->unwrap()->value());
+        $this->assertEquals(200, $result->unwrap()->value);
     }
 
     #[Test]
@@ -264,7 +223,7 @@ final class IntegerValueTest extends TestCase
 
         $result = $value->tryDiv($divisor);
         $this->assertTrue($result->isOk());
-        $this->assertEquals(50, $result->unwrap()->value());
+        $this->assertEquals(50, $result->unwrap()->value);
     }
 
     #[Test]
@@ -275,7 +234,7 @@ final class IntegerValueTest extends TestCase
 
         $result = $value->tryDiv($divisor);
         $this->assertTrue($result->isOk());
-        $this->assertEquals(33, $result->unwrap()->value()); // intdivによる整数除算
+        $this->assertEquals(33, $result->unwrap()->value); // intdivによる整数除算
     }
 
     #[Test]
@@ -339,13 +298,13 @@ final class IntegerValueTest extends TestCase
         // tryXxx系のメソッドを使用
         $tryMethodName = 'try' . ucfirst($operation);
 
-        /** @var Result<IIntegerValue,NumberValueError> */
+        /** @var Result<IntegerValueBase,NumberValueError> */
         $result = $integer1->{$tryMethodName}($integer2);
         $this->assertInstanceOf(Result::class, $result);
 
         if ($shouldSucceed) {
             $this->assertTrue($result->isOk(), "演算 {$value1} {$operation} {$value2} は成功するべき");
-            $this->assertEquals($expected, $result->unwrap()->value());
+            $this->assertEquals($expected, $result->unwrap()->value);
         } else {
             $this->assertFalse($result->isOk(), "演算 {$value1} {$operation} {$value2} は失敗するべき");
             $this->assertInstanceOf(NumberValueError::class, $result->unwrapErr());
@@ -354,10 +313,10 @@ final class IntegerValueTest extends TestCase
         // 例外を投げる通常メソッドのテスト
         if ($shouldSucceed) {
             try {
-                /** @var IIntegerValue */
+                /** @var IntegerValueBase */
                 $methodResult = $integer1->{$operation}($integer2);
-                $this->assertInstanceOf(IIntegerValue::class, $methodResult);
-                $this->assertEquals($expected, $methodResult->value());
+                $this->assertInstanceOf(IntegerValueBase::class, $methodResult);
+                $this->assertEquals($expected, $methodResult->value);
             } catch (Exception $e) {
                 $this->fail("演算 {$value1} {$operation} {$value2} は例外を投げるべきでない: " . $e->getMessage());
             }

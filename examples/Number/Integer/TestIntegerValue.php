@@ -15,20 +15,14 @@ use WizDevelop\PhpValueObject\ValueObjectMeta;
 #[ValueObjectMeta(displayName: '整数')]
 final readonly class TestIntegerValue extends IntegerValue
 {
-    /**
-     * 最小値は-1000
-     */
     #[Override]
-    public static function min(): int
+    protected static function min(): int
     {
         return -1000;
     }
 
-    /**
-     * 最大値は1000
-     */
     #[Override]
-    public static function max(): int
+    protected static function max(): int
     {
         return 1000;
     }
