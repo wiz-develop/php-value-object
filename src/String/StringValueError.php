@@ -54,4 +54,20 @@ final readonly class StringValueError extends ValueObjectError
             message: "{$displayName}は正規表現({$regex})に一致する必要があります。(値:{$value})",
         );
     }
+
+    /**
+     * メールアドレスの形式が無効
+     * @param class-string $className
+     */
+    public static function invalidEmail(
+        string $className,
+        string $value,
+    ): static {
+        $displayName = self::getDisplayName($className);
+
+        return new static(
+            code: __METHOD__,
+            message: "{$displayName}は有効なメールアドレス形式である必要があります。(値:{$value})",
+        );
+    }
 }

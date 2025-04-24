@@ -24,22 +24,6 @@ final class EmailAddressTest extends TestCase
         $this->assertEquals('test@example.com', $email->value);
     }
 
-    #[Test]
-    public function getLocalPartでローカル部が取得できる(): void
-    {
-        $email = EmailAddress::from('test@example.com');
-
-        $this->assertEquals('test', $email->getLocalPart());
-    }
-
-    #[Test]
-    public function getDomainでドメイン部が取得できる(): void
-    {
-        $email = EmailAddress::from('test@example.com');
-
-        $this->assertEquals('example.com', $email->getDomain());
-    }
-
     /**
      * @return array<string, array{string}>
      */

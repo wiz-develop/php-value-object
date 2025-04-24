@@ -5,16 +5,15 @@ declare(strict_types=1);
 namespace WizDevelop\PhpValueObject\Number\Decimal;
 
 use BcMath\Number;
-use Override;
 use WizDevelop\PhpMonad\Result;
 use WizDevelop\PhpValueObject\IValueObject;
 use WizDevelop\PhpValueObject\Number\NumberValueError;
 use WizDevelop\PhpValueObject\ValueObjectDefault;
 
 /**
- * 少数の値オブジェクトの抽象クラス
+ * 少数の値オブジェクトの基底クラス
  */
-abstract readonly class DecimalValueBase implements IValueObject, IArithmetic, IComparison, IDecimalValueFactory
+abstract readonly class DecimalValueBase implements IValueObject, IArithmetic, IComparison
 {
     use Arithmetic;
     use Comparison;
@@ -23,26 +22,14 @@ abstract readonly class DecimalValueBase implements IValueObject, IArithmetic, I
     protected const string MIN_VALUE = '-9999999999999999999999999999.9';
     protected const string MAX_VALUE = '9999999999999999999999999999.9';
 
-    /**
-     * Avoid new() operator.
-     */
     protected function __construct(public Number $value)
     {
+        // NOTE: 不変条件（invariant）
         assert(static::min() <= static::max());
         assert(static::isRangeValid($value)->isOk());
         assert(static::isScaleValid($value)->isOk());
         assert(static::isDigitsValid($value)->isOk());
         assert(static::isValid($value)->isOk());
-    }
-
-    #[Override]
-    final public static function tryFrom(Number $value): Result
-    {
-        return static::isRangeValid($value)
-            ->andThen(static fn () => static::isScaleValid($value))
-            ->andThen(static fn () => static::isDigitsValid($value))
-            ->andThen(static fn () => static::isValid($value))
-            ->andThen(static fn () => Result\ok(static::from($value)));
     }
 
     /**

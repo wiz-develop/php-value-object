@@ -6,73 +6,77 @@ namespace WizDevelop\PhpValueObject\String;
 
 use Override;
 use WizDevelop\PhpMonad\Result;
+use WizDevelop\PhpValueObject\String\Base\IStringValueFactory;
+use WizDevelop\PhpValueObject\String\Base\StringValueBase;
+use WizDevelop\PhpValueObject\String\Base\StringValueFactory;
 use WizDevelop\PhpValueObject\ValueObjectMeta;
 
 /**
  * メールアドレスの値オブジェクト
  */
 #[ValueObjectMeta(displayName: 'メールアドレス', description: 'メールアドレスの値オブジェクト')]
-final readonly class EmailAddress extends StringValue
+final readonly class EmailAddress extends StringValueBase implements IStringValueFactory
 {
-    /**
-     * メールアドレスの最大文字数（RFC 5321に基づく）
-     */
-    private const int MIN_EMAIL_LENGTH = 1;
-    private const int MAX_EMAIL_LENGTH = 254;
+    use StringValueFactory;
 
     /**
-     * メールアドレスの正規表現パターン
-     * RFC 5322に準拠した基本的な検証を行う
+     * Avoid new() operator.
      */
-    private const string EMAIL_REGEX = '/^[a-zA-Z0-9.!#$%&\'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/';
+    private function __construct(string $value)
+    {
+        parent::__construct($value);
+    }
 
+    #[Override]
+    public static function tryFrom(string $value): Result
+    {
+        /** @var string */
+        $sanitizedValue = filter_var($value, FILTER_SANITIZE_EMAIL);
+
+        return self::isValid($sanitizedValue)
+            ->andThen(static fn () => self::isLengthValid($sanitizedValue))
+            ->andThen(static fn () => self::isRegexValid($sanitizedValue))
+            ->andThen(static fn () => self::isValidEmail($sanitizedValue))
+            ->andThen(static fn () => Result\ok(self::from($sanitizedValue)));
+    }
+
+    /**
+     * メールアドレスの最小文字数（RFC 5321に基づく）
+     */
     #[Override]
     public static function minLength(): int
     {
-        return self::MIN_EMAIL_LENGTH;
+        return 1;
     }
 
+    /**
+     * メールアドレスの最大文字数（RFC 5321に基づく）
+     */
     #[Override]
     public static function maxLength(): int
     {
-        return self::MAX_EMAIL_LENGTH;
+        return 254;
     }
 
     #[Override]
-    public static function regex(): string
+    protected static function regex(): string
     {
-        return self::EMAIL_REGEX;
+        return self::REGEX;
     }
 
-    #[Override]
-    public static function isValid(string $value): Result
+    /**
+     * 有効な正規表現かどうか
+     * @return Result<bool,StringValueError>
+     */
+    protected static function isValidEmail(string $value): Result
     {
         if (!filter_var($value, FILTER_VALIDATE_EMAIL)) {
-            return Result\err(StringValueError::invalid(
-                message: "「{$value}」は有効なメールアドレス形式ではありません。",
+            return Result\err(StringValueError::invalidEmail(
+                className: self::class,
+                value: $value,
             ));
         }
 
         return Result\ok(true);
-    }
-
-    /**
-     * メールアドレスのローカル部（@より前の部分）を取得
-     */
-    public function getLocalPart(): string
-    {
-        [$localPart, $_] = explode('@', $this->value, 2);
-
-        return $localPart;
-    }
-
-    /**
-     * メールアドレスのドメイン部（@より後の部分）を取得
-     */
-    public function getDomain(): string
-    {
-        [$_, $domain] = explode('@', $this->value, 2);
-
-        return $domain;
     }
 }

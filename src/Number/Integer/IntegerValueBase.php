@@ -4,16 +4,15 @@ declare(strict_types=1);
 
 namespace WizDevelop\PhpValueObject\Number\Integer;
 
-use Override;
 use WizDevelop\PhpMonad\Result;
 use WizDevelop\PhpValueObject\IValueObject;
 use WizDevelop\PhpValueObject\Number\NumberValueError;
 use WizDevelop\PhpValueObject\ValueObjectDefault;
 
 /**
- * 整数の値オブジェクトの抽象クラス
+ * 整数の値オブジェクトの基底クラス
  */
-abstract readonly class IntegerValueBase implements IValueObject, IArithmetic, IComparison, IIntegerValueFactory
+abstract readonly class IntegerValueBase implements IValueObject, IArithmetic, IComparison
 {
     use Arithmetic;
     use Comparison;
@@ -22,22 +21,12 @@ abstract readonly class IntegerValueBase implements IValueObject, IArithmetic, I
     protected const MIN_VALUE = PHP_INT_MIN;
     protected const MAX_VALUE = PHP_INT_MAX;
 
-    /**
-     * Avoid new() operator.
-     */
     protected function __construct(public int $value)
     {
+        // NOTE: 不変条件（invariant）
         assert(static::min() <= static::max());
         assert(static::isRangeValid($value)->isOk());
         assert(static::isValid($value)->isOk());
-    }
-
-    #[Override]
-    final public static function tryFrom(int $value): Result
-    {
-        return static::isRangeValid($value)
-            ->andThen(static fn () => static::isValid($value))
-            ->andThen(static fn () => Result\ok(static::from($value)));
     }
 
     /**

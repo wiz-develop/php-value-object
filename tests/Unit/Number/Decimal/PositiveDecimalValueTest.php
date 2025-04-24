@@ -9,8 +9,8 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestDox;
 use WizDevelop\PhpValueObject\Examples\Number\Decimal\TestPositiveDecimalValue;
-use WizDevelop\PhpValueObject\Number\Decimal\PositiveDecimalValue;
 use WizDevelop\PhpValueObject\Number\NumberValueError;
+use WizDevelop\PhpValueObject\Number\PositiveDecimalValue;
 use WizDevelop\PhpValueObject\Tests\TestCase;
 
 /**

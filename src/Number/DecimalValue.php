@@ -2,17 +2,19 @@
 
 declare(strict_types=1);
 
-namespace WizDevelop\PhpValueObject\Number\Decimal;
+namespace WizDevelop\PhpValueObject\Number;
 
 use BcMath\Number;
 use Override;
 use WizDevelop\PhpMonad\Result;
-use WizDevelop\PhpValueObject\Number\NumberValueError;
+use WizDevelop\PhpValueObject\Number\Decimal\DecimalValueBase;
+use WizDevelop\PhpValueObject\Number\Decimal\DecimalValueFactory;
+use WizDevelop\PhpValueObject\Number\Decimal\IDecimalValueFactory;
 
 /**
- * 負の少数の値オブジェクト
+ * 少数の値オブジェクト
  */
-abstract readonly class NegativeDecimalValue extends DecimalValueBase
+abstract readonly class DecimalValue extends DecimalValueBase implements IDecimalValueFactory
 {
     use DecimalValueFactory;
 
@@ -21,7 +23,6 @@ abstract readonly class NegativeDecimalValue extends DecimalValueBase
      */
     final private function __construct(Number $value)
     {
-        assert(static::max() < new Number(0));
         parent::__construct($value);
     }
 
@@ -34,14 +35,14 @@ abstract readonly class NegativeDecimalValue extends DecimalValueBase
     #[Override]
     protected static function max(): Number
     {
-        return  new Number('-0.0000000000000000000000000001');
+        return new Number(DecimalValueBase::MAX_VALUE);
     }
 
     #[Override]
     final protected static function isRangeValid(Number $value): Result
     {
         $min = new Number(DecimalValueBase::MIN_VALUE);
-        $max = new Number(0);
+        $max = new Number(DecimalValueBase::MAX_VALUE);
         $minValue = static::min() > $min ? static::min() : $min;
         $maxValue = static::max() < $max ? static::max() : $max;
 
@@ -51,7 +52,6 @@ abstract readonly class NegativeDecimalValue extends DecimalValueBase
                 min: $minValue,
                 max: $maxValue,
                 value: $value,
-                isMaxInclusive: false,
             ));
         }
 

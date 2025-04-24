@@ -14,8 +14,8 @@ use PHPUnit\Framework\Attributes\TestDox;
 use Throwable;
 use WizDevelop\PhpMonad\Result;
 use WizDevelop\PhpValueObject\Examples\Number\Integer\TestIntegerValue;
-use WizDevelop\PhpValueObject\Number\Integer\IntegerValue;
 use WizDevelop\PhpValueObject\Number\Integer\IntegerValueBase;
+use WizDevelop\PhpValueObject\Number\IntegerValue;
 use WizDevelop\PhpValueObject\Number\NumberValueError;
 use WizDevelop\PhpValueObject\Tests\TestCase;
 

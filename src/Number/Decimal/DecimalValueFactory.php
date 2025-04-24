@@ -33,6 +33,16 @@ trait DecimalValueFactory
     }
 
     #[Override]
+    final public static function tryFrom(Number $value): Result
+    {
+        return static::isRangeValid($value)
+            ->andThen(static fn () => static::isScaleValid($value))
+            ->andThen(static fn () => static::isDigitsValid($value))
+            ->andThen(static fn () => static::isValid($value))
+            ->andThen(static fn () => Result\ok(static::from($value)));
+    }
+
+    #[Override]
     final public static function tryFromNullable(?Number $value): Result
     {
         if ($value === null) {

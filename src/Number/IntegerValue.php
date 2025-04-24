@@ -2,16 +2,18 @@
 
 declare(strict_types=1);
 
-namespace WizDevelop\PhpValueObject\Number\Integer;
+namespace WizDevelop\PhpValueObject\Number;
 
 use Override;
 use WizDevelop\PhpMonad\Result;
-use WizDevelop\PhpValueObject\Number\NumberValueError;
+use WizDevelop\PhpValueObject\Number\Integer\IIntegerValueFactory;
+use WizDevelop\PhpValueObject\Number\Integer\IntegerValueBase;
+use WizDevelop\PhpValueObject\Number\Integer\IntegerValueFactory;
 
 /**
  * 整数の値オブジェクト
  */
-abstract readonly class IntegerValue extends IntegerValueBase
+abstract readonly class IntegerValue extends IntegerValueBase implements IIntegerValueFactory
 {
     use IntegerValueFactory;
 

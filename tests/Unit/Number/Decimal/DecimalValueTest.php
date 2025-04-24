@@ -14,8 +14,8 @@ use PHPUnit\Framework\Attributes\TestDox;
 use Throwable;
 use WizDevelop\PhpMonad\Result;
 use WizDevelop\PhpValueObject\Examples\Number\Decimal\TestDecimalValue;
-use WizDevelop\PhpValueObject\Number\Decimal\DecimalValue;
 use WizDevelop\PhpValueObject\Number\Decimal\DecimalValueBase;
+use WizDevelop\PhpValueObject\Number\DecimalValue;
 use WizDevelop\PhpValueObject\Number\NumberValueError;
 use WizDevelop\PhpValueObject\Tests\TestCase;
 

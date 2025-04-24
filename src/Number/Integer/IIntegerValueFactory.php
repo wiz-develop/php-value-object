@@ -9,7 +9,7 @@ use WizDevelop\PhpMonad\Result;
 use WizDevelop\PhpValueObject\Number\NumberValueError;
 
 /**
- * すべての値オブジェクトの基底インターフェース
+ * 整数の値オブジェクト ファクトリインターフェース
  * @see WizDevelop\PhpValueObject\Number\Integer\IntegerValueFactory
  */
 interface IIntegerValueFactory

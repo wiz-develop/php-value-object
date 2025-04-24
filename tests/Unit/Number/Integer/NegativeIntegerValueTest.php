@@ -10,7 +10,7 @@ use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestDox;
 use WizDevelop\PhpValueObject\Examples\Number\Integer\TestNegativeIntegerValue;
-use WizDevelop\PhpValueObject\Number\Integer\NegativeIntegerValue;
+use WizDevelop\PhpValueObject\Number\NegativeIntegerValue;
 use WizDevelop\PhpValueObject\Number\NumberValueError;
 use WizDevelop\PhpValueObject\Tests\TestCase;
 

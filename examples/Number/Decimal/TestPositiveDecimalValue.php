@@ -6,7 +6,7 @@ namespace WizDevelop\PhpValueObject\Examples\Number\Decimal;
 
 use BCMath\Number;
 use Override;
-use WizDevelop\PhpValueObject\Number\Decimal\PositiveDecimalValue;
+use WizDevelop\PhpValueObject\Number\PositiveDecimalValue;
 use WizDevelop\PhpValueObject\ValueObjectMeta;
 
 /**

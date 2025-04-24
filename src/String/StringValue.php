@@ -4,58 +4,28 @@ declare(strict_types=1);
 
 namespace WizDevelop\PhpValueObject\String;
 
-use WizDevelop\PhpMonad\Option;
+use Override;
 use WizDevelop\PhpMonad\Result;
-use WizDevelop\PhpValueObject\ValueObjectDefault;
-
-use function assert;
+use WizDevelop\PhpValueObject\String\Base\IStringValueFactory;
+use WizDevelop\PhpValueObject\String\Base\StringValueBase;
+use WizDevelop\PhpValueObject\String\Base\StringValueFactory;
 
 /**
  * 文字列の値オブジェクトの性質を提供する
  */
-abstract readonly class StringValue implements IStringValue
+abstract readonly class StringValue extends StringValueBase implements IStringValueFactory
 {
-    use StringValueDefault;
-    use ValueObjectDefault;
+    use StringValueFactory;
 
     /**
      * Avoid new() operator.
-     * @see from()
-     * @see tryFrom()
      */
-    final private function __construct(public string $value)
+    final private function __construct(string $value)
     {
-        assert(static::minLength() <= static::maxLength());
-        assert(static::isValid($value)->isOk());
-        assert(self::isLengthValid($value)->isOk());
-        assert(self::isRegexValid($value)->isOk());
+        parent::__construct($value);
     }
 
-    /**
-     * 信頼できるプリミティブ値からインスタンスを生成する
-     */
-    final public static function from(string $value): static
-    {
-        return new static($value);
-    }
-
-    /**
-     * 信頼できるプリミティブ値からインスタンスを生成する（Null許容）
-     * @return Option<static>
-     */
-    final public static function fromNullable(?string $value): Option
-    {
-        if ($value === null) {
-            return Option\none();
-        }
-
-        return Option\some(static::from($value));
-    }
-
-    /**
-     * 信頼できないプリミティブ値からインスタンスを生成する
-     * @return Result<static,StringValueError>
-     */
+    #[Override]
     final public static function tryFrom(string $value): Result
     {
         return static::isValid($value)
@@ -64,59 +34,21 @@ abstract readonly class StringValue implements IStringValue
             ->andThen(static fn () => Result\ok(static::from($value)));
     }
 
-    /**
-     * 信頼できないプリミティブ値からインスタンスを生成する（Null許容）
-     * @return Result<Option<static>,StringValueError>
-     */
-    final public static function tryFromNullable(?string $value): Result
+    #[Override]
+    protected static function minLength(): int
     {
-        if ($value === null) {
-            // @phpstan-ignore-next-line
-            return Result\ok(Option\none());
-        }
-
-        // @phpstan-ignore-next-line
-        return static::tryFrom($value)->map(static fn ($result) => Option\some($result));
+        return self::MIN_LENGTH;
     }
 
-    /**
-     * 有効な文字列長かどうか
-     * @return Result<bool,StringValueError>
-     */
-    final public static function isLengthValid(string $value): Result
+    #[Override]
+    protected static function maxLength(): int
     {
-        $value_length = mb_strlen($value, 'UTF-8');
-        $min_length = static::minLength() > self::MIN_LENGTH ? static::minLength() : self::MIN_LENGTH;
-        $max_length = static::maxLength() < self::MAX_LENGTH ? static::maxLength() : self::MAX_LENGTH;
-
-        if (!($value_length >= $min_length && $value_length <= $max_length)) {
-            return Result\err(StringValueError::invalidLength(
-                className: static::class,
-                min_length: $min_length,
-                max_length: $max_length,
-                value: $value,
-            ));
-        }
-
-        return Result\ok(true);
+        return self::MAX_LENGTH;
     }
 
-    /**
-     * 有効な正規表現かどうか
-     * @return Result<bool,StringValueError>
-     */
-    final public static function isRegexValid(string $value): Result
+    #[Override]
+    protected static function regex(): string
     {
-        $regex = static::regex();
-
-        if ($regex !== self::REGEX && !preg_match($regex, $value)) {
-            return Result\err(StringValueError::invalidRegex(
-                className: static::class,
-                regex: $regex,
-                value: $value,
-            ));
-        }
-
-        return Result\ok(true);
+        return self::REGEX;
     }
 }

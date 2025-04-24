@@ -10,8 +10,8 @@ use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestDox;
 use WizDevelop\PhpValueObject\Examples\Number\Integer\TestPositiveIntegerValue;
-use WizDevelop\PhpValueObject\Number\Integer\PositiveIntegerValue;
 use WizDevelop\PhpValueObject\Number\NumberValueError;
+use WizDevelop\PhpValueObject\Number\PositiveIntegerValue;
 use WizDevelop\PhpValueObject\Tests\TestCase;
 
 /**

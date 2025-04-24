@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace WizDevelop\PhpValueObject\Examples\Number\Integer;
 
 use Override;
-use WizDevelop\PhpValueObject\Number\Integer\NegativeIntegerValue;
+use WizDevelop\PhpValueObject\Number\NegativeIntegerValue;
 use WizDevelop\PhpValueObject\ValueObjectMeta;
 
 /**

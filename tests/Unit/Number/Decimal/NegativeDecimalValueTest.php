@@ -9,7 +9,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestDox;
 use WizDevelop\PhpValueObject\Examples\Number\Decimal\TestNegativeDecimalValue;
-use WizDevelop\PhpValueObject\Number\Decimal\NegativeDecimalValue;
+use WizDevelop\PhpValueObject\Number\NegativeDecimalValue;
 use WizDevelop\PhpValueObject\Number\NumberValueError;
 use WizDevelop\PhpValueObject\Tests\TestCase;
 

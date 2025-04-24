@@ -42,4 +42,12 @@ trait IntegerValueFactory
         // @phpstan-ignore-next-line
         return static::tryFrom($value)->map(static fn ($result) => Option\some($result));
     }
+
+    #[Override]
+    final public static function tryFrom(int $value): Result
+    {
+        return static::isRangeValid($value)
+            ->andThen(static fn () => static::isValid($value))
+            ->andThen(static fn () => Result\ok(static::from($value)));
+    }
 }

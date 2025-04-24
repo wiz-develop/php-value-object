@@ -2,17 +2,19 @@
 
 declare(strict_types=1);
 
-namespace WizDevelop\PhpValueObject\Number\Decimal;
+namespace WizDevelop\PhpValueObject\Number;
 
 use BcMath\Number;
 use Override;
 use WizDevelop\PhpMonad\Result;
-use WizDevelop\PhpValueObject\Number\NumberValueError;
+use WizDevelop\PhpValueObject\Number\Decimal\DecimalValueBase;
+use WizDevelop\PhpValueObject\Number\Decimal\DecimalValueFactory;
+use WizDevelop\PhpValueObject\Number\Decimal\IDecimalValueFactory;
 
 /**
- * 正の少数の値オブジェクト
+ * 負の少数の値オブジェクト
  */
-abstract readonly class PositiveDecimalValue extends DecimalValueBase
+abstract readonly class NegativeDecimalValue extends DecimalValueBase implements IDecimalValueFactory
 {
     use DecimalValueFactory;
 
@@ -21,27 +23,27 @@ abstract readonly class PositiveDecimalValue extends DecimalValueBase
      */
     final private function __construct(Number $value)
     {
-        assert(static::min() > new Number(0));
+        assert(static::max() < new Number(0));
         parent::__construct($value);
     }
 
     #[Override]
     protected static function min(): Number
     {
-        return new Number('0.0000000000000000000000000001');
+        return new Number(DecimalValueBase::MIN_VALUE);
     }
 
     #[Override]
     protected static function max(): Number
     {
-        return new Number(DecimalValueBase::MAX_VALUE);
+        return  new Number('-0.0000000000000000000000000001');
     }
 
     #[Override]
     final protected static function isRangeValid(Number $value): Result
     {
-        $min = new Number(0);
-        $max = new Number(DecimalValueBase::MAX_VALUE);
+        $min = new Number(DecimalValueBase::MIN_VALUE);
+        $max = new Number(0);
         $minValue = static::min() > $min ? static::min() : $min;
         $maxValue = static::max() < $max ? static::max() : $max;
 
@@ -51,7 +53,7 @@ abstract readonly class PositiveDecimalValue extends DecimalValueBase
                 min: $minValue,
                 max: $maxValue,
                 value: $value,
-                isMinInclusive: false,
+                isMaxInclusive: false,
             ));
         }
 
