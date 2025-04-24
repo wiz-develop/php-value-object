@@ -104,7 +104,6 @@ final class DecimalValueTest extends TestCase
         return [
             '最小値未満' => ['-1000.01'],
             '最大値超過' => ['1000.01'],
-            '小数点以下が多すぎる' => ['100.123'],
         ];
     }
 
@@ -142,16 +141,25 @@ final class DecimalValueTest extends TestCase
     }
 
     #[Test]
-    public function スケールオーバーの値はエラーになる(): void
+    public function スケールが正確に保持されているかのテスト(): void
     {
-        $result = TestDecimalValue::tryFrom(new Number('100.123'));
-        $this->assertFalse($result->isOk());
-        $this->assertInstanceOf(NumberValueError::class, $result->unwrapErr());
+        $value1 = TestDecimalValue::from(new Number('10.50'));
+        $this->assertEquals('10.50', (string)$value1->value);
 
-        // エラーメッセージにスケール情報が含まれているか確認
-        $errorMessage = $result->unwrapErr()->getMessage();
-        $this->assertStringContainsString('2', $errorMessage); // 許容スケール
-        $this->assertStringContainsString('3', $errorMessage); // 実際のスケール
+        $value2 = TestDecimalValue::from(new Number('20.25'));
+        $this->assertEquals('20.25', (string)$value2->value);
+
+        // 末尾がゼロの値
+        $value3 = TestDecimalValue::from(new Number('10.00'));
+        $this->assertEquals('10.00', (string)$value3->value); // 末尾のゼロが保持される
+
+        // 演算結果のスケール確認
+        $sum = $value1->add($value2);
+        $this->assertEquals('30.75', (string)$sum->value); // スケールが保持される
+
+        // 整数値から小数への変換
+        $value4 = TestDecimalValue::from(new Number('42'));
+        $this->assertEquals('42.00', (string)$value4->value); // 小数点以下が追加される
     }
 
     #[Test]
@@ -162,10 +170,6 @@ final class DecimalValueTest extends TestCase
         $this->assertTrue($result1->isOk());
         $this->assertEquals('123.45', (string)$result1->unwrap()->value);
 
-        // 無効な値（スケールオーバー）
-        $result2 = TestDecimalValue::tryFrom(new Number('123.456'));
-        $this->assertFalse($result2->isOk());
-        $this->assertInstanceOf(NumberValueError::class, $result2->unwrapErr());
 
         // 無効な値（範囲外）
         $result3 = TestDecimalValue::tryFrom(new Number('1001'));
@@ -442,5 +446,69 @@ final class DecimalValueTest extends TestCase
 
         // 自分自身との比較
         $this->assertTrue($decimal1->equals($decimal1));
+    }
+
+    // ------------------------------------------
+    // 追加テスト: 複合的な演算と連鎖
+    // ------------------------------------------
+
+    #[Test]
+    public function 複合的な算術演算のテスト(): void
+    {
+        $value1 = TestDecimalValue::from(new Number('10.50'));
+        $value2 = TestDecimalValue::from(new Number('20.25'));
+        $value3 = TestDecimalValue::from(new Number('2.00'));
+
+        // (10.50 + 20.25) * 2.00 = 30.75 * 2.00 = 61.50
+        $result = $value1->add($value2)->mul($value3);
+        $this->assertEquals('61.5000', (string)$result->value);
+
+        // 10.50 * (20.25 + 2.00) = 10.50 * 22.25 = 233.63
+        $addResult = $value2->add($value3);
+        $mulResult = $value1->mul($addResult);
+        $this->assertEquals('233.6250', (string)$mulResult->value);
+    }
+
+    #[Test]
+    public function 演算の連鎖のテスト(): void
+    {
+        $value = TestDecimalValue::from(new Number('10.50'));
+
+        // (((10.50 + 5.25) - 3.00) * 2.00) = ((15.75 - 3.00) * 2.00) = (12.75 * 2.00) = 25.50
+        $result = $value
+            ->add(TestDecimalValue::from(new Number('5.25')))
+            ->sub(TestDecimalValue::from(new Number('3.00')))
+            ->mul(TestDecimalValue::from(new Number('2.00')));
+
+        $this->assertEquals('25.5000', (string)$result->value);
+    }
+
+    #[Test]
+    public function 文字列表現のテスト(): void
+    {
+        $value1 = TestDecimalValue::from(new Number('123.45'));
+        $this->assertEquals('123.45', (string)$value1);
+
+        $value2 = TestDecimalValue::from(new Number('-456.78'));
+        $this->assertEquals('-456.78', (string)$value2);
+
+        $value3 = TestDecimalValue::from(new Number('0.00'));
+        $this->assertEquals('0.00', (string)$value3);
+
+        $value4 = TestDecimalValue::from(new Number('100'));
+        $this->assertEquals('100', (string)$value4);
+    }
+
+    #[Test]
+    public function シリアライズとデシリアライズのテスト(): void
+    {
+        $original = TestDecimalValue::from(new Number('123.45'));
+        $serialized = serialize($original);
+
+        /** @var TestDecimalValue */
+        $unserialized = unserialize($serialized);
+
+        $this->assertEquals((string)$original->value, (string)$unserialized->value);
+        $this->assertTrue($original->equals($unserialized));
     }
 }

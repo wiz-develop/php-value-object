@@ -60,6 +60,16 @@ final class IntegerValueTest extends TestCase
         $this->assertEquals(123, $integerValue->value);
     }
 
+    #[Test]
+    public function isZero関数でゼロかどうかを判定できる(): void
+    {
+        $zeroValue = TestIntegerValue::from(0);
+        $nonZeroValue = TestIntegerValue::from(123);
+
+        $this->assertTrue($zeroValue->isZero());
+        $this->assertFalse($nonZeroValue->isZero());
+    }
+
     /**
      * @return array<string, array{int}>
      */
@@ -421,5 +431,66 @@ final class IntegerValueTest extends TestCase
 
         // 自分自身との比較
         $this->assertTrue($integer1->equals($integer1));
+    }
+
+    // ------------------------------------------
+    // 追加テスト: 複合的な演算と連鎖
+    // ------------------------------------------
+
+    #[Test]
+    public function 複合的な算術演算のテスト(): void
+    {
+        $value1 = TestIntegerValue::from(10);
+        $value2 = TestIntegerValue::from(20);
+        $value3 = TestIntegerValue::from(2);
+
+        // (10 + 20) * 2 = 60
+        $result = $value1->add($value2)->mul($value3);
+        $this->assertEquals(60, $result->value);
+
+        // 10 * (20 + 2) = 10 * 22 = 220
+        $addResult = $value2->add($value3);
+        $mulResult = $value1->mul($addResult);
+        $this->assertEquals(220, $mulResult->value);
+    }
+
+    #[Test]
+    public function 演算の連鎖のテスト(): void
+    {
+        $value = TestIntegerValue::from(10);
+
+        // (((10 + 5) - 3) * 2) = ((15 - 3) * 2) = (12 * 2) = 24
+        $result = $value
+            ->add(TestIntegerValue::from(5))
+            ->sub(TestIntegerValue::from(3))
+            ->mul(TestIntegerValue::from(2));
+
+        $this->assertEquals(24, $result->value);
+    }
+
+    #[Test]
+    public function 文字列表現のテスト(): void
+    {
+        $value1 = TestIntegerValue::from(123);
+        $this->assertEquals('123', (string)$value1);
+
+        $value2 = TestIntegerValue::from(-456);
+        $this->assertEquals('-456', (string)$value2);
+
+        $value3 = TestIntegerValue::from(0);
+        $this->assertEquals('0', (string)$value3);
+    }
+
+    #[Test]
+    public function シリアライズとデシリアライズのテスト(): void
+    {
+        $original = TestIntegerValue::from(123);
+        $serialized = serialize($original);
+
+        /** @var TestIntegerValue */
+        $unserialized = unserialize($serialized);
+
+        $this->assertEquals($original->value, $unserialized->value);
+        $this->assertTrue($original->equals($unserialized));
     }
 }

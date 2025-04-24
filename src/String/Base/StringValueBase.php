@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace WizDevelop\PhpValueObject\String\Base;
 
+use Override;
 use WizDevelop\PhpMonad\Result;
 use WizDevelop\PhpValueObject\IValueObject;
 use WizDevelop\PhpValueObject\String\StringValueError;
@@ -13,6 +14,7 @@ use function assert;
 
 /**
  * 文字列の値オブジェクトの基底クラス
+ * @implements IValueObject<StringValueBase>
  */
 abstract readonly class StringValueBase implements IValueObject, IStringValueFactory
 {
@@ -29,6 +31,27 @@ abstract readonly class StringValueBase implements IValueObject, IStringValueFac
         assert(static::isValid($value)->isOk());
         assert(static::isLengthValid($value)->isOk());
         assert(static::isRegexValid($value)->isOk());
+    }
+
+    /**
+     * @param StringValueBase $other
+     */
+    #[Override]
+    public function equals(IValueObject $other): bool
+    {
+        return (string)$this === (string)$other;
+    }
+
+    #[Override]
+    public function __toString(): string
+    {
+        return $this->value;
+    }
+
+    #[Override]
+    public function jsonSerialize(): string
+    {
+        return (string)$this;
     }
 
     /**

@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace WizDevelop\PhpValueObject\Number\Integer;
 
+use Override;
 use WizDevelop\PhpMonad\Result;
 use WizDevelop\PhpValueObject\IValueObject;
 use WizDevelop\PhpValueObject\Number\NumberValueError;
-use WizDevelop\PhpValueObject\ValueObjectDefault;
 
 /**
  * 整数の値オブジェクトの基底クラス
+ * @implements IValueObject<IntegerValueBase>
  */
 abstract readonly class IntegerValueBase implements IValueObject, IArithmetic, IComparison
 {
     use Arithmetic;
     use Comparison;
-    use ValueObjectDefault;
 
     protected const MIN_VALUE = PHP_INT_MIN;
     protected const MAX_VALUE = PHP_INT_MAX;
@@ -27,6 +27,27 @@ abstract readonly class IntegerValueBase implements IValueObject, IArithmetic, I
         assert(static::min() <= static::max());
         assert(static::isRangeValid($value)->isOk());
         assert(static::isValid($value)->isOk());
+    }
+
+    /**
+     * @param IntegerValueBase $other
+     */
+    #[Override]
+    public function equals(IValueObject $other): bool
+    {
+        return (string)$this === (string)$other;
+    }
+
+    #[Override]
+    public function __toString(): string
+    {
+        return (string)$this->value;
+    }
+
+    #[Override]
+    public function jsonSerialize(): int
+    {
+        return $this->value;
     }
 
     /**

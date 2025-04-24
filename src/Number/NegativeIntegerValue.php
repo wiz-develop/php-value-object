@@ -13,7 +13,7 @@ use WizDevelop\PhpValueObject\Number\Integer\IntegerValueFactory;
 /**
  * 負の整数の値オブジェクト
  */
-abstract readonly class NegativeIntegerValue extends IntegerValueBase implements IIntegerValueFactory
+readonly class NegativeIntegerValue extends IntegerValueBase implements IIntegerValueFactory
 {
     use IntegerValueFactory;
 
@@ -22,16 +22,29 @@ abstract readonly class NegativeIntegerValue extends IntegerValueBase implements
      */
     final private function __construct(int $value)
     {
-        assert(static::max() < 0);
         parent::__construct($value);
     }
 
+    #[Override]
+    final public static function tryFrom(int $value): Result
+    {
+        return static::isRangeValid($value)
+            ->andThen(static fn () => static::isValid($value))
+            ->andThen(static fn () => Result\ok(static::from($value)));
+    }
+
+    /**
+     * @return negative-int
+     */
     #[Override]
     protected static function min(): int
     {
         return IntegerValueBase::MIN_VALUE;
     }
 
+    /**
+     * @return negative-int
+     */
     #[Override]
     protected static function max(): int
     {

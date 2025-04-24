@@ -13,7 +13,7 @@ use WizDevelop\PhpValueObject\String\Base\StringValueFactory;
 /**
  * 文字列の値オブジェクトの性質を提供する
  */
-abstract readonly class StringValue extends StringValueBase implements IStringValueFactory
+readonly class StringValue extends StringValueBase implements IStringValueFactory
 {
     use StringValueFactory;
 

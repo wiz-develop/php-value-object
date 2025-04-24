@@ -15,7 +15,7 @@ interface IArithmetic
     /**
      * 加算
      */
-    public function add(IntegerValueBase $other): IntegerValueBase;
+    public function add(IntegerValueBase $other): static;
 
     /**
      * 加算（例外を投げない）
@@ -26,7 +26,7 @@ interface IArithmetic
     /**
      * 減算
      */
-    public function sub(IntegerValueBase $other): IntegerValueBase;
+    public function sub(IntegerValueBase $other): static;
 
     /**
      * 減算（例外を投げない）
@@ -37,7 +37,7 @@ interface IArithmetic
     /**
      * 乗算
      */
-    public function mul(IntegerValueBase $other): IntegerValueBase;
+    public function mul(IntegerValueBase $other): static;
 
     /**
      * 乗算（例外を投げない）
@@ -48,7 +48,7 @@ interface IArithmetic
     /**
      * 除算
      */
-    public function div(IntegerValueBase $other): IntegerValueBase;
+    public function div(IntegerValueBase $other): static;
 
     /**
      * 除算（例外を投げない）

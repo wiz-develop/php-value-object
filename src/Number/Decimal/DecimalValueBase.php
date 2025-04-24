@@ -5,19 +5,19 @@ declare(strict_types=1);
 namespace WizDevelop\PhpValueObject\Number\Decimal;
 
 use BcMath\Number;
+use Override;
 use WizDevelop\PhpMonad\Result;
 use WizDevelop\PhpValueObject\IValueObject;
 use WizDevelop\PhpValueObject\Number\NumberValueError;
-use WizDevelop\PhpValueObject\ValueObjectDefault;
 
 /**
  * 少数の値オブジェクトの基底クラス
+ * @implements IValueObject<DecimalValueBase>
  */
 abstract readonly class DecimalValueBase implements IValueObject, IArithmetic, IComparison
 {
     use Arithmetic;
     use Comparison;
-    use ValueObjectDefault;
 
     protected const string MIN_VALUE = '-9999999999999999999999999999.9';
     protected const string MAX_VALUE = '9999999999999999999999999999.9';
@@ -26,15 +26,39 @@ abstract readonly class DecimalValueBase implements IValueObject, IArithmetic, I
     {
         // NOTE: 不変条件（invariant）
         assert(static::min() <= static::max());
+        assert(static::min()->scale <= static::scale());
+        assert(static::max()->scale <= static::scale());
+
         assert(static::isRangeValid($value)->isOk());
-        assert(static::isScaleValid($value)->isOk());
         assert(static::isDigitsValid($value)->isOk());
         assert(static::isValid($value)->isOk());
     }
 
     /**
+     * @param DecimalValueBase $other
+     */
+    #[Override]
+    public function equals(IValueObject $other): bool
+    {
+        return (string)$this === (string)$other;
+    }
+
+    #[Override]
+    public function __toString(): string
+    {
+        return (string)$this->value;
+    }
+
+    #[Override]
+    public function jsonSerialize(): string
+    {
+        return (string)$this;
+    }
+
+    /**
      * 小数点以下の桁数
      * NOTE: 実装クラスでのオーバーライド用メソッド
+     * @return positive-int|0
      */
     protected static function scale(): int
     {
@@ -42,10 +66,11 @@ abstract readonly class DecimalValueBase implements IValueObject, IArithmetic, I
     }
 
     /**
-     * 有効最大桁数
+     * 数値全体の有効桁数
      * NOTE: 実装クラスでのオーバーライド用メソッド
+     * @return positive-int
      */
-    protected static function maxDigits(): int
+    protected static function precision(): int
     {
         return 29;
     }
@@ -69,25 +94,6 @@ abstract readonly class DecimalValueBase implements IValueObject, IArithmetic, I
     abstract protected static function isRangeValid(Number $value): Result;
 
     /**
-     * 有効なスケールかどうか
-     * @return Result<bool,NumberValueError>
-     */
-    final protected static function isScaleValid(Number $value): Result
-    {
-        // スケールが設定値以内かチェック
-        if ($value->scale > static::scale()) {
-            return Result\err(NumberValueError::invalidScale(
-                className: static::class,
-                expectedScale: static::scale(),
-                actualScale: $value->scale,
-                value: $value
-            ));
-        }
-
-        return Result\ok(true);
-    }
-
-    /**
      * 有効な桁数かどうか
      * @return Result<bool,NumberValueError>
      */
@@ -97,10 +103,10 @@ abstract readonly class DecimalValueBase implements IValueObject, IArithmetic, I
         $ret2 = str_replace('.', '', $ret1); // 小数点を削除
         $didits = mb_strlen($ret2); // 文字列の長さが有効桁数
 
-        if ($didits > static::maxDigits()) {
+        if ($didits > static::precision()) {
             return Result\err(NumberValueError::invalidDigits(
                 className: static::class,
-                maxDigits: static::maxDigits(),
+                precision: static::precision(),
                 actualDigits: $didits,
                 value: $value
             ));
@@ -125,5 +131,25 @@ abstract readonly class DecimalValueBase implements IValueObject, IArithmetic, I
     final public function isZero(): bool
     {
         return $this->value->compare(0) === 0;
+    }
+
+    /**
+     * 小数点以下の桁数を指定してフォーマットする
+     * @param positive-int|0|null $decimals 小数点以下の桁数
+     */
+    final public function format(?int $decimals = null): string
+    {
+        $d = $decimals ?? static::scale();
+
+        return sprintf("%.{$d}f", (string)$this->value);
+    }
+
+    /**
+     * 小数点以下の桁数を指定してフォーマットする(Number)
+     * @param positive-int|0|null $decimals 小数点以下の桁数
+     */
+    final public function formatToNumber(?int $decimals = null): Number
+    {
+        return new Number(self::format($decimals));
     }
 }

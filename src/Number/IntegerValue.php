@@ -13,7 +13,7 @@ use WizDevelop\PhpValueObject\Number\Integer\IntegerValueFactory;
 /**
  * 整数の値オブジェクト
  */
-abstract readonly class IntegerValue extends IntegerValueBase implements IIntegerValueFactory
+readonly class IntegerValue extends IntegerValueBase implements IIntegerValueFactory
 {
     use IntegerValueFactory;
 
@@ -23,6 +23,14 @@ abstract readonly class IntegerValue extends IntegerValueBase implements IIntege
     final private function __construct(int $value)
     {
         parent::__construct($value);
+    }
+
+    #[Override]
+    final public static function tryFrom(int $value): Result
+    {
+        return static::isRangeValid($value)
+            ->andThen(static fn () => static::isValid($value))
+            ->andThen(static fn () => Result\ok(static::from($value)));
     }
 
     #[Override]

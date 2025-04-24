@@ -14,7 +14,7 @@ use WizDevelop\PhpValueObject\Number\Decimal\IDecimalValueFactory;
 /**
  * 少数の値オブジェクト
  */
-abstract readonly class DecimalValue extends DecimalValueBase implements IDecimalValueFactory
+readonly class DecimalValue extends DecimalValueBase implements IDecimalValueFactory
 {
     use DecimalValueFactory;
 
@@ -24,6 +24,15 @@ abstract readonly class DecimalValue extends DecimalValueBase implements IDecima
     final private function __construct(Number $value)
     {
         parent::__construct($value);
+    }
+
+    #[Override]
+    final public static function tryFrom(Number $value): Result
+    {
+        return static::isRangeValid($value)
+            ->andThen(static fn () => static::isDigitsValid($value))
+            ->andThen(static fn () => static::isValid($value))
+            ->andThen(static fn () => Result\ok(static::from($value)));
     }
 
     #[Override]
