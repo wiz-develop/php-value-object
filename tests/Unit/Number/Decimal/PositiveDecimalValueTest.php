@@ -10,6 +10,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestDox;
+use ReflectionClass;
 use Throwable;
 use WizDevelop\PhpValueObject\Examples\Number\Decimal\TestPositiveDecimalValue;
 use WizDevelop\PhpValueObject\Number\NumberValueError;
@@ -269,5 +270,96 @@ final class PositiveDecimalValueTest extends TestCase
             ->mul(TestPositiveDecimalValue::from(new Number('2.00')));
 
         $this->assertEquals('25.5000', (string)$result->value);
+    }
+
+    // ------------------------------------------
+    // エラーメッセージの詳細テスト
+    // ------------------------------------------
+
+    #[Test]
+    public function 負の値を渡した場合のエラーメッセージテスト(): void
+    {
+        $result = TestPositiveDecimalValue::tryFrom(new Number('-100.50'));
+        $this->assertFalse($result->isOk());
+
+        $error = $result->unwrapErr();
+        $this->assertInstanceOf(NumberValueError::class, $error);
+
+        $errorMessage = $error->getMessage();
+        // クラス名が含まれているか
+        $this->assertStringContainsString('正の数値', $errorMessage);
+        // 範囲に関する情報が含まれているか
+        $this->assertStringContainsString('0.01', $errorMessage); // 最小値
+        $this->assertStringContainsString('1000', $errorMessage); // 最大値
+        $this->assertStringContainsString('-100.50', $errorMessage); // 入力値
+        // 正の数であるべきという情報が含まれているか
+        $this->assertStringContainsString('正の数', $errorMessage);
+    }
+
+    #[Test]
+    public function ゼロを渡した場合のエラーメッセージテスト(): void
+    {
+        $result = TestPositiveDecimalValue::tryFrom(new Number('0'));
+        $this->assertFalse($result->isOk());
+
+        $error = $result->unwrapErr();
+        $this->assertInstanceOf(NumberValueError::class, $error);
+
+        $errorMessage = $error->getMessage();
+        // 範囲に関する情報が含まれているか
+        $this->assertStringContainsString('0.01', $errorMessage); // 最小値
+        $this->assertStringContainsString('1000', $errorMessage); // 最大値
+        $this->assertStringContainsString('0', $errorMessage); // 入力値
+        // 正の数であるべきという情報が含まれているか
+        $this->assertStringContainsString('正の数', $errorMessage);
+    }
+
+    #[Test]
+    public function 最大値超過の場合のエラーメッセージテスト(): void
+    {
+        $result = TestPositiveDecimalValue::tryFrom(new Number('1001'));
+        $this->assertFalse($result->isOk());
+
+        $error = $result->unwrapErr();
+        $this->assertInstanceOf(NumberValueError::class, $error);
+
+        $errorMessage = $error->getMessage();
+        // 範囲に関する情報が含まれているか
+        $this->assertStringContainsString('0.01', $errorMessage); // 最小値
+        $this->assertStringContainsString('1000', $errorMessage); // 最大値
+        $this->assertStringContainsString('1001', $errorMessage); // 入力値
+    }
+
+    #[Test]
+    public function 算術演算でのエラーメッセージテスト(): void
+    {
+        $value1 = TestPositiveDecimalValue::from(new Number('10.50'));
+        $value2 = TestPositiveDecimalValue::from(new Number('20.50'));
+
+        // 10.50 - 20.50 = -10.00（負の数になるのでエラー）
+        $result = $value1->trySub($value2);
+        $this->assertFalse($result->isOk());
+
+        $error = $result->unwrapErr();
+        $this->assertInstanceOf(NumberValueError::class, $error);
+
+        $errorMessage = $error->getMessage();
+        // 範囲に関する情報が含まれているか
+        $this->assertStringContainsString('0.01', $errorMessage); // 最小値
+        $this->assertStringContainsString('1000', $errorMessage); // 最大値
+        // 計算結果が含まれているか
+        $this->assertStringContainsString('-10.00', $errorMessage);
+        // 正の数であるべきという情報が含まれているか
+        $this->assertStringContainsString('正の数', $errorMessage);
+    }
+
+    #[Test]
+    public function コンストラクタ保護テスト(): void
+    {
+        $reflection = new ReflectionClass(TestPositiveDecimalValue::class);
+        $constructor = $reflection->getConstructor();
+
+        $this->assertNotNull($constructor);
+        $this->assertTrue($constructor->isPrivate());
     }
 }

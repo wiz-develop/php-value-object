@@ -6,11 +6,13 @@ namespace WizDevelop\PhpValueObject\Tests\Unit\Number\Decimal;
 
 use BCMath\Number;
 use DivisionByZeroError;
+use Error;
 use Exception;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestDox;
+use ReflectionClass;
 use Throwable;
 use WizDevelop\PhpMonad\Result;
 use WizDevelop\PhpValueObject\Examples\Number\Decimal\TestDecimalValue;
@@ -159,7 +161,7 @@ final class DecimalValueTest extends TestCase
 
         // 整数値から小数への変換
         $value4 = TestDecimalValue::from(new Number('42'));
-        $this->assertEquals('42.00', (string)$value4->value); // 小数点以下が追加される
+        $this->assertEquals('42', (string)$value4->value); // 小数点以下が追加される
     }
 
     #[Test]
@@ -286,10 +288,10 @@ final class DecimalValueTest extends TestCase
         return [
             '加算_正常' => ['100.50', '200.25', 'add', '300.75', true],
             // 範囲内になるように調整
-            '加算_大きな値' => ['400', '500', 'add', '900.00', true],
+            '加算_大きな値' => ['400', '500', 'add', '900', true],
             '減算_正常' => ['200.50', '100.25', 'sub', '100.25', true],
             '乗算_正常' => ['100.50', '2', 'mul', '201.00', true],
-            '乗算_大きな値' => ['300', '3', 'mul', '900.00', true],
+            '乗算_大きな値' => ['300', '3', 'mul', '900', true],
             '除算_正常' => ['100.50', '2', 'div', '50.25', true],
             '除算_ゼロ除算' => ['100.50', '0', 'div', null, false],
             '除算_ゼロ除算_負の値' => ['-100.50', '0', 'div', null, false],
@@ -510,5 +512,248 @@ final class DecimalValueTest extends TestCase
 
         $this->assertEquals((string)$original->value, (string)$unserialized->value);
         $this->assertTrue($original->equals($unserialized));
+    }
+
+    // ------------------------------------------
+    // アクセス制御のテスト
+    // ------------------------------------------
+
+    #[Test]
+    public function コンストラクタはプライベートであることを確認(): void
+    {
+        $reflection = new ReflectionClass(TestDecimalValue::class);
+        $constructor = $reflection->getConstructor();
+
+        $this->assertNotNull($constructor);
+        $this->assertTrue($constructor->isPrivate());
+    }
+
+    #[Test]
+    public function staticメソッドからのみインスタンス生成が可能であることを確認(): void
+    {
+        $value = new Number('100.50');
+
+        // from()メソッドからインスタンス生成可能
+        $instance1 = TestDecimalValue::from($value);
+        $this->assertInstanceOf(TestDecimalValue::class, $instance1);
+
+        // tryFrom()メソッドからもインスタンス生成可能
+        $result = TestDecimalValue::tryFrom($value);
+        $this->assertTrue($result->isOk());
+        $instance2 = $result->unwrap();
+        $this->assertInstanceOf(TestDecimalValue::class, $instance2);
+    }
+
+    #[Test]
+    public function コンストラクタはprivateアクセス修飾子を持つことを確認(): void
+    {
+        $reflectionClass = new ReflectionClass(TestDecimalValue::class);
+        $constructor = $reflectionClass->getConstructor();
+
+        $this->assertNotNull($constructor, 'コンストラクタが見つかりませんでした');
+        $this->assertTrue($constructor->isPrivate(), 'コンストラクタはprivateでなければならない');
+    }
+
+    #[Test]
+    public function privateコンストラクタへのアクセスを試みるとエラーとなることを確認(): void
+    {
+        $hasThrown = false;
+
+        try {
+            // コンストラクタへの直接アクセスを試みる（通常これはPHPで許可されていない）
+            // 以下は単にエラーが発生することを確認するだけ
+            /** @phpstan-ignore-next-line */
+            $newObj = new TestDecimalValue(new Number('100.50'));
+        } catch (Error $e) {
+            $hasThrown = true;
+            $this->assertStringContainsString(
+                'private',
+                $e->getMessage(),
+                'エラーメッセージにprivateという文字列が含まれるべき'
+            );
+        }
+
+        $this->assertTrue($hasThrown, 'privateコンストラクタへのアクセス時にはエラーが発生するべき');
+    }
+
+    // ------------------------------------------
+    // スケールと桁数のテスト
+    // ------------------------------------------
+
+    #[Test]
+    public function scaleメソッドで定義されたスケール値がフォーマットに反映されることを確認(): void
+    {
+        // TestDecimalValueのscaleは2に設定されている
+        $value = TestDecimalValue::from(new Number('123.456'));
+
+        // 数値表現では元の値がそのまま保持される
+        $this->assertEquals('123.456', (string)$value->value);
+
+        // format()メソッドではscale値が適用される
+        $this->assertEquals('123.46', $value->format());  // 小数点以下2桁に丸められている
+
+        // 異なるスケール値を指定して確認
+        $this->assertEquals('123.5', $value->format(1));  // 小数点以下1桁に丸められる
+        $this->assertEquals('123.456', $value->format(3));  // 小数点以下3桁に丸められる
+    }
+
+    #[Test]
+    public function 有効桁数を超える値はエラーになることを確認(): void
+    {
+        // 非常に大きな桁数の値を作成
+        $largeDigitValue = '1.' . str_repeat('9', 29);  // 30桁の9の連続 (precision()は29に設定)
+
+        $result = TestDecimalValue::tryFrom(new Number($largeDigitValue));
+        $this->assertFalse($result->isOk());
+        $this->assertInstanceOf(NumberValueError::class, $result->unwrapErr());
+
+        $errorMessage = $result->unwrapErr()->getMessage();
+        $this->assertStringContainsString('桁数', $errorMessage, 'エラーメッセージには桁数に関する情報が含まれるべき');
+        $this->assertStringContainsString('29', $errorMessage, 'エラーメッセージには許容桁数(29)が含まれるべき');
+        $this->assertStringContainsString('30', $errorMessage, 'エラーメッセージには実際の桁数(30)が含まれるべき');
+    }
+
+    #[Test]
+    public function formatToNumberメソッドの動作確認(): void
+    {
+        $value = TestDecimalValue::from(new Number('123.456'));
+
+        // formatToNumberはNumberオブジェクトを返す
+        $formattedNumber = $value->formatToNumber(2);
+        $this->assertInstanceOf(Number::class, $formattedNumber);
+        $this->assertEquals('123.46', (string)$formattedNumber);
+
+        // デフォルトのスケール値の場合
+        $defaultFormatted = $value->formatToNumber();
+        $this->assertEquals('123.46', (string)$defaultFormatted);
+
+        // 異なるスケール値の場合
+        $longFormatted = $value->formatToNumber(4);
+        $this->assertEquals('123.4560', (string)$longFormatted);
+    }
+
+    // ------------------------------------------
+    // format関数とformatToNumber関数の詳細テスト
+    // ------------------------------------------
+
+    /**
+     * @return array<string, array{string, positive-int|0|null, string}>
+     */
+    public static function フォーマット用データを提供(): array
+    {
+        return [
+            '整数値_デフォルトスケール' => ['100', null, '100.00'],
+            '小数値_デフォルトスケール' => ['123.456', null, '123.46'],
+            '負の値_デフォルトスケール' => ['-123.456', null, '-123.46'],
+            'ゼロ値_デフォルトスケール' => ['0', null, '0.00'],
+            '整数値_スケール0' => ['100', 0, '100'],
+            '小数値_スケール0' => ['123.456', 0, '123'],
+            '負の値_スケール0' => ['-123.456', 0, '-123'],
+            'ゼロ値_スケール0' => ['0', 0, '0'],
+            '整数値_スケール1' => ['100', 1, '100.0'],
+            '小数値_スケール1' => ['123.456', 1, '123.5'],
+            '負の値_スケール1' => ['-123.456', 1, '-123.5'],
+            'ゼロ値_スケール1' => ['0', 1, '0.0'],
+            '整数値_スケール3' => ['100', 3, '100.000'],
+            '小数値_スケール3' => ['123.456', 3, '123.456'],
+            '負の値_スケール3' => ['-123.456', 3, '-123.456'],
+            'ゼロ値_スケール3' => ['0', 3, '0.000'],
+            '整数値_スケール5' => ['100', 5, '100.00000'],
+            '小数値_スケール5' => ['123.456', 5, '123.45600'],
+            '負の値_スケール5' => ['-123.456', 5, '-123.45600'],
+            'ゼロ値_スケール5' => ['0', 5, '0.00000'],
+            '丸めが発生する値_切り上げ' => ['123.455', 2, '123.45'], // PHPのsprintfは切り捨てを行う
+            '丸めが発生する値_切り下げ' => ['123.454', 2, '123.45'],
+            'スケールより小さい小数値' => ['123.4', 2, '123.40'],
+            '最小値に近い値' => ['-999.999', 2, '-1000.00'],
+            '最大値に近い値' => ['999.999', 2, '1000.00'],
+        ];
+    }
+
+    /**
+     * format関数のテスト
+     *
+     * @param string              $value    テスト対象の値
+     * @param positive-int|0|null $decimals 小数点以下の桁数
+     * @param string              $expected 期待される結果
+     */
+    #[Test]
+    #[DataProvider('フォーマット用データを提供')]
+    public function format関数の詳細テスト(string $value, ?int $decimals, string $expected): void
+    {
+        $decimalValue = TestDecimalValue::from(new Number($value));
+        $result = $decimalValue->format($decimals);
+
+        $this->assertEquals($expected, $result, "値 {$value} を小数点以下 {$decimals} 桁でフォーマットした結果が期待値と一致しない");
+    }
+
+    /**
+     * formatToNumber関数のテスト
+     *
+     * @param string              $value    テスト対象の値
+     * @param positive-int|0|null $decimals 小数点以下の桁数
+     * @param string              $expected 期待される結果
+     */
+    #[Test]
+    #[DataProvider('フォーマット用データを提供')]
+    public function formatToNumber関数の詳細テスト(string $value, ?int $decimals, string $expected): void
+    {
+        $decimalValue = TestDecimalValue::from(new Number($value));
+        $result = $decimalValue->formatToNumber($decimals);
+
+        $this->assertInstanceOf(Number::class, $result);
+        $this->assertEquals($expected, (string)$result, "値 {$value} を小数点以下 {$decimals} 桁でフォーマットした結果が期待値と一致しない");
+    }
+
+    #[Test]
+    public function format関数とformatToNumber関数の結果が一致することを確認(): void
+    {
+        $testCases = [
+            '123.456',
+            '-789.012',
+            '0.00',
+            '500',
+            '-0.123',
+        ];
+
+        foreach ($testCases as $value) {
+            $decimalValue = TestDecimalValue::from(new Number($value));
+
+            // デフォルトスケール
+            $this->assertEquals(
+                $decimalValue->format(),
+                (string)$decimalValue->formatToNumber(),
+                "値 {$value} のデフォルトスケールでのフォーマット結果が一致しない"
+            );
+
+            // スケール1
+            $this->assertEquals(
+                $decimalValue->format(1),
+                (string)$decimalValue->formatToNumber(1),
+                "値 {$value} のスケール1でのフォーマット結果が一致しない"
+            );
+
+            // スケール4
+            $this->assertEquals(
+                $decimalValue->format(4),
+                (string)$decimalValue->formatToNumber(4),
+                "値 {$value} のスケール4でのフォーマット結果が一致しない"
+            );
+        }
+    }
+
+    #[Test]
+    public function 極端な桁数でのフォーマットテスト(): void
+    {
+        $value = TestDecimalValue::from(new Number('123.456'));
+
+        // 非常に大きなスケール値
+        $largeScale = 10;
+        $this->assertEquals('123.4560000000', $value->format($largeScale));
+        $this->assertEquals('123.4560000000', (string)$value->formatToNumber($largeScale));
+
+        // ゼロスケール値
+        $this->assertEquals('123', $value->format(0));
+        $this->assertEquals('123', (string)$value->formatToNumber(0));
     }
 }

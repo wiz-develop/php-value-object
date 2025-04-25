@@ -9,6 +9,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestDox;
+use ReflectionClass;
 use Throwable;
 use WizDevelop\PhpValueObject\Examples\Number\Integer\TestNegativeIntegerValue;
 use WizDevelop\PhpValueObject\Examples\Number\Integer\TestPositiveIntegerValue;
@@ -232,5 +233,93 @@ final class NegativeIntegerValueTest extends TestCase
             // @phpstan-ignore-next-line
             $this->assertTrue(true);
         }
+    }
+
+    // ------------------------------------------
+    // エラーメッセージの詳細テスト
+    // ------------------------------------------
+
+    #[Test]
+    public function 正の値を渡した場合のエラーメッセージテスト(): void
+    {
+        $result = TestNegativeIntegerValue::tryFrom(10);
+        $this->assertFalse($result->isOk());
+
+        $error = $result->unwrapErr();
+        $this->assertInstanceOf(NumberValueError::class, $error);
+
+        $errorMessage = $error->getMessage();
+        // クラス名が含まれているか
+        $this->assertStringContainsString('負の整数', $errorMessage);
+        // 範囲に関する情報が含まれているか
+        $this->assertStringContainsString('-1000', $errorMessage); // 最小値
+        $this->assertStringContainsString('-1', $errorMessage); // 最大値
+        $this->assertStringContainsString('10', $errorMessage); // 入力値
+        // 負の数であるべきという情報が含まれているか
+        $this->assertStringContainsString('負の整数', $errorMessage);
+    }
+
+    #[Test]
+    public function ゼロを渡した場合のエラーメッセージテスト(): void
+    {
+        $result = TestNegativeIntegerValue::tryFrom(0);
+        $this->assertFalse($result->isOk());
+
+        $error = $result->unwrapErr();
+        $this->assertInstanceOf(NumberValueError::class, $error);
+
+        $errorMessage = $error->getMessage();
+        // 範囲に関する情報が含まれているか
+        $this->assertStringContainsString('-1000', $errorMessage); // 最小値
+        $this->assertStringContainsString('-1', $errorMessage); // 最大値
+        $this->assertStringContainsString('0', $errorMessage); // 入力値
+        // 負の数であるべきという情報が含まれているか
+        $this->assertStringContainsString('負の整数', $errorMessage);
+    }
+
+    #[Test]
+    public function 最小値未満の場合のエラーメッセージテスト(): void
+    {
+        $result = TestNegativeIntegerValue::tryFrom(-1001);
+        $this->assertFalse($result->isOk());
+
+        $error = $result->unwrapErr();
+        $this->assertInstanceOf(NumberValueError::class, $error);
+
+        $errorMessage = $error->getMessage();
+        // 範囲に関する情報が含まれているか
+        $this->assertStringContainsString('-1000', $errorMessage); // 最小値
+        $this->assertStringContainsString('-1', $errorMessage); // 最大値
+        $this->assertStringContainsString('-1001', $errorMessage); // 入力値
+        // 値オブジェクトの名称が含まれているか
+        $this->assertStringContainsString('負の整数', $errorMessage);
+    }
+
+    #[Test]
+    public function 結果がゼロになる演算のエラーテスト(): void
+    {
+        $value1 = TestNegativeIntegerValue::from(-10);
+        $value2 = TestNegativeIntegerValue::from(-10);
+
+        // -10 + 10 = 0（ゼロになるのでエラー）
+        $result = $value1->trySub($value2);
+        $this->assertFalse($result->isOk());
+
+        $error = $result->unwrapErr();
+        $this->assertInstanceOf(NumberValueError::class, $error);
+
+        $errorMessage = $error->getMessage();
+        // 負の数であるべきという情報が含まれているか
+        $this->assertStringContainsString('負の整数', $errorMessage);
+    }
+
+    #[Test]
+    public function コンストラクタはprivateアクセス修飾子を持つことを確認(): void
+    {
+        $reflection = new ReflectionClass(TestNegativeIntegerValue::class);
+        $constructor = $reflection->getConstructor();
+
+        $this->assertNotNull($constructor);
+        $this->assertTrue($constructor->isPrivate());
     }
 }

@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace WizDevelop\PhpValueObject\Tests\Unit\Number\Integer;
 
 use DivisionByZeroError;
+use Error;
 use Exception;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestDox;
+use ReflectionClass;
 use Throwable;
 use WizDevelop\PhpMonad\Result;
 use WizDevelop\PhpValueObject\Examples\Number\Integer\TestIntegerValue;
@@ -492,5 +494,86 @@ final class IntegerValueTest extends TestCase
 
         $this->assertEquals($original->value, $unserialized->value);
         $this->assertTrue($original->equals($unserialized));
+    }
+
+    // ------------------------------------------
+    // アクセス制御のテスト
+    // ------------------------------------------
+
+    #[Test]
+    public function コンストラクタはprivateアクセス修飾子を持つことを確認(): void
+    {
+        $reflectionClass = new ReflectionClass(TestIntegerValue::class);
+        $constructor = $reflectionClass->getConstructor();
+
+        $this->assertNotNull($constructor, 'コンストラクタが見つかりませんでした');
+        $this->assertTrue($constructor->isPrivate(), 'コンストラクタはprivateでなければならない');
+    }
+
+    #[Test]
+    public function privateコンストラクタへのアクセスを試みるとエラーとなることを確認(): void
+    {
+        $hasThrown = false;
+
+        try {
+            // コンストラクタへの直接アクセスを試みる（通常これはPHPで許可されていない）
+            // 以下は単にエラーが発生することを確認するだけ
+            /** @phpstan-ignore-next-line */
+            $newObj = new TestIntegerValue(100);
+        } catch (Error $e) {
+            $hasThrown = true;
+            $this->assertStringContainsString(
+                'private',
+                $e->getMessage(),
+                'エラーメッセージにprivateという文字列が含まれるべき'
+            );
+        }
+
+        $this->assertTrue($hasThrown, 'privateコンストラクタへのアクセス時にはエラーが発生するべき');
+    }
+
+    // ------------------------------------------
+    // jsonSerializeのテスト
+    // ------------------------------------------
+
+    #[Test]
+    public function jsonSerializeメソッドは整数値を返す(): void
+    {
+        $integer = TestIntegerValue::from(123);
+        $this->assertSame(123, $integer->jsonSerialize());
+
+        $json = json_encode($integer);
+        $this->assertSame('123', $json);
+
+        $negativeInteger = TestIntegerValue::from(-456);
+        $this->assertSame(-456, $negativeInteger->jsonSerialize());
+
+        $json = json_encode($negativeInteger);
+        $this->assertSame('-456', $json);
+    }
+
+    // ------------------------------------------
+    // PHP_INT_MIN/MAXに近い値のテスト
+    // ------------------------------------------
+
+    #[Test]
+    public function PHP整数の限界値付近の値のテスト(): void
+    {
+        // TestIntegerValueのmin/maxはIntegerValueBase::MIN_VALUEとIntegerValueBase::MAX_VALUEを制約として使用
+        // これらはPHP_INT_MINとPHP_INT_MAXに設定されているが、実際のテストクラスではもっと狭い範囲を使用
+
+        // 代わりに、通常の制約内で大きな値/小さな値をテスト
+        $largeValue = TestIntegerValue::from(1000);  // TestIntegerValueの最大値
+        $this->assertEquals(1000, $largeValue->value);
+
+        $smallValue = TestIntegerValue::from(-1000);  // TestIntegerValueの最小値
+        $this->assertEquals(-1000, $smallValue->value);
+
+        // 範囲外の値
+        $result1 = TestIntegerValue::tryFrom(1001);  // TestIntegerValueの最大値+1
+        $this->assertFalse($result1->isOk());
+
+        $result2 = TestIntegerValue::tryFrom(-1001);  // TestIntegerValueの最小値-1
+        $this->assertFalse($result2->isOk());
     }
 }

@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace WizDevelop\PhpValueObject\Tests\Unit\Number\Integer;
 
+use Error;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestDox;
+use ReflectionClass;
 use Throwable;
 use WizDevelop\PhpValueObject\Examples\Number\Integer\TestPositiveIntegerValue;
 use WizDevelop\PhpValueObject\Number\NumberValueError;
@@ -249,5 +251,119 @@ final class PositiveIntegerValueTest extends TestCase
         // (10 + 20) * 2 = 30 * 2 = 60
         $mulResult = $addResult->mul($value3);
         $this->assertEquals(60, $mulResult->value);
+    }
+
+    // ------------------------------------------
+    // エラーメッセージの詳細テスト
+    // ------------------------------------------
+
+    #[Test]
+    public function 負の値を渡した場合のエラーメッセージテスト(): void
+    {
+        $result = TestPositiveIntegerValue::tryFrom(-10);
+        $this->assertFalse($result->isOk());
+
+        $error = $result->unwrapErr();
+        $this->assertInstanceOf(NumberValueError::class, $error);
+
+        $errorMessage = $error->getMessage();
+        // 値オブジェクトの名称が含まれているか
+        $this->assertStringContainsString('正の整数', $errorMessage);
+        // 範囲に関する情報が含まれているか
+        $this->assertStringContainsString('1', $errorMessage); // 最小値
+        $this->assertStringContainsString('1000', $errorMessage); // 最大値
+        $this->assertStringContainsString('-10', $errorMessage); // 入力値
+        // 正の数であるべきという情報が含まれているか
+        $this->assertStringContainsString('正の整数', $errorMessage);
+    }
+
+    #[Test]
+    public function ゼロを渡した場合のエラーメッセージテスト(): void
+    {
+        $result = TestPositiveIntegerValue::tryFrom(0);
+        $this->assertFalse($result->isOk());
+
+        $error = $result->unwrapErr();
+        $this->assertInstanceOf(NumberValueError::class, $error);
+
+        $errorMessage = $error->getMessage();
+        // 範囲に関する情報が含まれているか
+        $this->assertStringContainsString('1', $errorMessage); // 最小値
+        $this->assertStringContainsString('1000', $errorMessage); // 最大値
+        $this->assertStringContainsString('0', $errorMessage); // 入力値
+        // 正の数であるべきという情報が含まれているか
+        $this->assertStringContainsString('正の整数', $errorMessage);
+    }
+
+    #[Test]
+    public function 最大値超過の場合のエラーメッセージテスト(): void
+    {
+        $result = TestPositiveIntegerValue::tryFrom(1001);
+        $this->assertFalse($result->isOk());
+
+        $error = $result->unwrapErr();
+        $this->assertInstanceOf(NumberValueError::class, $error);
+
+        $errorMessage = $error->getMessage();
+        // 範囲に関する情報が含まれているか
+        $this->assertStringContainsString('1', $errorMessage); // 最小値
+        $this->assertStringContainsString('1000', $errorMessage); // 最大値
+        $this->assertStringContainsString('1001', $errorMessage); // 入力値
+        // 値オブジェクトの名称が含まれているか
+        $this->assertStringContainsString('正の整数', $errorMessage);
+    }
+
+    #[Test]
+    public function 除算で1未満になる場合のエラーテスト(): void
+    {
+        $value1 = TestPositiveIntegerValue::from(10);
+        $value2 = TestPositiveIntegerValue::from(20);
+
+        // 10 / 20 = 0（整数除算）
+        // これは正の整数の範囲外（1未満）なのでエラーになるはず
+        $result = $value1->tryDiv($value2);
+        $this->assertFalse($result->isOk());
+
+        $error = $result->unwrapErr();
+        $this->assertInstanceOf(NumberValueError::class, $error);
+
+        $errorMessage = $error->getMessage();
+        // 範囲に関する情報が含まれているか
+        $this->assertStringContainsString('1', $errorMessage); // 最小値
+        $this->assertStringContainsString('0', $errorMessage); // 演算結果
+        // 正の数であるべきという情報が含まれているか
+        $this->assertStringContainsString('正の整数', $errorMessage);
+    }
+
+    #[Test]
+    public function コンストラクタはprivateアクセス修飾子を持つことを確認(): void
+    {
+        $reflection = new ReflectionClass(TestPositiveIntegerValue::class);
+        $constructor = $reflection->getConstructor();
+
+        $this->assertNotNull($constructor);
+        $this->assertTrue($constructor->isPrivate());
+    }
+
+    #[Test]
+    public function privateコンストラクタへのアクセスを試みるとエラーとなることを確認(): void
+    {
+        $hasThrown = false;
+
+        try {
+            // コンストラクタへの直接アクセスを試みる（通常これはPHPで許可されていない）
+            // 以下は単にエラーが発生することを確認するだけ
+            /** @phpstan-ignore-next-line */
+            $newObj = new TestPositiveIntegerValue(100);
+        } catch (Error $e) {
+            $hasThrown = true;
+            $this->assertStringContainsString(
+                'private',
+                $e->getMessage(),
+                'エラーメッセージにprivateという文字列が含まれるべき'
+            );
+        }
+
+        $this->assertTrue($hasThrown, 'privateコンストラクタへのアクセス時にはエラーが発生するべき');
     }
 }

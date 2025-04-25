@@ -250,4 +250,87 @@ final class NegativeDecimalValueTest extends TestCase
             $this->assertTrue(true);
         }
     }
+
+    // ------------------------------------------
+    // エラーメッセージの詳細テスト
+    // ------------------------------------------
+
+    #[Test]
+    public function 正の値を渡した場合のエラーメッセージテスト(): void
+    {
+        $result = TestNegativeDecimalValue::tryFrom(new Number('100.50'));
+        $this->assertFalse($result->isOk());
+
+        $error = $result->unwrapErr();
+        $this->assertInstanceOf(NumberValueError::class, $error);
+
+        $errorMessage = $error->getMessage();
+        // 値オブジェクトの名称が含まれているか
+        $this->assertStringContainsString('負の数値', $errorMessage);
+        // 範囲に関する情報が含まれているか
+        $this->assertStringContainsString('-1000', $errorMessage); // 最小値
+        $this->assertStringContainsString('-0.01', $errorMessage); // 最大値
+        $this->assertStringContainsString('100.50', $errorMessage); // 入力値
+        // 負の数であるべきという情報が含まれているか
+        $this->assertStringContainsString('負の数', $errorMessage);
+    }
+
+    #[Test]
+    public function ゼロを渡した場合のエラーメッセージテスト(): void
+    {
+        $result = TestNegativeDecimalValue::tryFrom(new Number('0'));
+        $this->assertFalse($result->isOk());
+
+        $error = $result->unwrapErr();
+        $this->assertInstanceOf(NumberValueError::class, $error);
+
+        $errorMessage = $error->getMessage();
+        // 範囲に関する情報が含まれているか
+        $this->assertStringContainsString('-1000', $errorMessage); // 最小値
+        $this->assertStringContainsString('-0.01', $errorMessage); // 最大値
+        $this->assertStringContainsString('0', $errorMessage); // 入力値
+        // 負の数であるべきという情報が含まれているか
+        $this->assertStringContainsString('負の数', $errorMessage);
+    }
+
+    #[Test]
+    public function 最小値未満の場合のエラーメッセージテスト(): void
+    {
+        $result = TestNegativeDecimalValue::tryFrom(new Number('-1001'));
+        $this->assertFalse($result->isOk());
+
+        $error = $result->unwrapErr();
+        $this->assertInstanceOf(NumberValueError::class, $error);
+
+        $errorMessage = $error->getMessage();
+        // 範囲に関する情報が含まれているか
+        $this->assertStringContainsString('-1000', $errorMessage); // 最小値
+        $this->assertStringContainsString('-0.01', $errorMessage); // 最大値
+        $this->assertStringContainsString('-1001', $errorMessage); // 入力値
+        // 正の数であるべきという情報が含まれているか
+        $this->assertStringContainsString('負の数', $errorMessage);
+    }
+
+    #[Test]
+    public function 算術演算でのエラーメッセージテスト(): void
+    {
+        $value1 = TestNegativeDecimalValue::from(new Number('-10.50'));
+        $value2 = TestNegativeDecimalValue::from(new Number('-2.00'));
+
+        // -10.50 * -2.00 = 21.00（正の数になるのでエラー）
+        $result = $value1->tryMul($value2);
+        $this->assertFalse($result->isOk());
+
+        $error = $result->unwrapErr();
+        $this->assertInstanceOf(NumberValueError::class, $error);
+
+        $errorMessage = $error->getMessage();
+        // 範囲に関する情報が含まれているか
+        $this->assertStringContainsString('-1000', $errorMessage); // 最小値
+        $this->assertStringContainsString('-0.01', $errorMessage); // 最大値
+        // 計算結果が含まれているか
+        $this->assertStringContainsString('21.00', $errorMessage);
+        // 負の数であるべきという情報が含まれているか
+        $this->assertStringContainsString('負の数', $errorMessage);
+    }
 }
