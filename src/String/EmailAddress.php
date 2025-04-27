@@ -15,20 +15,20 @@ use WizDevelop\PhpValueObject\ValueObjectMeta;
  * メールアドレスの値オブジェクト
  */
 #[ValueObjectMeta(displayName: 'メールアドレス', description: 'メールアドレスの値オブジェクト')]
-final readonly class EmailAddress extends StringValueBase implements IStringValueFactory
+readonly class EmailAddress extends StringValueBase implements IStringValueFactory
 {
     use StringValueFactory;
 
     /**
      * Avoid new() operator.
      */
-    private function __construct(string $value)
+    final private function __construct(string $value)
     {
         parent::__construct($value);
     }
 
     #[Override]
-    public static function tryFrom(string $value): Result
+    final public static function tryFrom(string $value): Result
     {
         /** @var string */
         $sanitizedValue = filter_var($value, FILTER_SANITIZE_EMAIL);
@@ -44,7 +44,7 @@ final readonly class EmailAddress extends StringValueBase implements IStringValu
      * メールアドレスの最小文字数（RFC 5321に基づく）
      */
     #[Override]
-    public static function minLength(): int
+    final public static function minLength(): int
     {
         return 1;
     }
@@ -53,13 +53,13 @@ final readonly class EmailAddress extends StringValueBase implements IStringValu
      * メールアドレスの最大文字数（RFC 5321に基づく）
      */
     #[Override]
-    public static function maxLength(): int
+    final public static function maxLength(): int
     {
         return 254;
     }
 
     #[Override]
-    protected static function regex(): string
+    final protected static function regex(): string
     {
         return self::REGEX;
     }
@@ -68,7 +68,7 @@ final readonly class EmailAddress extends StringValueBase implements IStringValu
      * 有効な正規表現かどうか
      * @return Result<bool,StringValueError>
      */
-    protected static function isValidEmail(string $value): Result
+    final protected static function isValidEmail(string $value): Result
     {
         if (!filter_var($value, FILTER_VALIDATE_EMAIL)) {
             return Result\err(StringValueError::invalidEmail(

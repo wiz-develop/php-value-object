@@ -8,7 +8,6 @@ use Override;
 use WizDevelop\PhpMonad\Result;
 use WizDevelop\PhpValueObject\IValueObject;
 use WizDevelop\PhpValueObject\String\StringValueError;
-use WizDevelop\PhpValueObject\ValueObjectDefault;
 
 use function assert;
 
@@ -18,8 +17,6 @@ use function assert;
  */
 abstract readonly class StringValueBase implements IValueObject, IStringValueFactory
 {
-    use ValueObjectDefault;
-
     protected const int MIN_LENGTH = 1;
     protected const int MAX_LENGTH = 4194303;
     protected const string REGEX = '/^.*$/u';
