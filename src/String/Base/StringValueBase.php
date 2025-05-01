@@ -13,13 +13,12 @@ use function assert;
 
 /**
  * 文字列の値オブジェクトの基底クラス
- * @implements IValueObject<StringValueBase>
  */
 abstract readonly class StringValueBase implements IValueObject, IStringValueFactory
 {
-    protected const int MIN_LENGTH = 1;
-    protected const int MAX_LENGTH = 4194303;
-    protected const string REGEX = '/^.*$/u';
+    final protected const int MIN_LENGTH = 1;
+    final protected const int MAX_LENGTH = 4194303;
+    final protected const string REGEX = '/^.*$/u';
 
     protected function __construct(public string $value)
     {
@@ -30,23 +29,20 @@ abstract readonly class StringValueBase implements IValueObject, IStringValueFac
         assert(static::isRegexValid($value)->isOk());
     }
 
-    /**
-     * @param StringValueBase $other
-     */
     #[Override]
-    public function equals(IValueObject $other): bool
+    final public function equals(IValueObject $other): bool
     {
         return (string)$this === (string)$other;
     }
 
     #[Override]
-    public function __toString(): string
+    final public function __toString(): string
     {
         return $this->value;
     }
 
     #[Override]
-    public function jsonSerialize(): string
+    final public function jsonSerialize(): string
     {
         return (string)$this;
     }

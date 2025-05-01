@@ -12,15 +12,14 @@ use WizDevelop\PhpValueObject\Number\NumberValueError;
 
 /**
  * 少数の値オブジェクトの基底クラス
- * @implements IValueObject<DecimalValueBase>
  */
 abstract readonly class DecimalValueBase implements IValueObject, IArithmetic, IComparison
 {
     use Arithmetic;
     use Comparison;
 
-    protected const string MIN_VALUE = '-9999999999999999999999999999.9';
-    protected const string MAX_VALUE = '9999999999999999999999999999.9';
+    final protected const string MIN_VALUE = '-9999999999999999999999999999.9';
+    final protected const string MAX_VALUE = '9999999999999999999999999999.9';
 
     protected function __construct(public Number $value)
     {
@@ -33,23 +32,20 @@ abstract readonly class DecimalValueBase implements IValueObject, IArithmetic, I
         assert(static::isValid($value)->isOk());
     }
 
-    /**
-     * @param DecimalValueBase $other
-     */
     #[Override]
-    public function equals(IValueObject $other): bool
+    final public function equals(IValueObject $other): bool
     {
         return (string)$this === (string)$other;
     }
 
     #[Override]
-    public function __toString(): string
+    final public function __toString(): string
     {
         return (string)$this->value;
     }
 
     #[Override]
-    public function jsonSerialize(): string
+    final public function jsonSerialize(): string
     {
         return (string)$this;
     }

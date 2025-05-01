@@ -15,7 +15,6 @@ use WizDevelop\PhpValueObject\Number\NumberValueError;
  * @see WizDevelop\PhpValueObject\Number\Decimal\IArithmetic
  * @see WizDevelop\PhpValueObject\Number\Decimal\DecimalValueBase
  * @see WizDevelop\PhpValueObject\Number\Decimal\IDecimalValueFactory
- * @property \BcMath\Number $value
  */
 trait Arithmetic
 {

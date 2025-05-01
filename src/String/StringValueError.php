@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace WizDevelop\PhpValueObject\String;
 
+use WizDevelop\PhpValueObject\String\Base\StringValueBase;
 use WizDevelop\PhpValueObject\ValueObjectError;
 
 /**
@@ -22,7 +23,7 @@ final readonly class StringValueError extends ValueObjectError
 
     /**
      * 文字列の長さが無効
-     * @param class-string $className
+     * @param class-string<StringValueBase> $className
      */
     public static function invalidLength(
         string $className,
@@ -40,7 +41,7 @@ final readonly class StringValueError extends ValueObjectError
 
     /**
      * 文字列の正規表現が無効
-     * @param class-string $className
+     * @param class-string<StringValueBase> $className
      */
     public static function invalidRegex(
         string $className,
@@ -57,7 +58,7 @@ final readonly class StringValueError extends ValueObjectError
 
     /**
      * メールアドレスの形式が無効
-     * @param class-string $className
+     * @param class-string<StringValueBase> $className
      */
     public static function invalidEmail(
         string $className,

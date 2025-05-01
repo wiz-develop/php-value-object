@@ -11,15 +11,14 @@ use WizDevelop\PhpValueObject\Number\NumberValueError;
 
 /**
  * 整数の値オブジェクトの基底クラス
- * @implements IValueObject<IntegerValueBase>
  */
 abstract readonly class IntegerValueBase implements IValueObject, IArithmetic, IComparison
 {
     use Arithmetic;
     use Comparison;
 
-    protected const MIN_VALUE = PHP_INT_MIN;
-    protected const MAX_VALUE = PHP_INT_MAX;
+    final protected const MIN_VALUE = PHP_INT_MIN;
+    final protected const MAX_VALUE = PHP_INT_MAX;
 
     protected function __construct(public int $value)
     {
@@ -29,23 +28,20 @@ abstract readonly class IntegerValueBase implements IValueObject, IArithmetic, I
         assert(static::isValid($value)->isOk());
     }
 
-    /**
-     * @param IntegerValueBase $other
-     */
     #[Override]
-    public function equals(IValueObject $other): bool
+    final public function equals(IValueObject $other): bool
     {
         return (string)$this === (string)$other;
     }
 
     #[Override]
-    public function __toString(): string
+    final public function __toString(): string
     {
         return (string)$this->value;
     }
 
     #[Override]
-    public function jsonSerialize(): int
+    final public function jsonSerialize(): int
     {
         return $this->value;
     }

@@ -9,6 +9,7 @@ use ReflectionException;
 
 /**
  * ドメイン層エラー 基底クラス
+ * @template TValueObject of IValueObject
  */
 abstract readonly class ValueObjectError implements IValueObject
 {
@@ -33,7 +34,7 @@ abstract readonly class ValueObjectError implements IValueObject
     /**
      * ValueObjectMetaから表示名を取得する
      * クラスにValueObjectMeta属性が設定されていない場合はクラス名を返す
-     * @param class-string $className
+     * @param class-string<TValueObject> $className
      */
     public static function getDisplayName(string $className): string
     {
