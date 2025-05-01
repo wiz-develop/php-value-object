@@ -264,6 +264,18 @@ final class ListCollectionTest extends TestCase
     }
 
     #[Test]
+    public function mapStrictメソッドで要素を変換できる(): void
+    {
+        $collection = ListCollection::from([1, 2, 3]);
+
+        $mapped = $collection->mapStrict(static fn ($value) => $value * 2);
+
+        $this->assertEquals([2, 4, 6], $mapped->toArray());
+        // mapStrictはmapと異なり、元のコレクションと同じ型を返す
+        $this->assertInstanceOf($collection::class, $mapped);
+    }
+
+    #[Test]
     public function filterメソッドで条件に一致する要素だけを取得できる(): void
     {
         $collection = ListCollection::from([1, 2, 3, 4, 5]);

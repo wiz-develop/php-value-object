@@ -515,7 +515,7 @@ readonly class MapCollection extends CollectionBase implements IMapCollection, I
      * @param array<int,Pair<TPutInnerKey1,TPutInnerValue1>> &$elements
      * @param Pair<TPutInnerKey2,TPutInnerValue2>            &$pair
      */
-    private static function &putPair(array &$elements, &$pair): void
+    private static function putPair(array &$elements, &$pair): void
     {
         $foundIndex = self::findIndex($elements, $pair->key);
 

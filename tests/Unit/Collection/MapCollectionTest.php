@@ -313,6 +313,24 @@ final class MapCollectionTest extends TestCase
     }
 
     #[Test]
+    public function mapStrictメソッドで値を変換できる(): void
+    {
+        $collection = MapCollection::make([
+            'key1' => 1,
+            'key2' => 2,
+        ]);
+
+        $mapped = $collection->mapStrict(static fn ($value) => $value * 2);
+
+        $this->assertEquals([
+            'key1' => 2,
+            'key2' => 4,
+        ], $mapped->toArray());
+        // mapStrictはmapと異なり、元のコレクションと同じ型を返す
+        $this->assertInstanceOf($collection::class, $mapped);
+    }
+
+    #[Test]
     public function filterメソッドで条件に一致する要素だけを取得できる(): void
     {
         $collection = MapCollection::make([
