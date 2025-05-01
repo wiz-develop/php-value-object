@@ -59,7 +59,7 @@ readonly class ListCollection extends CollectionBase implements IListCollection,
     // NOTE: IteratorAggregate
     // -------------------------------------------------------------------------
     /**
-     * @return Generator<TValue>
+     * @return Generator<int,TValue>
      */
     #[Override]
     final public function getIterator(): Generator
