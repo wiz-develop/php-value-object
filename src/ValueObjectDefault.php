@@ -15,15 +15,18 @@ trait ValueObjectDefault
     #[Override]
     public function equals(IValueObject $other): bool
     {
-        return $other instanceof self && (string)$this === (string)$other;
+        return (string)$this === (string)$other;
     }
 
     #[Override]
     public function __toString(): string
     {
-        return json_encode($this->jsonSerialize());
+        return json_encode($this->jsonSerialize(), JSON_THROW_ON_ERROR);
     }
 
+    /**
+     * @return array<mixed>
+     */
     #[Override]
     public function jsonSerialize(): array
     {

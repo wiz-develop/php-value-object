@@ -6,7 +6,6 @@ namespace WizDevelop\PhpValueObject\String;
 
 use Override;
 use WizDevelop\PhpMonad\Result;
-use WizDevelop\PhpValueObject\String\Base\IStringValueFactory;
 use WizDevelop\PhpValueObject\String\Base\StringValueBase;
 use WizDevelop\PhpValueObject\String\Base\StringValueFactory;
 use WizDevelop\PhpValueObject\ValueObjectMeta;
@@ -15,7 +14,7 @@ use WizDevelop\PhpValueObject\ValueObjectMeta;
  * メールアドレスの値オブジェクト
  */
 #[ValueObjectMeta(displayName: 'メールアドレス', description: 'メールアドレスの値オブジェクト')]
-readonly class EmailAddress extends StringValueBase implements IStringValueFactory
+readonly class EmailAddress extends StringValueBase
 {
     use StringValueFactory;
 

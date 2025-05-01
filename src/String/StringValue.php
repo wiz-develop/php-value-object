@@ -6,14 +6,13 @@ namespace WizDevelop\PhpValueObject\String;
 
 use Override;
 use WizDevelop\PhpMonad\Result;
-use WizDevelop\PhpValueObject\String\Base\IStringValueFactory;
 use WizDevelop\PhpValueObject\String\Base\StringValueBase;
 use WizDevelop\PhpValueObject\String\Base\StringValueFactory;
 
 /**
  * 文字列の値オブジェクトの性質を提供する
  */
-readonly class StringValue extends StringValueBase implements IStringValueFactory
+readonly class StringValue extends StringValueBase
 {
     use StringValueFactory;
 

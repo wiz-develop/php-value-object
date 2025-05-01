@@ -6,14 +6,13 @@ namespace WizDevelop\PhpValueObject\Number;
 
 use Override;
 use WizDevelop\PhpMonad\Result;
-use WizDevelop\PhpValueObject\Number\Integer\IIntegerValueFactory;
 use WizDevelop\PhpValueObject\Number\Integer\IntegerValueBase;
 use WizDevelop\PhpValueObject\Number\Integer\IntegerValueFactory;
 
 /**
  * 負の整数の値オブジェクト
  */
-readonly class NegativeIntegerValue extends IntegerValueBase implements IIntegerValueFactory
+readonly class NegativeIntegerValue extends IntegerValueBase
 {
     use IntegerValueFactory;
 

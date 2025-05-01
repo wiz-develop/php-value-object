@@ -12,7 +12,7 @@ use WizDevelop\PhpValueObject\Number\NumberValueError;
 /**
  * 整数の値オブジェクトの基底クラス
  */
-abstract readonly class IntegerValueBase implements IValueObject, IArithmetic, IComparison
+abstract readonly class IntegerValueBase implements IValueObject, IArithmetic, IComparison, IIntegerValueFactory
 {
     use Arithmetic;
     use Comparison;

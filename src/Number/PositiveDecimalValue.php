@@ -9,12 +9,11 @@ use Override;
 use WizDevelop\PhpMonad\Result;
 use WizDevelop\PhpValueObject\Number\Decimal\DecimalValueBase;
 use WizDevelop\PhpValueObject\Number\Decimal\DecimalValueFactory;
-use WizDevelop\PhpValueObject\Number\Decimal\IDecimalValueFactory;
 
 /**
  * 正の少数の値オブジェクト
  */
-readonly class PositiveDecimalValue extends DecimalValueBase implements IDecimalValueFactory
+readonly class PositiveDecimalValue extends DecimalValueBase
 {
     use DecimalValueFactory;
 
