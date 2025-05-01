@@ -11,6 +11,7 @@ use Generator;
 use OutOfBoundsException;
 use Override;
 use Stringable;
+use WizDevelop\PhpMonad\Option;
 use WizDevelop\PhpMonad\Result;
 use WizDevelop\PhpValueObject\Collection\Base\CollectionBase;
 use WizDevelop\PhpValueObject\Collection\Base\CollectionDefault;
@@ -82,19 +83,10 @@ readonly class MapCollection extends CollectionBase implements IMapCollection, I
     /**
      * @throws OutOfBoundsException
      */
-    /**
-     * @phpstan-ignore-next-line
-     */
     #[Override]
     final public function offsetGet($offset): mixed
     {
-        $value = $this->get($offset);
-
-        if ($value === null) {
-            throw new OutOfBoundsException();
-        }
-
-        return $value;
+        return $this->get($offset)->unwrapOrThrow(new OutOfBoundsException('The key does not exist.'));
     }
 
     #[Override]
@@ -106,7 +98,7 @@ readonly class MapCollection extends CollectionBase implements IMapCollection, I
     #[Override]
     final public function offsetExists($offset): bool
     {
-        return $this->get($offset) !== null;
+        return $this->has($offset);
     }
 
     // -------------------------------------------------------------------------
@@ -193,32 +185,31 @@ readonly class MapCollection extends CollectionBase implements IMapCollection, I
         return new static($elements);
     }
 
+    /**
+     * @phpstan-ignore-next-line
+     */
     #[Override]
-    final public function last(?Closure $closure = null, $default = null)
+    final public function last(?Closure $closure = null, $default = null): Option
     {
-        if ($closure === null) {
-            return $this->elements[count($this->elements) - 1] ?? $default;
-        }
-
-        foreach (array_reverse($this->elements) as $index => $pair) {
-            if ($closure($pair->value, $pair->key)) {
-                return $pair;
+        return Option\of(function () use ($closure, $default) {
+            if ($closure === null) {
+                return $this->elements[count($this->elements) - 1] ?? $default;
             }
-        }
 
-        return $default;
+            foreach (array_reverse($this->elements) as $index => $pair) {
+                if ($closure($pair->value, $pair->key)) {
+                    return $pair;
+                }
+            }
+
+            return $default;
+        });
     }
 
     #[Override]
     final public function lastOrFail(?Closure $closure = null): Pair
     {
-        $element = $this->last($closure);
-
-        if ($element !== null) {
-            return $element;
-        }
-
-        throw new CollectionNotFoundException(static::class);
+        return $this->last($closure)->unwrapOrThrow(new CollectionNotFoundException(static::class));
     }
 
     #[Override]
@@ -227,32 +218,31 @@ readonly class MapCollection extends CollectionBase implements IMapCollection, I
         return new static(array_reverse($this->elements));
     }
 
+    /**
+     * @phpstan-ignore-next-line
+     */
     #[Override]
-    final public function first(?Closure $closure = null, $default = null)
+    final public function first(?Closure $closure = null, $default = null): Option
     {
-        if ($closure === null) {
-            return $this->elements[0] ?? $default;
-        }
-
-        foreach ($this->elements as $index => $pair) {
-            if ($closure($pair->value, $pair->key)) {
-                return $pair;
+        return Option\of(function () use ($closure, $default) {
+            if ($closure === null) {
+                return $this->elements[0] ?? $default;
             }
-        }
 
-        return $default;
+            foreach ($this->elements as $index => $pair) {
+                if ($closure($pair->value, $pair->key)) {
+                    return $pair;
+                }
+            }
+
+            return $default;
+        });
     }
 
     #[Override]
     final public function firstOrFail(?Closure $closure = null): Pair
     {
-        $element = $this->first($closure);
-
-        if ($element !== null) {
-            return $element;
-        }
-
-        throw new CollectionNotFoundException(static::class);
+        return $this->first($closure)->unwrapOrThrow(new CollectionNotFoundException(static::class));
     }
 
     #[Override]
@@ -301,17 +291,22 @@ readonly class MapCollection extends CollectionBase implements IMapCollection, I
         return new static($elements);
     }
 
+    /**
+     * @phpstan-ignore-next-line
+     */
     #[Override]
-    final public function get($key, $default = null)
+    final public function get($key, $default = null): Option
     {
-        $elements = $this->elements;
-        $foundKey = self::findIndex($elements, $key);
+        return Option\of(function () use ($key, $default) {
+            $elements = $this->elements;
+            $foundKey = self::findIndex($elements, $key);
 
-        if ($foundKey !== null) {
-            return $elements[$foundKey]->value;
-        }
+            if ($foundKey !== null) {
+                return $elements[$foundKey]->value;
+            }
 
-        return $default;
+            return $default;
+        });
     }
 
     /**

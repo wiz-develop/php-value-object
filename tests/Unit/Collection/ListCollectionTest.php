@@ -127,17 +127,20 @@ final class ListCollectionTest extends TestCase
     {
         $collection = ListCollection::from([10, 20, 30, 40]);
 
-        $this->assertEquals(10, $collection->first());
+        $this->assertTrue($collection->first()->isSome());
+        $this->assertEquals(10, $collection->first()->unwrap());
 
         // クロージャによるフィルタリング
-        $this->assertEquals(20, $collection->first(static fn ($value) => $value > 15));
+        $this->assertTrue($collection->first(static fn ($value) => $value > 15)->isSome());
+        $this->assertEquals(20, $collection->first(static fn ($value) => $value > 15)->unwrap());
 
         // 条件に合致する要素がない場合のデフォルト値
-        $this->assertEquals('default', $collection->first(static fn ($value) => $value > 100, 'default'));
+        $this->assertTrue($collection->first(static fn ($value) => $value > 100, 'default')->isSome());
+        $this->assertEquals('default', $collection->first(static fn ($value) => $value > 100, 'default')->unwrap());
 
         // 空のコレクション
         $emptyCollection = ListCollection::empty();
-        $this->assertNull($emptyCollection->first());
+        $this->assertTrue($emptyCollection->first()->isNone());
     }
 
     #[Test]
@@ -163,17 +166,20 @@ final class ListCollectionTest extends TestCase
     {
         $collection = ListCollection::from([10, 20, 30, 40]);
 
-        $this->assertEquals(40, $collection->last());
+        $this->assertTrue($collection->last()->isSome());
+        $this->assertEquals(40, $collection->last()->unwrap());
 
         // クロージャによるフィルタリング
-        $this->assertEquals(30, $collection->last(static fn ($value) => $value < 35));
+        $this->assertTrue($collection->last(static fn ($value) => $value < 35)->isSome());
+        $this->assertEquals(30, $collection->last(static fn ($value) => $value < 35)->unwrap());
 
         // 条件に合致する要素がない場合のデフォルト値
-        $this->assertEquals('default', $collection->last(static fn ($value) => $value < 10, 'default'));
+        $this->assertTrue($collection->last(static fn ($value) => $value < 10, 'default')->isSome());
+        $this->assertEquals('default', $collection->last(static fn ($value) => $value < 10, 'default')->unwrap());
 
         // 空のコレクション
         $emptyCollection = ListCollection::empty();
-        $this->assertNull($emptyCollection->last());
+        $this->assertTrue($emptyCollection->last()->isNone());
     }
 
     #[Test]

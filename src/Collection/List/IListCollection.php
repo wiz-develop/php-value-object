@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace WizDevelop\PhpValueObject\Collection\List;
 
 use Closure;
+use WizDevelop\PhpMonad\Option;
 use WizDevelop\PhpValueObject\Collection\Base\ICollection;
 use WizDevelop\PhpValueObject\Collection\Exception\CollectionNotFoundException;
 use WizDevelop\PhpValueObject\Collection\Exception\MultipleCollectionsFoundException;
@@ -30,11 +31,11 @@ interface IListCollection extends ICollection
     /**
      * 要素の末尾を取得する
      * @template TLastDefault
-     * @param  (Closure(TValue,int): bool)|null $closure
-     * @param  TLastDefault                     $default
-     * @return TValue|TLastDefault
+     * @param  (Closure(TValue,int): bool)|null                                  $closure
+     * @param  TLastDefault                                                      $default
+     * @return ($default is null ? Option<TValue> : Option<TValue|TLastDefault>)
      */
-    public function last(?Closure $closure = null, $default = null);
+    public function last(?Closure $closure = null, $default = null): Option;
 
     /**
      * 要素の末尾を取得する
@@ -54,11 +55,11 @@ interface IListCollection extends ICollection
     /**
      * 要素の先頭を取得する
      * @template TFirstDefault
-     * @param  (Closure(TValue,int): bool)|null $closure
-     * @param  TFirstDefault                    $default
-     * @return TValue|TFirstDefault
+     * @param  (Closure(TValue,int): bool)|null                                   $closure
+     * @param  TFirstDefault                                                      $default
+     * @return ($default is null ? Option<TValue> : Option<TValue|TFirstDefault>)
      */
-    public function first(?Closure $closure, $default = null);
+    public function first(?Closure $closure, $default = null): Option;
 
     /**
      * 要素の先頭を取得する

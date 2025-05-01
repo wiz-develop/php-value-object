@@ -8,6 +8,7 @@ use ArrayAccess;
 use Closure;
 use Generator;
 use Override;
+use WizDevelop\PhpMonad\Option;
 use WizDevelop\PhpMonad\Result;
 use WizDevelop\PhpValueObject\Collection\Base\ArrayAccessDefault;
 use WizDevelop\PhpValueObject\Collection\Base\CollectionBase;
@@ -116,37 +117,36 @@ readonly class ListCollection extends CollectionBase implements IListCollection,
         return new static(iterator_to_array($items));
     }
 
+    /**
+     * @phpstan-ignore-next-line
+     */
     #[Override]
-    final public function last(?Closure $closure = null, $default = null)
+    final public function last(?Closure $closure = null, $default = null): Option
     {
-        if ($closure === null) {
-            $elements = $this->elements;
+        return Option\of(function () use ($closure, $default) {
+            if ($closure === null) {
+                $elements = $this->elements;
 
-            /** @var TValue */
-            $element = end($elements);
+                /** @var TValue */
+                $element = end($elements);
 
-            return key($elements) === null ? $default : $element;
-        }
-
-        foreach (array_reverse($this->elements) as $key => $value) {
-            if ($closure($value, $key)) {
-                return $value;
+                return key($elements) === null ? $default : $element;
             }
-        }
 
-        return $default;
+            foreach (array_reverse($this->elements) as $key => $value) {
+                if ($closure($value, $key)) {
+                    return $value;
+                }
+            }
+
+            return $default;
+        });
     }
 
     #[Override]
     final public function lastOrFail(?Closure $closure = null)
     {
-        $element = $this->last($closure);
-
-        if ($element !== null) {
-            return $element;
-        }
-
-        throw new CollectionNotFoundException(static::class);
+        return $this->last($closure)->unwrapOrThrow(new CollectionNotFoundException(static::class));
     }
 
     #[Override]
@@ -155,37 +155,36 @@ readonly class ListCollection extends CollectionBase implements IListCollection,
         return new static(array_reverse($this->elements));
     }
 
+    /**
+     * @phpstan-ignore-next-line
+     */
     #[Override]
-    final public function first(?Closure $closure = null, $default = null)
+    final public function first(?Closure $closure = null, $default = null): Option
     {
-        if ($closure === null) {
-            $elements = $this->elements;
+        return Option\of(function () use ($closure, $default) {
+            if ($closure === null) {
+                $elements = $this->elements;
 
-            /** @var TValue */
-            $element = reset($elements);
+                /** @var TValue */
+                $element = reset($elements);
 
-            return key($elements) === null ? $default : $element;
-        }
-
-        foreach ($this->elements as $key => $value) {
-            if ($closure($value, $key)) {
-                return $value;
+                return key($elements) === null ? $default : $element;
             }
-        }
 
-        return $default;
+            foreach ($this->elements as $key => $value) {
+                if ($closure($value, $key)) {
+                    return $value;
+                }
+            }
+
+            return $default;
+        });
     }
 
     #[Override]
     final public function firstOrFail(?Closure $closure = null)
     {
-        $element = $this->first($closure);
-
-        if ($element !== null) {
-            return $element;
-        }
-
-        throw new CollectionNotFoundException(static::class);
+        return $this->first($closure)->unwrapOrThrow(new CollectionNotFoundException(static::class));
     }
 
     #[Override]
@@ -330,7 +329,7 @@ readonly class ListCollection extends CollectionBase implements IListCollection,
     final public function contains($key): bool
     {
         if ($key instanceof Closure) {
-            return $this->first($key) !== null;
+            return $this->first($key)->isSome();
         }
 
         return in_array($key, $this->elements, true);

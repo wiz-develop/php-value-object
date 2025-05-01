@@ -214,10 +214,16 @@ final class MapCollectionTest extends TestCase
     {
         $collection = MapCollection::make(['a' => 1, 'b' => 2, 'c' => 3]);
 
-        $this->assertEquals(1, $collection->get('a'));
-        $this->assertEquals(2, $collection->get('b'));
-        $this->assertNull($collection->get('x')); // 存在しないキー
-        $this->assertEquals('default', $collection->get('x', 'default')); // デフォルト値
+        $this->assertTrue($collection->get('a')->isSome());
+        $this->assertEquals(1, $collection->get('a')->unwrap());
+
+        $this->assertTrue($collection->get('b')->isSome());
+        $this->assertEquals(2, $collection->get('b')->unwrap());
+
+        $this->assertTrue($collection->get('x')->isNone()); // 存在しないキー
+
+        $this->assertTrue($collection->get('x', 'default')->isSome()); // デフォルト値
+        $this->assertEquals('default', $collection->get('x', 'default')->unwrap());
     }
 
     #[Test]
@@ -242,22 +248,28 @@ final class MapCollectionTest extends TestCase
     {
         $collection = MapCollection::make(['a' => 1, 'b' => 2, 'c' => 3]);
 
-        $firstPair = $collection->first();
+        $firstOption = $collection->first();
+        $this->assertTrue($firstOption->isSome());
+        $firstPair = $firstOption->unwrap();
         $this->assertInstanceOf(Pair::class, $firstPair);
         $this->assertEquals('a', $firstPair->key);
         $this->assertEquals(1, $firstPair->value);
 
         // クロージャによるフィルタリング
-        $filteredPair = $collection->first(static fn ($value) => $value > 1);
-        $this->assertEquals('b', $filteredPair?->key);
-        $this->assertEquals(2, $filteredPair?->value);
+        $filteredOption = $collection->first(static fn ($value) => $value > 1);
+        $this->assertTrue($filteredOption->isSome());
+        $filteredPair = $filteredOption->unwrap();
+        $this->assertEquals('b', $filteredPair->key);
+        $this->assertEquals(2, $filteredPair->value);
 
         // 条件に合致するものがない場合
-        $this->assertEquals('default', $collection->first(static fn ($value) => $value > 10, 'default'));
+        $defaultOption = $collection->first(static fn ($value) => $value > 10, 'default');
+        $this->assertTrue($defaultOption->isSome());
+        $this->assertEquals('default', $defaultOption->unwrap());
 
         // 空のコレクション
         $emptyCollection = MapCollection::empty();
-        $this->assertNull($emptyCollection->first());
+        $this->assertTrue($emptyCollection->first()->isNone());
     }
 
     #[Test]
@@ -290,22 +302,28 @@ final class MapCollectionTest extends TestCase
     {
         $collection = MapCollection::make(['a' => 1, 'b' => 2, 'c' => 3]);
 
-        $lastPair = $collection->last();
+        $lastOption = $collection->last();
+        $this->assertTrue($lastOption->isSome());
+        $lastPair = $lastOption->unwrap();
         $this->assertInstanceOf(Pair::class, $lastPair);
         $this->assertEquals('c', $lastPair->key);
         $this->assertEquals(3, $lastPair->value);
 
         // クロージャによるフィルタリング
-        $filteredPair = $collection->last(static fn ($value) => $value < 3);
-        $this->assertEquals('b', $filteredPair?->key);
-        $this->assertEquals(2, $filteredPair?->value);
+        $filteredOption = $collection->last(static fn ($value) => $value < 3);
+        $this->assertTrue($filteredOption->isSome());
+        $filteredPair = $filteredOption->unwrap();
+        $this->assertEquals('b', $filteredPair->key);
+        $this->assertEquals(2, $filteredPair->value);
 
         // 条件に合致するものがない場合
-        $this->assertEquals('default', $collection->last(static fn ($value) => $value > 10, 'default'));
+        $defaultOption = $collection->last(static fn ($value) => $value > 10, 'default');
+        $this->assertTrue($defaultOption->isSome());
+        $this->assertEquals('default', $defaultOption->unwrap());
 
         // 空のコレクション
         $emptyCollection = MapCollection::empty();
-        $this->assertNull($emptyCollection->last());
+        $this->assertTrue($emptyCollection->last()->isNone());
     }
 
     #[Test]

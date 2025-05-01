@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace WizDevelop\PhpValueObject\Collection\Map;
 
 use Closure;
+use WizDevelop\PhpMonad\Option;
 use WizDevelop\PhpValueObject\Collection\Base\ICollection;
 use WizDevelop\PhpValueObject\Collection\Exception\CollectionNotFoundException;
 use WizDevelop\PhpValueObject\Collection\Exception\MultipleCollectionsFoundException;
@@ -34,11 +35,11 @@ interface IMapCollection extends ICollection
     /**
      * 要素の末尾を取得する
      * @template TLastDefault
-     * @param  (Closure(TValue,TKey): bool)|null $closure
-     * @param  TLastDefault                      $default
-     * @return Pair<TKey,TValue>|TLastDefault
+     * @param  (Closure(TValue,TKey): bool)|null                                                       $closure
+     * @param  TLastDefault                                                                            $default
+     * @return ($default is null ? Option<Pair<TKey,TValue>> : Option<Pair<TKey,TValue>|TLastDefault>)
      */
-    public function last(?Closure $closure = null, $default = null);
+    public function last(?Closure $closure = null, $default = null): Option;
 
     /**
      * 要素の末尾を取得する
@@ -58,11 +59,11 @@ interface IMapCollection extends ICollection
     /**
      * 要素の先頭を取得する
      * @template TFirstDefault
-     * @param  (Closure(TValue,TKey): bool)|null $closure
-     * @param  TFirstDefault                     $default
-     * @return Pair<TKey,TValue>|TFirstDefault
+     * @param  (Closure(TValue,TKey): bool)|null                                                        $closure
+     * @param  TFirstDefault                                                                            $default
+     * @return ($default is null ? Option<Pair<TKey,TValue>> : Option<Pair<TKey,TValue>|TFirstDefault>)
      */
-    public function first(?Closure $closure, $default = null);
+    public function first(?Closure $closure, $default = null): Option;
 
     /**
      * 要素の先頭を取得する
@@ -113,11 +114,11 @@ interface IMapCollection extends ICollection
      *
      * @template TDefault
      *
-     * @param  TKey            $key
-     * @param  TDefault        $default
-     * @return TValue|TDefault
+     * @param  TKey                                                          $key
+     * @param  TDefault                                                      $default
+     * @return ($default is null ? Option<TValue> : Option<TValue|TDefault>)
      */
-    public function get($key, $default = null);
+    public function get($key, $default = null): Option;
 
     /**
      * 引数で受け取ったコレクションを現在のコレクションと結合します。
