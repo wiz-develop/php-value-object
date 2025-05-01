@@ -14,10 +14,11 @@ use WizDevelop\PhpMonad\Result;
 use WizDevelop\PhpValueObject\Collection\Base\CollectionBase;
 use WizDevelop\PhpValueObject\Collection\Base\CollectionDefault;
 use WizDevelop\PhpValueObject\Collection\Base\CountableDefault;
+use WizDevelop\PhpValueObject\Collection\Exception\CollectionNotFoundException;
+use WizDevelop\PhpValueObject\Collection\Exception\MultipleCollectionsFoundException;
 use WizDevelop\PhpValueObject\Collection\Map\IMapCollection;
 use WizDevelop\PhpValueObject\Collection\Map\IMapCollectionFactory;
 use WizDevelop\PhpValueObject\IValueObject;
-use WizDevelop\PhpValueObject\Pair;
 
 /**
  * マップコレクション
@@ -436,6 +437,32 @@ readonly class MapCollection extends CollectionBase implements IMapCollection, I
         }
 
         return ListCollection::make($values);
+    }
+
+    #[Override]
+    public function keys(): ListCollection
+    {
+        /** @var array<int,TKey> */
+        $keys = [];
+
+        foreach ($this->elements as $pair) {
+            $keys[] = $pair->key;
+        }
+
+        return ListCollection::make($keys);
+    }
+
+    #[Override]
+    public function remove($key): static
+    {
+        $elements = $this->elements;
+        $foundIndex = self::findIndex($elements, $key);
+
+        if ($foundIndex !== null) {
+            unset($elements[$foundIndex]);
+        }
+
+        return new static($elements);
     }
 
     // -------------------------------------------------------------------------

@@ -9,7 +9,7 @@ use WizDevelop\PhpValueObject\ValueObjectError;
 
 /**
  * CollectionValue エラー
- * @extends ValueObjectError<CollectionBase<array-key,mixed>>
+ * @extends ValueObjectError<CollectionBase<mixed,mixed>>
  */
 final readonly class CollectionValueError extends ValueObjectError
 {
@@ -24,7 +24,7 @@ final readonly class CollectionValueError extends ValueObjectError
 
     /**
      * 最低要素数が無効
-     * @param class-string<CollectionBase<array-key,mixed>> $className
+     * @param class-string<CollectionBase<mixed,mixed>> $className
      */
     public static function invalidMinCount(
         string $className,
@@ -41,7 +41,7 @@ final readonly class CollectionValueError extends ValueObjectError
 
     /**
      * 最大要素数が無効
-     * @param class-string<CollectionBase<array-key,mixed>> $className
+     * @param class-string<CollectionBase<mixed,mixed>> $className
      */
     public static function invalidMaxCount(
         string $className,
@@ -58,7 +58,7 @@ final readonly class CollectionValueError extends ValueObjectError
 
     /**
      * 要素数が無効
-     * @param class-string<CollectionBase<array-key,mixed>> $className
+     * @param class-string<CollectionBase<mixed,mixed>> $className
      */
     public static function invalidRange(
         string $className,

@@ -4,3 +4,5 @@ parameters:
     level: max
     paths:
         - src
+    typeAliases:
+        NumberValueBase: '\WizDevelop\PhpValueObject\Number\Decimal\DecimalValueBase|\WizDevelop\PhpValueObject\Number\Integer\IntegerValueBase'

@@ -9,6 +9,7 @@ use WizDevelop\PhpValueObject\ValueObjectError;
 
 /**
  * StringValue エラー
+ * @extends ValueObjectError<StringValueBase>
  */
 final readonly class StringValueError extends ValueObjectError
 {

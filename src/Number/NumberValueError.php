@@ -9,6 +9,7 @@ use WizDevelop\PhpValueObject\ValueObjectError;
 
 /**
  * NumberValue エラー
+ * @extends ValueObjectError<NumberValueBase>
  */
 final readonly class NumberValueError extends ValueObjectError
 {
@@ -23,7 +24,7 @@ final readonly class NumberValueError extends ValueObjectError
 
     /**
      * 数値の範囲が無効
-     * @param class-string $className
+     * @param class-string<NumberValueBase> $className
      */
     public static function invalidRange(
         string $className,
@@ -45,7 +46,7 @@ final readonly class NumberValueError extends ValueObjectError
 
     /**
      * ゼロによる除算は無効
-     * @param class-string $className
+     * @param class-string<NumberValueBase> $className
      */
     public static function invalidDivideByZero(
         string $className,
@@ -60,7 +61,7 @@ final readonly class NumberValueError extends ValueObjectError
 
     /**
      * 数値の桁数が無効
-     * @param class-string $className
+     * @param class-string<NumberValueBase> $className
      */
     public static function invalidDigits(
         string $className,

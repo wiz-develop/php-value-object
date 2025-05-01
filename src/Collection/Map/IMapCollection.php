@@ -6,16 +6,15 @@ namespace WizDevelop\PhpValueObject\Collection\Map;
 
 use Closure;
 use WizDevelop\PhpValueObject\Collection\Base\ICollection;
-use WizDevelop\PhpValueObject\Collection\CollectionNotFoundException;
+use WizDevelop\PhpValueObject\Collection\Exception\CollectionNotFoundException;
+use WizDevelop\PhpValueObject\Collection\Exception\MultipleCollectionsFoundException;
 use WizDevelop\PhpValueObject\Collection\ListCollection;
-use WizDevelop\PhpValueObject\Collection\MultipleCollectionsFoundException;
-use WizDevelop\PhpValueObject\Pair;
+use WizDevelop\PhpValueObject\Collection\Pair;
 
 /**
  * マップコレクション インターフェース
  * @template TKey
  * @template TValue
- * @uses WizDevelop\PhpValueObject\Collection\Map\MapCollectionDefault
  * @uses WizDevelop\PhpValueObject\Collection\MapCollection
  * @extends ICollection<TKey,TValue>
  */
@@ -191,4 +190,17 @@ interface IMapCollection extends ICollection
      * @return ListCollection<TValue>
      */
     public function values(): ListCollection;
+
+    /**
+     * Returns a List of all the associated keys in the Map.
+     * @return ListCollection<TKey>
+     */
+    public function keys(): ListCollection;
+
+    /**
+     * 指定したキーを持つ要素を削除する
+     * @param  TKey                $key
+     * @return static<TKey,TValue>
+     */
+    public function remove($key): static;
 }

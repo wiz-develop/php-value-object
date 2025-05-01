@@ -6,13 +6,12 @@ namespace WizDevelop\PhpValueObject\Collection\List;
 
 use Closure;
 use WizDevelop\PhpValueObject\Collection\Base\ICollection;
-use WizDevelop\PhpValueObject\Collection\CollectionNotFoundException;
-use WizDevelop\PhpValueObject\Collection\MultipleCollectionsFoundException;
+use WizDevelop\PhpValueObject\Collection\Exception\CollectionNotFoundException;
+use WizDevelop\PhpValueObject\Collection\Exception\MultipleCollectionsFoundException;
 
 /**
  * リストコレクション インターフェース
  * @template TValue
- * @uses WizDevelop\PhpValueObject\Collection\List\ListCollectionDefault
  * @uses WizDevelop\PhpValueObject\Collection\ListCollection
  * @extends ICollection<int,TValue>
  */

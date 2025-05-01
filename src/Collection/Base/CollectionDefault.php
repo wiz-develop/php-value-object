@@ -9,7 +9,6 @@ use Override;
 /**
  * Default implementation of ICollection
  * @see WizDevelop\PhpValueObject\Collection\Base\ICollection
- * @uses WizDevelop\PhpValueObject\Collection\ArrayCollection
  * @template TKey
  * @template TValue
  */

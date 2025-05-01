@@ -2,7 +2,10 @@
 
 declare(strict_types=1);
 
-namespace WizDevelop\PhpValueObject;
+namespace WizDevelop\PhpValueObject\Collection;
+
+use WizDevelop\PhpValueObject\IValueObject;
+use WizDevelop\PhpValueObject\ValueObjectDefault;
 
 /**
  * A pair which represents a key and an associated value.

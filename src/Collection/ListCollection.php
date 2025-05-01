@@ -13,6 +13,8 @@ use WizDevelop\PhpValueObject\Collection\Base\ArrayAccessDefault;
 use WizDevelop\PhpValueObject\Collection\Base\CollectionBase;
 use WizDevelop\PhpValueObject\Collection\Base\CollectionDefault;
 use WizDevelop\PhpValueObject\Collection\Base\CountableDefault;
+use WizDevelop\PhpValueObject\Collection\Exception\CollectionNotFoundException;
+use WizDevelop\PhpValueObject\Collection\Exception\MultipleCollectionsFoundException;
 use WizDevelop\PhpValueObject\Collection\List\IListCollection;
 use WizDevelop\PhpValueObject\Collection\List\IListCollectionFactory;
 

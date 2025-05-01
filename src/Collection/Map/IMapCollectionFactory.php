@@ -6,7 +6,7 @@ namespace WizDevelop\PhpValueObject\Collection\Map;
 
 use WizDevelop\PhpMonad\Result;
 use WizDevelop\PhpValueObject\Collection\CollectionValueError;
-use WizDevelop\PhpValueObject\Pair;
+use WizDevelop\PhpValueObject\Collection\Pair;
 
 /**
  * マップコレクション ファクトリインターフェース
