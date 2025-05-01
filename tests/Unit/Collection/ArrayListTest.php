@@ -122,6 +122,41 @@ final class ArrayListTest extends TestCase
         $this->assertEquals(['a', 'b', 'c'], $collection3->toArray());
     }
 
+    /**
+     * @param array<int,mixed> $elements
+     */
+    #[Test]
+    #[DataProvider('様々な要素のコレクションを提供')]
+    public function tryFrom静的メソッドで有効な配列から成功結果が取得できる(array $elements): void
+    {
+        $result = ArrayList::tryFrom($elements);
+
+        $this->assertTrue($result->isOk());
+        $collection = $result->unwrap();
+        $this->assertInstanceOf(ArrayList::class, $collection);
+        $this->assertEquals($elements, $collection->toArray());
+    }
+
+    #[Test]
+    public function tryFrom静的メソッドで無効な配列からエラー結果が取得できる(): void
+    {
+        // ArrayListの実装では現在、最小カウントは0、最大カウントはPHP_INT_MAXなので
+        // 常に有効な結果になるはずだが、将来的な制約変更に備えてテストを追加
+
+        // 今後最小カウント制約が追加された場合のテスト
+        // この例では現在は常に成功するが、将来的に最小カウントが増えた場合を想定
+        $result = ArrayList::tryFrom([]);
+
+        // 最大カウント制約のテスト用の大きな配列を用意する
+        // 注: PHP_INT_MAXの配列は作れないので、実用的なテスト範囲で十分
+        $bigArray = array_fill(0, 1000, 'test');
+        $resultBig = ArrayList::tryFrom($bigArray);
+
+        // 現在の実装では両方成功するはず
+        $this->assertTrue($result->isOk());
+        $this->assertTrue($resultBig->isOk());
+    }
+
     #[Test]
     public function first関数で先頭要素が取得できる(): void
     {

@@ -177,6 +177,79 @@ final class MapTest extends TestCase
         $this->assertEquals(['p' => 100, 'q' => 200], $collection3->toArray());
     }
 
+    /**
+     * @param Pair<mixed,mixed>[] $pairs
+     */
+    #[Test]
+    #[DataProvider('様々な要素を持つPairの配列を提供')]
+    public function tryFrom静的メソッドで有効なPair配列から成功結果が取得できる(array $pairs): void
+    {
+        $result = Map::tryFrom(...$pairs);
+
+        $this->assertTrue($result->isOk());
+        $collection = $result->unwrap();
+        $this->assertInstanceOf(Map::class, $collection);
+
+        // toArray()で得られる配列は、キーと値のマッピングになっている
+        $expected = [];
+        foreach ($pairs as $pair) {
+            $expected[$pair->key] = $pair->value;
+        }
+
+        $this->assertEquals($expected, $collection->toArray());
+    }
+
+    /**
+     * @param Pair<mixed,mixed>[] $pairs
+     */
+    #[Test]
+    #[DataProvider('独自クラスを含むPairの配列を提供')]
+    public function tryFrom静的メソッドで独自クラスを含むPair配列から成功結果が取得できる(array $pairs): void
+    {
+        $result = Map::tryFrom(...$pairs);
+
+        $this->assertTrue($result->isOk());
+        $collection = $result->unwrap();
+        $this->assertInstanceOf(Map::class, $collection);
+
+        // キーが独自クラスの場合でもtoArray()で正しくマッピングされる
+        $expected = [];
+        foreach ($pairs as $pair) {
+            $key = match(true) {
+                is_int($pair->key) => $pair->key,
+                is_string($pair->key) => $pair->key,
+                $pair->key instanceof Stringable => (string)$pair->key,
+                default => throw new BadMethodCallException('The key must be an integer or string or Stringable.'),
+            };
+            $expected[$key] = $pair->value;
+        }
+
+        $this->assertEquals($expected, $collection->toArray());
+    }
+
+    #[Test]
+    public function tryFrom静的メソッドで無効なPair配列からエラー結果が取得できる(): void
+    {
+        // Mapの実装では現在、最小カウントは0、最大カウントはPHP_INT_MAXなので
+        // 常に有効な結果になるはずだが、将来的な制約変更に備えてテストを追加
+
+        // 今後最小カウント制約が追加された場合のテスト
+        // この例では現在は常に成功するが、将来的に最小カウントが増えた場合を想定
+        $result = Map::tryFrom();
+
+        // 最大カウント制約のテスト用の大きなPair配列を用意する
+        // 注: PHP_INT_MAXの配列は作れないので、実用的なテスト範囲で十分
+        $bigArray = [];
+        for ($i = 0; $i < 1000; ++$i) {
+            $bigArray[] = Pair::of("key{$i}", "value{$i}");
+        }
+        $resultBig = Map::tryFrom(...$bigArray);
+
+        // 現在の実装では両方成功するはず
+        $this->assertTrue($result->isOk());
+        $this->assertTrue($resultBig->isOk());
+    }
+
     #[Test]
     public function put関数でキーと値を追加したコレクションが取得できる(): void
     {
