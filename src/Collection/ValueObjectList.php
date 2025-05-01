@@ -8,9 +8,9 @@ use WizDevelop\PhpValueObject\IValueObject;
 
 /**
  * @template TValue of IValueObject
- * @extends ListCollection<TValue>
+ * @extends ArrayList<TValue>
  */
-readonly class ValueObjectCollection extends ListCollection
+readonly class ValueObjectList extends ArrayList
 {
     /**
      * 存在するかどうか

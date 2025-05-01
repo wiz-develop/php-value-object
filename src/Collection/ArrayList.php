@@ -16,18 +16,18 @@ use WizDevelop\PhpValueObject\Collection\Base\CollectionDefault;
 use WizDevelop\PhpValueObject\Collection\Base\CountableDefault;
 use WizDevelop\PhpValueObject\Collection\Exception\CollectionNotFoundException;
 use WizDevelop\PhpValueObject\Collection\Exception\MultipleCollectionsFoundException;
-use WizDevelop\PhpValueObject\Collection\List\IListCollection;
-use WizDevelop\PhpValueObject\Collection\List\IListCollectionFactory;
+use WizDevelop\PhpValueObject\Collection\List\IArrayList;
+use WizDevelop\PhpValueObject\Collection\List\IArrayListFactory;
 
 /**
  * リストコレクション
  * @template TValue
  * @extends CollectionBase<int,TValue>
- * @implements IListCollection<TValue>
- * @implements IListCollectionFactory<TValue>
+ * @implements IArrayList<TValue>
+ * @implements IArrayListFactory<TValue>
  * @implements ArrayAccess<int,TValue>
  */
-readonly class ListCollection extends CollectionBase implements IListCollection, IListCollectionFactory, ArrayAccess
+readonly class ArrayList extends CollectionBase implements IArrayList, IArrayListFactory, ArrayAccess
 {
     /** @use ArrayAccessDefault<int,TValue> */
     use ArrayAccessDefault;
@@ -80,7 +80,7 @@ readonly class ListCollection extends CollectionBase implements IListCollection,
     }
 
     // -------------------------------------------------------------------------
-    // NOTE: IListCollectionFactory
+    // NOTE: IArrayListFactory
     // -------------------------------------------------------------------------
     #[Override]
     final public static function from(array $elements): static
@@ -105,7 +105,7 @@ readonly class ListCollection extends CollectionBase implements IListCollection,
     }
 
     // -------------------------------------------------------------------------
-    // NOTE: IListCollection
+    // NOTE: IArrayList
     // -------------------------------------------------------------------------
     #[Override]
     final public static function make(iterable $items = []): static
@@ -225,11 +225,11 @@ readonly class ListCollection extends CollectionBase implements IListCollection,
     /**
      * @template TValue2
      *
-     * @param  IListCollection<TValue2> $other
+     * @param  IArrayList<TValue2>  $other
      * @return self<TValue|TValue2>
      */
     #[Override]
-    final public function concat(IListCollection $other): self
+    final public function concat(IArrayList $other): self
     {
         $elements = $this->elements;
 
@@ -243,11 +243,11 @@ readonly class ListCollection extends CollectionBase implements IListCollection,
     /**
      * @template TValue2
      *
-     * @param  IListCollection<TValue2> $other
+     * @param  IArrayList<TValue2>  $other
      * @return self<TValue|TValue2>
      */
     #[Override]
-    final public function merge(IListCollection $other): self
+    final public function merge(IArrayList $other): self
     {
         return new self(array_merge($this->elements, $other->toArray()));
     }

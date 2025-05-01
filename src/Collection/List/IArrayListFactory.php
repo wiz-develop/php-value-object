@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace WizDevelop\PhpValueObject\Collection\List;
 
 use WizDevelop\PhpMonad\Result;
-use WizDevelop\PhpValueObject\Collection\CollectionValueError;
+use WizDevelop\PhpValueObject\Collection\CollectionError;
 
 /**
  * リストコレクション ファクトリインターフェース
- * @see WizDevelop\PhpValueObject\Collection\ListCollection
+ * @see WizDevelop\PhpValueObject\Collection\ArrayList
  *
  * @template TValue
  */
-interface IListCollectionFactory
+interface IArrayListFactory
 {
     /**
      * 信頼できるプリミティブ値からインスタンスを生成する
@@ -30,8 +30,8 @@ interface IListCollectionFactory
      *
      * @template TTryFromValue of TValue
      *
-     * @param  array<int,TTryFromValue>                           $elements
-     * @return Result<static<TTryFromValue>,CollectionValueError>
+     * @param  array<int,TTryFromValue>                      $elements
+     * @return Result<static<TTryFromValue>,CollectionError>
      */
     public static function tryFrom(array $elements): Result;
 

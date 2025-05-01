@@ -5,17 +5,17 @@ declare(strict_types=1);
 namespace WizDevelop\PhpValueObject\Collection\Map;
 
 use WizDevelop\PhpMonad\Result;
-use WizDevelop\PhpValueObject\Collection\CollectionValueError;
+use WizDevelop\PhpValueObject\Collection\CollectionError;
 use WizDevelop\PhpValueObject\Collection\Pair;
 
 /**
  * マップコレクション ファクトリインターフェース
- * @see WizDevelop\PhpValueObject\Collection\MapCollection
+ * @see WizDevelop\PhpValueObject\Collection\Map
  *
  * @template TKey
  * @template TValue
  */
-interface IMapCollectionFactory
+interface IMapFactory
 {
     /**
      * 信頼できるプリミティブ値からインスタンスを生成する
@@ -34,8 +34,8 @@ interface IMapCollectionFactory
      * @template TTryFromKey of TKey
      * @template TTryFromValue of TValue
      *
-     * @param  Pair<TTryFromKey,TTryFromValue>                                ...$values
-     * @return Result<static<TTryFromKey,TTryFromValue>,CollectionValueError>
+     * @param  Pair<TTryFromKey,TTryFromValue>                           ...$values
+     * @return Result<static<TTryFromKey,TTryFromValue>,CollectionError>
      */
     public static function tryFrom(Pair ...$values): Result;
 

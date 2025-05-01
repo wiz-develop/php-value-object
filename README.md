@@ -126,7 +126,7 @@ if ($decimalResult->isOk()) {
 #### リストコレクション
 
 ```php
-use WizDevelop\PhpValueObject\Collection\ListCollection;
+use WizDevelop\PhpValueObject\Collection\ArrayList;
 use WizDevelop\PhpValueObject\Number\IntegerValue;
 
 // 整数値オブジェクトのコレクション
@@ -136,7 +136,7 @@ $numbers = [
     IntegerValue::from(3),
 ];
 
-$list = ListCollection::from($numbers);
+$list = ArrayList::from($numbers);
 
 // マップ操作
 $doubled = $list->map(fn ($num) => $num->mul(IntegerValue::from(2)));
@@ -158,11 +158,11 @@ $last = $list->last();    // 3
 #### マップコレクション
 
 ```php
-use WizDevelop\PhpValueObject\Collection\MapCollection;
+use WizDevelop\PhpValueObject\Collection\Map;
 use WizDevelop\PhpValueObject\String\StringValue;
 
 // 文字列値オブジェクトの連想配列
-$map = MapCollection::from([
+$map = Map::from([
     'name' => StringValue::from('John'),
     'email' => StringValue::from('john@example.com'),
 ]);
@@ -287,14 +287,14 @@ protected static function max(): \BcMath\Number  // 最大値
 protected static function isValid(\BcMath\Number $value): Result  // 追加の検証ロジック
 ```
 
-### ListCollection API
+### ArrayList API
 
 ```php
 // 静的ファクトリメソッド
-ListCollection::from(array $elements): static
-ListCollection::tryFrom(array $elements): Result<static, CollectionValueError>
-ListCollection::empty(): static
-ListCollection::make(iterable $items = []): static
+ArrayList::from(array $elements): static
+ArrayList::tryFrom(array $elements): Result<static, CollectionValueError>
+ArrayList::empty(): static
+ArrayList::make(iterable $items = []): static
 
 // 要素の取得
 public function first(?Closure $closure = null, $default = null): mixed
@@ -309,8 +309,8 @@ public function slice(int $offset, ?int $length = null): static
 public function reverse(): static
 public function push(...$values): static
 public function add($element): static
-public function concat(IListCollection $other): self
-public function merge(IListCollection $other): self
+public function concat(IArrayList $other): self
+public function merge(IArrayList $other): self
 
 // 高階関数
 public function map(Closure $closure): self
@@ -332,20 +332,20 @@ public function offsetExists(mixed $offset): bool
 public function offsetGet(mixed $offset): mixed
 ```
 
-### MapCollection API
+### Map API
 
 ```php
 // 静的ファクトリメソッド
-MapCollection::from(array $elements): static
-MapCollection::tryFrom(array $elements): Result<static, CollectionValueError>
-MapCollection::empty(): static
-MapCollection::make(iterable $items = []): static
+Map::from(array $elements): static
+Map::tryFrom(array $elements): Result<static, CollectionValueError>
+Map::empty(): static
+Map::make(iterable $items = []): static
 
 // 要素の取得
 public function get(string $key, $default = null): mixed
 public function has(string $key): bool
-public function keys(): ListCollection
-public function values(): ListCollection
+public function keys(): ArrayList
+public function values(): ArrayList
 
 // コレクション操作
 public function toArray(): array
@@ -455,13 +455,13 @@ final readonly class Age extends IntegerValue
 ### カスタムコレクションの作成
 
 ```php
-use WizDevelop\PhpValueObject\Collection\ListCollection;
+use WizDevelop\PhpValueObject\Collection\ArrayList;
 
 /**
  * @template T of User
- * @extends ListCollection<T>
+ * @extends ArrayList<T>
  */
-final readonly class UserCollection extends ListCollection
+final readonly class UserCollection extends ArrayList
 {
     // コレクションサイズの制約をオーバーライド
     protected static function minCount(): int

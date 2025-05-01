@@ -13,10 +13,10 @@ use WizDevelop\PhpValueObject\Collection\Exception\MultipleCollectionsFoundExcep
 /**
  * リストコレクション インターフェース
  * @template TValue
- * @uses WizDevelop\PhpValueObject\Collection\ListCollection
+ * @uses WizDevelop\PhpValueObject\Collection\ArrayList
  * @extends ICollection<int,TValue>
  */
-interface IListCollection extends ICollection
+interface IArrayList extends ICollection
 {
     /**
      * Create a new collection instance if the value isn't one already.
@@ -99,8 +99,8 @@ interface IListCollection extends ICollection
      *
      * @template TValue2
      *
-     * @param  IListCollection<TValue2>        $other
-     * @return IListCollection<TValue|TValue2>
+     * @param  IArrayList<TValue2>        $other
+     * @return IArrayList<TValue|TValue2>
      */
     public function concat(self $other): self;
 
@@ -112,8 +112,8 @@ interface IListCollection extends ICollection
      *
      * @template TValue2
      *
-     * @param  IListCollection<TValue2>        $other
-     * @return IListCollection<TValue|TValue2>
+     * @param  IArrayList<TValue2>        $other
+     * @return IArrayList<TValue|TValue2>
      */
     public function merge(self $other): self;
 
@@ -121,7 +121,7 @@ interface IListCollection extends ICollection
      * @template TMapValue
      *
      * @param  Closure(TValue,int): TMapValue $closure
-     * @return IListCollection<TMapValue>
+     * @return IArrayList<TMapValue>
      */
     public function map(Closure $closure): self;
 

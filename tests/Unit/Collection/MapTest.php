@@ -13,18 +13,18 @@ use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
 use Stringable;
+use WizDevelop\PhpValueObject\Collection\ArrayList;
 use WizDevelop\PhpValueObject\Collection\Exception\CollectionNotFoundException;
 use WizDevelop\PhpValueObject\Collection\Exception\MultipleCollectionsFoundException;
-use WizDevelop\PhpValueObject\Collection\ListCollection;
-use WizDevelop\PhpValueObject\Collection\MapCollection;
+use WizDevelop\PhpValueObject\Collection\Map;
 use WizDevelop\PhpValueObject\Collection\Pair;
 use WizDevelop\PhpValueObject\Number\DecimalValue;
 use WizDevelop\PhpValueObject\Number\IntegerValue;
 use WizDevelop\PhpValueObject\String\StringValue;
 
-#[TestDox('MapCollectionクラスのテスト')]
-#[CoversClass(MapCollection::class)]
-final class MapCollectionTest extends TestCase
+#[TestDox('Mapクラスのテスト')]
+#[CoversClass(Map::class)]
+final class MapTest extends TestCase
 {
     /**
      * @return array<string, array{array<mixed>}>
@@ -103,9 +103,9 @@ final class MapCollectionTest extends TestCase
     #[DataProvider('様々な要素を持つPairの配列を提供')]
     public function from静的メソッドでインスタンスが作成できる(array $pairs): void
     {
-        $collection = MapCollection::from(...$pairs);
+        $collection = Map::from(...$pairs);
 
-        $this->assertInstanceOf(MapCollection::class, $collection);
+        $this->assertInstanceOf(Map::class, $collection);
 
         // toArray()で得られる配列は、キーと値のマッピングになっている
         $expected = [];
@@ -123,9 +123,9 @@ final class MapCollectionTest extends TestCase
     #[DataProvider('独自クラスを含むPairの配列を提供')]
     public function 独自クラスを含むPairのコレクションが作成できる(array $pairs): void
     {
-        $collection = MapCollection::from(...$pairs);
+        $collection = Map::from(...$pairs);
 
-        $this->assertInstanceOf(MapCollection::class, $collection);
+        $this->assertInstanceOf(Map::class, $collection);
 
         $collection->toArray();
 
@@ -147,9 +147,9 @@ final class MapCollectionTest extends TestCase
     #[Test]
     public function empty静的メソッドで空のコレクションが作成できる(): void
     {
-        $collection = MapCollection::empty();
+        $collection = Map::empty();
 
-        $this->assertInstanceOf(MapCollection::class, $collection);
+        $this->assertInstanceOf(Map::class, $collection);
         $this->assertEmpty($collection->toArray());
         $this->assertEquals(0, $collection->count());
     }
@@ -159,7 +159,7 @@ final class MapCollectionTest extends TestCase
     {
         // 連想配列から作成
         $array = ['a' => 1, 'b' => 2, 'c' => 3];
-        $collection1 = MapCollection::make($array);
+        $collection1 = Map::make($array);
         $this->assertEquals($array, $collection1->toArray());
 
         // ジェネレーターから作成
@@ -168,19 +168,19 @@ final class MapCollectionTest extends TestCase
             yield 'y' => 20;
             yield 'z' => 30;
         })();
-        $collection2 = MapCollection::make($generator);
+        $collection2 = Map::make($generator);
         $this->assertEquals(['x' => 10, 'y' => 20, 'z' => 30], $collection2->toArray());
 
-        // 別のMapCollectionから作成
-        $original = MapCollection::make(['p' => 100, 'q' => 200]);
-        $collection3 = MapCollection::make($original);
+        // 別のMapから作成
+        $original = Map::make(['p' => 100, 'q' => 200]);
+        $collection3 = Map::make($original);
         $this->assertEquals(['p' => 100, 'q' => 200], $collection3->toArray());
     }
 
     #[Test]
     public function put関数でキーと値を追加したコレクションが取得できる(): void
     {
-        $collection = MapCollection::make(['a' => 1, 'b' => 2]);
+        $collection = Map::make(['a' => 1, 'b' => 2]);
 
         $newCollection = $collection->put('c', 3);
         $this->assertEquals(['a' => 1, 'b' => 2, 'c' => 3], $newCollection->toArray());
@@ -196,7 +196,7 @@ final class MapCollectionTest extends TestCase
     #[Test]
     public function putAll関数で複数のキーと値を追加したコレクションが取得できる(): void
     {
-        $collection = MapCollection::make(['a' => 1, 'b' => 2]);
+        $collection = Map::make(['a' => 1, 'b' => 2]);
 
         $newCollection = $collection->putAll(['c' => 3, 'd' => 4]);
         $this->assertEquals(['a' => 1, 'b' => 2, 'c' => 3, 'd' => 4], $newCollection->toArray());
@@ -212,7 +212,7 @@ final class MapCollectionTest extends TestCase
     #[Test]
     public function get関数でキーに対応する値が取得できる(): void
     {
-        $collection = MapCollection::make(['a' => 1, 'b' => 2, 'c' => 3]);
+        $collection = Map::make(['a' => 1, 'b' => 2, 'c' => 3]);
 
         $this->assertTrue($collection->get('a')->isSome());
         $this->assertEquals(1, $collection->get('a')->unwrap());
@@ -229,7 +229,7 @@ final class MapCollectionTest extends TestCase
     #[Test]
     public function has関数でキーの存在確認ができる(): void
     {
-        $collection = MapCollection::make(['a' => 1, 'b' => 2]);
+        $collection = Map::make(['a' => 1, 'b' => 2]);
 
         $this->assertTrue($collection->has('a'));
         $this->assertTrue($collection->has('b'));
@@ -237,7 +237,7 @@ final class MapCollectionTest extends TestCase
 
         // ValueObjectのキー
         $keyObj = StringValue::from('test');
-        $collection2 = MapCollection::from(Pair::of($keyObj, 'value'));
+        $collection2 = Map::from(Pair::of($keyObj, 'value'));
         $this->assertTrue($collection2->has($keyObj));
         $this->assertTrue($collection2->has(StringValue::from('test'))); // 同じ値の別インスタンス
         $this->assertFalse($collection2->has(StringValue::from('other')));
@@ -246,7 +246,7 @@ final class MapCollectionTest extends TestCase
     #[Test]
     public function first関数で先頭のPairが取得できる(): void
     {
-        $collection = MapCollection::make(['a' => 1, 'b' => 2, 'c' => 3]);
+        $collection = Map::make(['a' => 1, 'b' => 2, 'c' => 3]);
 
         $firstOption = $collection->first();
         $this->assertTrue($firstOption->isSome());
@@ -268,14 +268,14 @@ final class MapCollectionTest extends TestCase
         $this->assertEquals('default', $defaultOption->unwrap());
 
         // 空のコレクション
-        $emptyCollection = MapCollection::empty();
+        $emptyCollection = Map::empty();
         $this->assertTrue($emptyCollection->first()->isNone());
     }
 
     #[Test]
     public function firstOrFail関数で先頭のPairが取得できる(): void
     {
-        $collection = MapCollection::make(['a' => 1, 'b' => 2, 'c' => 3]);
+        $collection = Map::make(['a' => 1, 'b' => 2, 'c' => 3]);
 
         $firstPair = $collection->firstOrFail();
         $this->assertInstanceOf(Pair::class, $firstPair);
@@ -293,14 +293,14 @@ final class MapCollectionTest extends TestCase
     {
         $this->expectException(CollectionNotFoundException::class);
 
-        $emptyCollection = MapCollection::empty();
+        $emptyCollection = Map::empty();
         $emptyCollection->firstOrFail();
     }
 
     #[Test]
     public function last関数で末尾のPairが取得できる(): void
     {
-        $collection = MapCollection::make(['a' => 1, 'b' => 2, 'c' => 3]);
+        $collection = Map::make(['a' => 1, 'b' => 2, 'c' => 3]);
 
         $lastOption = $collection->last();
         $this->assertTrue($lastOption->isSome());
@@ -322,14 +322,14 @@ final class MapCollectionTest extends TestCase
         $this->assertEquals('default', $defaultOption->unwrap());
 
         // 空のコレクション
-        $emptyCollection = MapCollection::empty();
+        $emptyCollection = Map::empty();
         $this->assertTrue($emptyCollection->last()->isNone());
     }
 
     #[Test]
     public function lastOrFail関数で末尾のPairが取得できる(): void
     {
-        $collection = MapCollection::make(['a' => 1, 'b' => 2, 'c' => 3]);
+        $collection = Map::make(['a' => 1, 'b' => 2, 'c' => 3]);
 
         $lastPair = $collection->lastOrFail();
         $this->assertInstanceOf(Pair::class, $lastPair);
@@ -347,14 +347,14 @@ final class MapCollectionTest extends TestCase
     {
         $this->expectException(CollectionNotFoundException::class);
 
-        $emptyCollection = MapCollection::empty();
+        $emptyCollection = Map::empty();
         $emptyCollection->lastOrFail();
     }
 
     #[Test]
     public function sole関数で条件に合うPairが1つだけ存在する場合にそのPairが取得できる(): void
     {
-        $collection = MapCollection::make(['a' => 1, 'b' => 2, 'c' => 3]);
+        $collection = Map::make(['a' => 1, 'b' => 2, 'c' => 3]);
 
         $pair = $collection->sole(static fn ($value) => $value === 2);
         $this->assertInstanceOf(Pair::class, $pair);
@@ -367,7 +367,7 @@ final class MapCollectionTest extends TestCase
     {
         $this->expectException(CollectionNotFoundException::class);
 
-        $collection = MapCollection::make(['a' => 1, 'b' => 2, 'c' => 3]);
+        $collection = Map::make(['a' => 1, 'b' => 2, 'c' => 3]);
         $collection->sole(static fn ($value) => $value > 10);
     }
 
@@ -376,14 +376,14 @@ final class MapCollectionTest extends TestCase
     {
         $this->expectException(MultipleCollectionsFoundException::class);
 
-        $collection = MapCollection::make(['a' => 1, 'b' => 2, 'c' => 3]);
+        $collection = Map::make(['a' => 1, 'b' => 2, 'c' => 3]);
         $collection->sole(static fn ($value) => $value > 1);
     }
 
     #[Test]
     public function slice関数で部分コレクションが取得できる(): void
     {
-        $collection = MapCollection::make(['a' => 1, 'b' => 2, 'c' => 3, 'd' => 4, 'e' => 5]);
+        $collection = Map::make(['a' => 1, 'b' => 2, 'c' => 3, 'd' => 4, 'e' => 5]);
 
         // インデックス0から2要素
         $slice1 = $collection->slice(0, 2);
@@ -401,7 +401,7 @@ final class MapCollectionTest extends TestCase
     #[Test]
     public function reverse関数で要素が逆順になったコレクションが取得できる(): void
     {
-        $collection = MapCollection::make(['a' => 1, 'b' => 2, 'c' => 3]);
+        $collection = Map::make(['a' => 1, 'b' => 2, 'c' => 3]);
         $reversed = $collection->reverse();
 
         // キーと値のマッピングは保持されるが、要素の並び順が逆になる
@@ -414,7 +414,7 @@ final class MapCollectionTest extends TestCase
     #[Test]
     public function ArrayAccessインターフェースが実装されている(): void
     {
-        $collection = MapCollection::make(['a' => 1, 'b' => 2, 'c' => 3]);
+        $collection = Map::make(['a' => 1, 'b' => 2, 'c' => 3]);
 
         // offsetExists
         $this->assertTrue(isset($collection['a']));
@@ -434,7 +434,7 @@ final class MapCollectionTest extends TestCase
     {
         $this->expectException(BadMethodCallException::class);
 
-        $collection = MapCollection::make(['a' => 1]);
+        $collection = Map::make(['a' => 1]);
         $collection['b'] = 2; // offsetSet
     }
 
@@ -443,21 +443,21 @@ final class MapCollectionTest extends TestCase
     {
         $this->expectException(BadMethodCallException::class);
 
-        $collection = MapCollection::make(['a' => 1]);
+        $collection = Map::make(['a' => 1]);
         unset($collection['a']); // offsetUnset
     }
 
     #[Test]
     public function merge関数で別のコレクションと結合したコレクションが取得できる(): void
     {
-        $collection1 = MapCollection::make(['a' => 1, 'b' => 2]);
-        $collection2 = MapCollection::make(['c' => 3, 'd' => 4]);
+        $collection1 = Map::make(['a' => 1, 'b' => 2]);
+        $collection2 = Map::make(['c' => 3, 'd' => 4]);
 
         $mergedCollection = $collection1->merge($collection2);
         $this->assertEquals(['a' => 1, 'b' => 2, 'c' => 3, 'd' => 4], $mergedCollection->toArray());
 
         // キーが重複する場合は後から結合するコレクションの値で上書き
-        $collection3 = MapCollection::make(['a' => 10, 'e' => 5]);
+        $collection3 = Map::make(['a' => 10, 'e' => 5]);
         $overwrittenCollection = $collection1->merge($collection3);
         $this->assertEquals(['a' => 10, 'b' => 2, 'e' => 5], $overwrittenCollection->toArray());
 
@@ -468,7 +468,7 @@ final class MapCollectionTest extends TestCase
     #[Test]
     public function map関数で各値を変換したコレクションが取得できる(): void
     {
-        $collection = MapCollection::make(['a' => 1, 'b' => 2, 'c' => 3]);
+        $collection = Map::make(['a' => 1, 'b' => 2, 'c' => 3]);
 
         $mappedCollection = $collection->map(static fn ($value, $key) => $value * 2);
         $this->assertEquals(['a' => 2, 'b' => 4, 'c' => 6], $mappedCollection->toArray());
@@ -484,19 +484,19 @@ final class MapCollectionTest extends TestCase
     #[Test]
     public function mapStrict関数で型情報を保持したまま各値を変換できる(): void
     {
-        $collection = MapCollection::make(['a' => 1, 'b' => 2, 'c' => 3]);
+        $collection = Map::make(['a' => 1, 'b' => 2, 'c' => 3]);
 
         $mappedCollection = $collection->mapStrict(static fn ($value, $key) => $value * 2);
         $this->assertEquals(['a' => 2, 'b' => 4, 'c' => 6], $mappedCollection->toArray());
 
         // 同じ型のインスタンスである
-        $this->assertInstanceOf(MapCollection::class, $mappedCollection);
+        $this->assertInstanceOf(Map::class, $mappedCollection);
     }
 
     #[Test]
     public function filter関数で条件に合う要素のみのコレクションが取得できる(): void
     {
-        $collection = MapCollection::make(['a' => 1, 'b' => 2, 'c' => 3, 'd' => 4, 'e' => 5]);
+        $collection = Map::make(['a' => 1, 'b' => 2, 'c' => 3, 'd' => 4, 'e' => 5]);
 
         $filteredCollection = $collection->filter(static fn ($value) => $value % 2 === 0);
         $this->assertEquals(['b' => 2, 'd' => 4], $filteredCollection->toArray());
@@ -512,7 +512,7 @@ final class MapCollectionTest extends TestCase
     #[Test]
     public function reject関数で条件に合わない要素のみのコレクションが取得できる(): void
     {
-        $collection = MapCollection::make(['a' => 1, 'b' => 2, 'c' => 3, 'd' => 4, 'e' => 5]);
+        $collection = Map::make(['a' => 1, 'b' => 2, 'c' => 3, 'd' => 4, 'e' => 5]);
 
         $rejectedCollection = $collection->reject(static fn ($value) => $value % 2 === 0);
         $this->assertEquals(['a' => 1, 'c' => 3, 'e' => 5], $rejectedCollection->toArray());
@@ -528,7 +528,7 @@ final class MapCollectionTest extends TestCase
     #[Test]
     public function reduce関数で要素を集約できる(): void
     {
-        $collection = MapCollection::make(['a' => 1, 'b' => 2, 'c' => 3, 'd' => 4, 'e' => 5]);
+        $collection = Map::make(['a' => 1, 'b' => 2, 'c' => 3, 'd' => 4, 'e' => 5]);
 
         $sum = $collection->reduce(static fn ($carry, $value) => $carry + $value, 0);
         $this->assertEquals(15, $sum);
@@ -541,7 +541,7 @@ final class MapCollectionTest extends TestCase
     #[Test]
     public function sort関数で要素をソートしたコレクションが取得できる(): void
     {
-        $collection = MapCollection::make(['c' => 3, 'a' => 1, 'e' => 5, 'b' => 2, 'd' => 4]);
+        $collection = Map::make(['c' => 3, 'a' => 1, 'e' => 5, 'b' => 2, 'd' => 4]);
 
         // デフォルトソート（値で昇順）
         $sortedCollection = $collection->sort();
@@ -556,29 +556,29 @@ final class MapCollectionTest extends TestCase
     }
 
     #[Test]
-    public function values関数で値だけを取り出したListCollectionが取得できる(): void
+    public function values関数で値だけを取り出したArrayListが取得できる(): void
     {
-        $collection = MapCollection::make(['a' => 1, 'b' => 2, 'c' => 3]);
+        $collection = Map::make(['a' => 1, 'b' => 2, 'c' => 3]);
 
         $values = $collection->values();
-        $this->assertInstanceOf(ListCollection::class, $values);
+        $this->assertInstanceOf(ArrayList::class, $values);
         $this->assertEquals([1, 2, 3], $values->toArray());
     }
 
     #[Test]
-    public function keys関数でキーだけを取り出したListCollectionが取得できる(): void
+    public function keys関数でキーだけを取り出したArrayListが取得できる(): void
     {
-        $collection = MapCollection::make(['a' => 1, 'b' => 2, 'c' => 3]);
+        $collection = Map::make(['a' => 1, 'b' => 2, 'c' => 3]);
 
         $keys = $collection->keys();
-        $this->assertInstanceOf(ListCollection::class, $keys);
+        $this->assertInstanceOf(ArrayList::class, $keys);
         $this->assertEquals(['a', 'b', 'c'], $keys->toArray());
     }
 
     #[Test]
     public function remove関数で指定したキーを削除したコレクションが取得できる(): void
     {
-        $collection = MapCollection::make(['a' => 1, 'b' => 2, 'c' => 3]);
+        $collection = Map::make(['a' => 1, 'b' => 2, 'c' => 3]);
 
         $removedCollection = $collection->remove('b');
         $this->assertEquals(['a' => 1, 'c' => 3], $removedCollection->toArray());

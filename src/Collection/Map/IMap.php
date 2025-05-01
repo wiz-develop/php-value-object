@@ -6,20 +6,20 @@ namespace WizDevelop\PhpValueObject\Collection\Map;
 
 use Closure;
 use WizDevelop\PhpMonad\Option;
+use WizDevelop\PhpValueObject\Collection\ArrayList;
 use WizDevelop\PhpValueObject\Collection\Base\ICollection;
 use WizDevelop\PhpValueObject\Collection\Exception\CollectionNotFoundException;
 use WizDevelop\PhpValueObject\Collection\Exception\MultipleCollectionsFoundException;
-use WizDevelop\PhpValueObject\Collection\ListCollection;
 use WizDevelop\PhpValueObject\Collection\Pair;
 
 /**
  * マップコレクション インターフェース
  * @template TKey
  * @template TValue
- * @uses WizDevelop\PhpValueObject\Collection\MapCollection
+ * @uses WizDevelop\PhpValueObject\Collection\Map
  * @extends ICollection<TKey,TValue>
  */
-interface IMapCollection extends ICollection
+interface IMap extends ICollection
 {
     /**
      * Create a new collection instance if the value isn't one already.
@@ -129,8 +129,8 @@ interface IMapCollection extends ICollection
      * @template TKey2
      * @template TValue2
      *
-     * @param  IMapCollection<TKey2,TValue2>             $other
-     * @return IMapCollection<TKey|TKey2,TValue|TValue2>
+     * @param  IMap<TKey2,TValue2>             $other
+     * @return IMap<TKey|TKey2,TValue|TValue2>
      */
     public function merge(self $other): self;
 
@@ -138,7 +138,7 @@ interface IMapCollection extends ICollection
      * @template TMapValue
      *
      * @param  Closure(TValue,TKey): TMapValue $closure
-     * @return IMapCollection<TKey,TMapValue>
+     * @return IMap<TKey,TMapValue>
      */
     public function map(Closure $closure): self;
 
@@ -188,15 +188,15 @@ interface IMapCollection extends ICollection
     /**
      * Returns a List of all the associated values in the Map.
      *
-     * @return ListCollection<TValue>
+     * @return ArrayList<TValue>
      */
-    public function values(): ListCollection;
+    public function values(): ArrayList;
 
     /**
      * Returns a List of all the associated keys in the Map.
-     * @return ListCollection<TKey>
+     * @return ArrayList<TKey>
      */
-    public function keys(): ListCollection;
+    public function keys(): ArrayList;
 
     /**
      * 指定したキーを持つ要素を削除する

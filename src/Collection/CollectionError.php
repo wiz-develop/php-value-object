@@ -8,10 +8,10 @@ use WizDevelop\PhpValueObject\Collection\Base\CollectionBase;
 use WizDevelop\PhpValueObject\ValueObjectError;
 
 /**
- * CollectionValue エラー
+ * Collection エラー
  * @extends ValueObjectError<CollectionBase<mixed,mixed>>
  */
-final readonly class CollectionValueError extends ValueObjectError
+final readonly class CollectionError extends ValueObjectError
 {
     public static function invalid(
         string $message,

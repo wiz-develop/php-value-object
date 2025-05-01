@@ -18,8 +18,8 @@ use WizDevelop\PhpValueObject\Collection\Base\CollectionDefault;
 use WizDevelop\PhpValueObject\Collection\Base\CountableDefault;
 use WizDevelop\PhpValueObject\Collection\Exception\CollectionNotFoundException;
 use WizDevelop\PhpValueObject\Collection\Exception\MultipleCollectionsFoundException;
-use WizDevelop\PhpValueObject\Collection\Map\IMapCollection;
-use WizDevelop\PhpValueObject\Collection\Map\IMapCollectionFactory;
+use WizDevelop\PhpValueObject\Collection\Map\IMap;
+use WizDevelop\PhpValueObject\Collection\Map\IMapFactory;
 use WizDevelop\PhpValueObject\IValueObject;
 
 /**
@@ -27,11 +27,11 @@ use WizDevelop\PhpValueObject\IValueObject;
  * @template TKey
  * @template TValue
  * @extends CollectionBase<int, Pair<TKey,TValue>>
- * @implements IMapCollection<TKey,TValue>
- * @implements IMapCollectionFactory<TKey,TValue>
+ * @implements IMap<TKey,TValue>
+ * @implements IMapFactory<TKey,TValue>
  * @implements ArrayAccess<TKey,TValue>
  */
-readonly class MapCollection extends CollectionBase implements IMapCollection, IMapCollectionFactory, ArrayAccess
+readonly class Map extends CollectionBase implements IMap, IMapFactory, ArrayAccess
 {
     /** @use CollectionDefault<TKey,TValue> */
     use CollectionDefault;
@@ -77,7 +77,7 @@ readonly class MapCollection extends CollectionBase implements IMapCollection, I
     #[Override]
     final public function offsetSet($offset, $value): void
     {
-        throw new BadMethodCallException('MapCollection does not support offsetSet due to its immutable.');
+        throw new BadMethodCallException('Map does not support offsetSet due to its immutable.');
     }
 
     /**
@@ -92,7 +92,7 @@ readonly class MapCollection extends CollectionBase implements IMapCollection, I
     #[Override]
     final public function offsetUnset($offset): void
     {
-        throw new BadMethodCallException('MapCollection does not support offsetUnset due to its immutable.');
+        throw new BadMethodCallException('Map does not support offsetUnset due to its immutable.');
     }
 
     #[Override]
@@ -122,7 +122,7 @@ readonly class MapCollection extends CollectionBase implements IMapCollection, I
     }
 
     // -------------------------------------------------------------------------
-    // NOTE: IMapCollectionFactory
+    // NOTE: IMapFactory
     // -------------------------------------------------------------------------
     /**
      * @template TFromKey of TKey
@@ -162,7 +162,7 @@ readonly class MapCollection extends CollectionBase implements IMapCollection, I
     }
 
     // -------------------------------------------------------------------------
-    // NOTE: IMapCollection
+    // NOTE: IMap
     // -------------------------------------------------------------------------
     /**
      * @template TMakeKey of TKey
@@ -317,7 +317,7 @@ readonly class MapCollection extends CollectionBase implements IMapCollection, I
      * @return self<TKey|TKey2,TValue|TValue2>
      */
     #[Override]
-    final public function merge(IMapCollection $other): self
+    final public function merge(IMap $other): self
     {
         /** @var array<int,Pair<TKey|TKey2,TValue|TValue2>> */
         $elements = $this->elements;
@@ -429,7 +429,7 @@ readonly class MapCollection extends CollectionBase implements IMapCollection, I
     }
 
     #[Override]
-    final public function values(): ListCollection
+    final public function values(): ArrayList
     {
         /** @var array<int,TValue> */
         $values = [];
@@ -438,11 +438,11 @@ readonly class MapCollection extends CollectionBase implements IMapCollection, I
             $values[] = $pair->value;
         }
 
-        return ListCollection::make($values);
+        return ArrayList::make($values);
     }
 
     #[Override]
-    public function keys(): ListCollection
+    public function keys(): ArrayList
     {
         /** @var array<int,TKey> */
         $keys = [];
@@ -451,7 +451,7 @@ readonly class MapCollection extends CollectionBase implements IMapCollection, I
             $keys[] = $pair->key;
         }
 
-        return ListCollection::make($keys);
+        return ArrayList::make($keys);
     }
 
     #[Override]
