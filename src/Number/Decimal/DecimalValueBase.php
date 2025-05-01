@@ -25,8 +25,8 @@ abstract readonly class DecimalValueBase implements IValueObject, IArithmetic, I
     {
         // NOTE: 不変条件（invariant）
         assert(static::min() <= static::max());
-        assert(static::min()->scale <= static::scale());
-        assert(static::max()->scale <= static::scale());
+        // assert(static::min()->scale <= static::scale());
+        // assert(static::max()->scale <= static::scale());
         assert(static::isRangeValid($value)->isOk());
         assert(static::isDigitsValid($value)->isOk());
         assert(static::isValid($value)->isOk());

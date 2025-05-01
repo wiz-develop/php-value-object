@@ -146,7 +146,7 @@ interface IListCollection extends ICollection
 
     /**
      * コレクション配列から一意な項目のみを返します。
-     * @param  Closure(TValue,int): bool $closure
+     * @param  Closure(TValue,int): mixed $closure
      * @return static<TValue>
      */
     public function unique(?Closure $closure = null): static;

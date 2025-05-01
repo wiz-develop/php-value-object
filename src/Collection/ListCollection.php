@@ -140,7 +140,7 @@ readonly class ListCollection extends CollectionBase implements IListCollection,
     #[Override]
     final public function lastOrFail(?Closure $closure = null)
     {
-        $element = $this->last();
+        $element = $this->last($closure);
 
         if ($element !== null) {
             return $element;

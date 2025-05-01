@@ -4,392 +4,258 @@ declare(strict_types=1);
 
 namespace WizDevelop\PhpValueObject\Tests\Unit\Collection;
 
+use BcMath\Number;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
 use WizDevelop\PhpValueObject\Collection\Exception\CollectionNotFoundException;
 use WizDevelop\PhpValueObject\Collection\Exception\MultipleCollectionsFoundException;
 use WizDevelop\PhpValueObject\Collection\ListCollection;
+use WizDevelop\PhpValueObject\Number\DecimalValue;
+use WizDevelop\PhpValueObject\Number\IntegerValue;
+use WizDevelop\PhpValueObject\String\StringValue;
 
 #[TestDox('ListCollectionクラスのテスト')]
 #[CoversClass(ListCollection::class)]
 final class ListCollectionTest extends TestCase
 {
+    /**
+     * @return array<string, array{array<mixed>}>
+     */
+    public static function 様々な要素のコレクションを提供(): array
+    {
+        return [
+            'プリミティブ値の配列' => [[1, 2, 3, 4, 5]],
+            '文字列の配列' => [['apple', 'banana', 'cherry']],
+            '空の配列' => [[]],
+            '混合型の配列' => [[1, 'string', true, 3.14]],
+        ];
+    }
+
+    /**
+     * @return array<string, array{array<mixed>}>
+     */
+    public static function 独自クラスを含むコレクションを提供(): array
+    {
+        return [
+            'StringValue配列' => [[
+                StringValue::from('apple'),
+                StringValue::from('banana'),
+                StringValue::from('cherry'),
+            ]],
+            'IntegerValue配列' => [[
+                IntegerValue::from(10),
+                IntegerValue::from(20),
+                IntegerValue::from(30),
+            ]],
+            'DecimalValue配列' => [[
+                DecimalValue::from(new Number('1.5')),
+                DecimalValue::from(new Number('2.5')),
+                DecimalValue::from(new Number('3.5')),
+            ]],
+            '混合ValueObject配列' => [[
+                StringValue::from('test'),
+                IntegerValue::from(10),
+                DecimalValue::from(new Number('1.5')),
+            ]],
+        ];
+    }
+
+    /**
+     * @param array<int,mixed> $elements
+     */
     #[Test]
-    public function 空のコレクションが作成できる(): void
+    #[DataProvider('様々な要素のコレクションを提供')]
+    public function from静的メソッドでインスタンスが作成できる(array $elements): void
+    {
+        $collection = ListCollection::from($elements);
+
+        $this->assertInstanceOf(ListCollection::class, $collection);
+        $this->assertEquals($elements, $collection->toArray());
+    }
+
+    /**
+     * @param array<int,mixed> $elements
+     */
+    #[Test]
+    #[DataProvider('独自クラスを含むコレクションを提供')]
+    public function 独自クラスのコレクションが作成できる(array $elements): void
+    {
+        $collection = ListCollection::from($elements);
+
+        $this->assertInstanceOf(ListCollection::class, $collection);
+        $this->assertEquals($elements, $collection->toArray());
+    }
+
+    #[Test]
+    public function empty静的メソッドで空のコレクションが作成できる(): void
     {
         $collection = ListCollection::empty();
 
         $this->assertInstanceOf(ListCollection::class, $collection);
-        $this->assertCount(0, $collection);
-        $this->assertEquals([], $collection->toArray());
+        $this->assertEmpty($collection->toArray());
+        $this->assertEquals(0, $collection->count());
     }
 
     #[Test]
-    public function from静的メソッドでコレクションが作成できる(): void
+    public function make静的メソッドで様々なイテラブルからコレクションが作成できる(): void
     {
-        $elements = [1, 2, 3];
-        $collection = ListCollection::from($elements);
+        // 配列から作成
+        $array = [1, 2, 3];
+        $collection1 = ListCollection::make($array);
+        $this->assertEquals($array, $collection1->toArray());
 
-        $this->assertInstanceOf(ListCollection::class, $collection);
-        $this->assertCount(3, $collection);
-        $this->assertEquals($elements, $collection->toArray());
+        // Generatorから作成
+        $generator = (static function () {
+            yield 1;
+            yield 2;
+            yield 3;
+        })();
+        $collection2 = ListCollection::make($generator);
+        $this->assertEquals([1, 2, 3], $collection2->toArray());
+
+        // 別のListCollectionから作成
+        $original = ListCollection::from(['a', 'b', 'c']);
+        $collection3 = ListCollection::make($original);
+        $this->assertEquals(['a', 'b', 'c'], $collection3->toArray());
     }
 
     #[Test]
-    public function tryFrom静的メソッドでコレクションが作成できる(): void
+    public function first関数で先頭要素が取得できる(): void
     {
-        $elements = [1, 2, 3];
-        $result = ListCollection::tryFrom($elements);
+        $collection = ListCollection::from([10, 20, 30, 40]);
 
-        $this->assertTrue($result->isOk());
-        $collection = $result->unwrap();
-        $this->assertInstanceOf(ListCollection::class, $collection);
-        $this->assertEquals($elements, $collection->toArray());
+        $this->assertEquals(10, $collection->first());
+
+        // クロージャによるフィルタリング
+        $this->assertEquals(20, $collection->first(static fn ($value) => $value > 15));
+
+        // 条件に合致する要素がない場合のデフォルト値
+        $this->assertEquals('default', $collection->first(static fn ($value) => $value > 100, 'default'));
+
+        // 空のコレクション
+        $emptyCollection = ListCollection::empty();
+        $this->assertNull($emptyCollection->first());
     }
 
     #[Test]
-    public function make静的メソッドでコレクションが作成できる(): void
+    public function firstOrFail関数で先頭要素が取得できる(): void
     {
-        $elements = [1, 2, 3];
-        $collection = ListCollection::make($elements);
+        $collection = ListCollection::from([10, 20, 30]);
 
-        $this->assertInstanceOf(ListCollection::class, $collection);
-        $this->assertCount(3, $collection);
-        $this->assertEquals($elements, $collection->toArray());
+        $this->assertEquals(10, $collection->firstOrFail());
+        $this->assertEquals(20, $collection->firstOrFail(static fn ($value) => $value > 15));
     }
 
     #[Test]
-    public function iteratorが正しく値を返す(): void
+    public function firstOrFail関数で要素が見つからない場合は例外が発生する(): void
     {
-        $elements = [1, 2, 3];
-        $collection = ListCollection::from($elements);
-
-        $values = [];
-        foreach ($collection as $value) {
-            $values[] = $value;
-        }
-
-        $this->assertEquals($elements, $values);
-    }
-
-    #[Test]
-    public function firstメソッドで最初の要素を取得できる(): void
-    {
-        $elements = [1, 2, 3];
-        $collection = ListCollection::from($elements);
-
-        $this->assertEquals(1, $collection->first());
-    }
-
-    #[Test]
-    public function firstメソッドにクロージャを渡して条件に一致する最初の要素を取得できる(): void
-    {
-        $elements = [1, 2, 3, 4, 5];
-        $collection = ListCollection::from($elements);
-
-        $result = $collection->first(static fn ($value) => $value > 3);
-
-        $this->assertEquals(4, $result);
-    }
-
-    #[Test]
-    public function firstメソッドで条件に一致する要素がない場合はデフォルト値を返す(): void
-    {
-        $elements = [1, 2, 3];
-        $collection = ListCollection::from($elements);
-
-        $result = $collection->first(static fn ($value) => $value > 10, 'default');
-
-        $this->assertEquals('default', $result);
-    }
-
-    #[Test]
-    public function firstOrFailメソッドで最初の要素を取得できる(): void
-    {
-        $elements = [1, 2, 3];
-        $collection = ListCollection::from($elements);
-
-        $this->assertEquals(1, $collection->firstOrFail());
-    }
-
-    #[Test]
-    public function firstOrFailメソッドで要素がない場合は例外が発生する(): void
-    {
-        $collection = ListCollection::empty();
-
         $this->expectException(CollectionNotFoundException::class);
-        $collection->firstOrFail();
+
+        $emptyCollection = ListCollection::empty();
+        $emptyCollection->firstOrFail();
     }
 
     #[Test]
-    public function lastメソッドで最後の要素を取得できる(): void
+    public function last関数で末尾要素が取得できる(): void
     {
-        $elements = [1, 2, 3];
-        $collection = ListCollection::from($elements);
+        $collection = ListCollection::from([10, 20, 30, 40]);
 
-        $this->assertEquals(3, $collection->last());
+        $this->assertEquals(40, $collection->last());
+
+        // クロージャによるフィルタリング
+        $this->assertEquals(30, $collection->last(static fn ($value) => $value < 35));
+
+        // 条件に合致する要素がない場合のデフォルト値
+        $this->assertEquals('default', $collection->last(static fn ($value) => $value < 10, 'default'));
+
+        // 空のコレクション
+        $emptyCollection = ListCollection::empty();
+        $this->assertNull($emptyCollection->last());
     }
 
     #[Test]
-    public function lastメソッドにクロージャを渡して条件に一致する最後の要素を取得できる(): void
+    public function lastOrFail関数で末尾要素が取得できる(): void
     {
-        $elements = [1, 2, 3, 4, 5];
-        $collection = ListCollection::from($elements);
+        $collection = ListCollection::from([10, 20, 30]);
 
-        $result = $collection->last(static fn ($value) => $value < 4);
-
-        $this->assertEquals(3, $result);
+        $this->assertEquals(30, $collection->lastOrFail());
+        $this->assertEquals(20, $collection->lastOrFail(static fn ($value) => $value < 25));
     }
 
     #[Test]
-    public function lastOrFailメソッドで最後の要素を取得できる(): void
+    public function lastOrFail関数で要素が見つからない場合は例外が発生する(): void
     {
-        $elements = [1, 2, 3];
-        $collection = ListCollection::from($elements);
-
-        $this->assertEquals(3, $collection->lastOrFail());
-    }
-
-    #[Test]
-    public function lastOrFailメソッドで要素がない場合は例外が発生する(): void
-    {
-        $collection = ListCollection::empty();
-
         $this->expectException(CollectionNotFoundException::class);
-        $collection->lastOrFail();
+
+        $emptyCollection = ListCollection::empty();
+        $emptyCollection->lastOrFail();
     }
 
     #[Test]
-    public function reverseメソッドでコレクションを逆順にできる(): void
+    public function sole関数で条件に合う要素が1つだけ存在する場合にその要素が取得できる(): void
     {
-        $elements = [1, 2, 3];
-        $collection = ListCollection::from($elements);
+        $collection = ListCollection::from([10, 20, 30]);
 
+        $this->assertEquals(20, $collection->sole(static fn ($value) => $value === 20));
+    }
+
+    #[Test]
+    public function sole関数で条件に合う要素がない場合は例外が発生する(): void
+    {
+        $this->expectException(CollectionNotFoundException::class);
+
+        $collection = ListCollection::from([10, 20, 30]);
+        $collection->sole(static fn ($value) => $value > 100);
+    }
+
+    #[Test]
+    public function sole関数で条件に合う要素が複数ある場合は例外が発生する(): void
+    {
+        $this->expectException(MultipleCollectionsFoundException::class);
+
+        $collection = ListCollection::from([10, 20, 30]);
+        $collection->sole(static fn ($value) => $value > 15);
+    }
+
+    #[Test]
+    public function slice関数で部分コレクションが取得できる(): void
+    {
+        $collection = ListCollection::from([10, 20, 30, 40, 50]);
+
+        // 先頭から3要素
+        $slice1 = $collection->slice(0, 3);
+        $this->assertEquals([10, 20, 30], $slice1->toArray());
+
+        // インデックス2から2要素
+        $slice2 = $collection->slice(2, 2);
+        $this->assertEquals([30, 40], $slice2->toArray());
+
+        // 末尾要素
+        $slice3 = $collection->slice(4);
+        $this->assertEquals([50], $slice3->toArray());
+
+        // 範囲外のスライス
+        $slice4 = $collection->slice(5);
+        $this->assertEquals([], $slice4->toArray());
+    }
+
+    #[Test]
+    public function reverse関数で要素が逆順になったコレクションが取得できる(): void
+    {
+        $collection = ListCollection::from([10, 20, 30]);
         $reversed = $collection->reverse();
 
-        $this->assertEquals([3, 2, 1], $reversed->toArray());
+        $this->assertEquals([30, 20, 10], $reversed->toArray());
+
+        // 元のコレクションは変更されない（イミュータブル）
+        $this->assertEquals([10, 20, 30], $collection->toArray());
     }
 
     #[Test]
-    public function soleメソッドで唯一の要素を取得できる(): void
-    {
-        $collection = ListCollection::from([42]);
-
-        $this->assertEquals(42, $collection->sole());
-    }
-
-    #[Test]
-    public function soleメソッドで要素がない場合は例外が発生する(): void
-    {
-        $collection = ListCollection::empty();
-
-        $this->expectException(CollectionNotFoundException::class);
-        $collection->sole();
-    }
-
-    #[Test]
-    public function soleメソッドで複数の要素がある場合は例外が発生する(): void
-    {
-        $collection = ListCollection::from([1, 2]);
-
-        $this->expectException(MultipleCollectionsFoundException::class);
-        $collection->sole();
-    }
-
-    #[Test]
-    public function soleメソッドにクロージャを渡して条件に一致する唯一の要素を取得できる(): void
-    {
-        $collection = ListCollection::from([1, 2, 3, 4, 5]);
-
-        $result = $collection->sole(static fn ($value) => $value === 3);
-
-        $this->assertEquals(3, $result);
-    }
-
-    #[Test]
-    public function sliceメソッドでコレクションの一部を取得できる(): void
-    {
-        $elements = [1, 2, 3, 4, 5];
-        $collection = ListCollection::from($elements);
-
-        $sliced = $collection->slice(1, 3);
-
-        $this->assertEquals([2, 3, 4], $sliced->toArray());
-    }
-
-    #[Test]
-    public function pushメソッドで要素を追加できる(): void
-    {
-        $collection = ListCollection::from([1, 2]);
-
-        $newCollection = $collection->push(3, 4);
-
-        $this->assertEquals([1, 2, 3, 4], $newCollection->toArray());
-        // 元のコレクションは変更されていないことを確認
-        $this->assertEquals([1, 2], $collection->toArray());
-    }
-
-    #[Test]
-    public function concatメソッドで別のコレクションと連結できる(): void
-    {
-        $collection1 = ListCollection::from([1, 2]);
-        $collection2 = ListCollection::from([3, 4]);
-
-        $concatenated = $collection1->concat($collection2);
-
-        $this->assertEquals([1, 2, 3, 4], $concatenated->toArray());
-    }
-
-    #[Test]
-    public function mergeメソッドで別のコレクションとマージできる(): void
-    {
-        $collection1 = ListCollection::from([1, 2]);
-        $collection2 = ListCollection::from([3, 4]);
-
-        $merged = $collection1->merge($collection2);
-
-        $this->assertEquals([1, 2, 3, 4], $merged->toArray());
-    }
-
-    #[Test]
-    public function mapメソッドで要素を変換できる(): void
-    {
-        $collection = ListCollection::from([1, 2, 3]);
-
-        $mapped = $collection->map(static fn ($value) => $value * 2);
-
-        $this->assertEquals([2, 4, 6], $mapped->toArray());
-    }
-
-    #[Test]
-    public function mapStrictメソッドで要素を変換できる(): void
-    {
-        $collection = ListCollection::from([1, 2, 3]);
-
-        $mapped = $collection->mapStrict(static fn ($value) => $value * 2);
-
-        $this->assertEquals([2, 4, 6], $mapped->toArray());
-        // mapStrictはmapと異なり、元のコレクションと同じ型を返す
-        $this->assertInstanceOf($collection::class, $mapped);
-    }
-
-    #[Test]
-    public function filterメソッドで条件に一致する要素だけを取得できる(): void
-    {
-        $collection = ListCollection::from([1, 2, 3, 4, 5]);
-
-        $filtered = $collection->filter(static fn ($value) => $value % 2 === 0);
-
-        $this->assertEquals([1 => 2, 3 => 4], $filtered->toArray());
-    }
-
-    #[Test]
-    public function rejectメソッドで条件に一致しない要素だけを取得できる(): void
-    {
-        $collection = ListCollection::from([1, 2, 3, 4, 5]);
-
-        $rejected = $collection->reject(static fn ($value) => $value % 2 === 0);
-
-        $this->assertEquals([0 => 1, 2 => 3, 4 => 5], $rejected->toArray());
-    }
-
-    #[Test]
-    public function uniqueメソッドで重複のない要素を取得できる(): void
-    {
-        $collection = ListCollection::from([1, 2, 2, 3, 3, 3]);
-
-        $unique = $collection->unique();
-
-        $this->assertEquals([0 => 1, 1 => 2, 3 => 3], $unique->toArray());
-    }
-
-    #[Test]
-    public function filterメソッドで数値の条件でフィルタリングできる(): void
-    {
-        $collection = ListCollection::from([1, 2, 3, 4, 5]);
-
-        $filtered = $collection->filter(static function ($value) {
-            return $value % 2 === 0; // 偶数のみをフィルタリング
-        });
-
-        $this->assertCount(2, $filtered);
-        $this->assertEquals([1 => 2, 3 => 4], $filtered->toArray());
-    }
-
-    #[Test]
-    public function reduceメソッドで要素を集約できる(): void
-    {
-        $collection = ListCollection::from([1, 2, 3, 4]);
-
-        $sum = $collection->reduce(static fn ($carry, $value) => $carry + $value, 0);
-
-        $this->assertEquals(10, $sum);
-    }
-
-    #[Test]
-    public function containsメソッドで要素の存在確認ができる(): void
-    {
-        $collection = ListCollection::from([1, 2, 3]);
-
-        $this->assertTrue($collection->contains(2));
-        $this->assertFalse($collection->contains(4));
-    }
-
-    #[Test]
-    public function containsメソッドにクロージャを渡して条件に一致する要素の存在確認ができる(): void
-    {
-        $collection = ListCollection::from([1, 2, 3, 4, 5]);
-
-        $this->assertTrue($collection->contains(static fn ($value) => $value > 3));
-        $this->assertFalse($collection->contains(static fn ($value) => $value > 10));
-    }
-
-    #[Test]
-    public function everyメソッドですべての要素が条件を満たすか確認できる(): void
-    {
-        $collection1 = ListCollection::from([2, 4, 6, 8]);
-        $collection2 = ListCollection::from([2, 3, 4, 5]);
-
-        $this->assertTrue($collection1->every(static fn ($value) => $value % 2 === 0));
-        $this->assertFalse($collection2->every(static fn ($value) => $value % 2 === 0));
-    }
-
-    #[Test]
-    public function addメソッドで要素を追加できる(): void
-    {
-        $collection = ListCollection::from([1, 2]);
-
-        $newCollection = $collection->add(3);
-
-        $this->assertEquals([1, 2, 3], $newCollection->toArray());
-        // 元のコレクションは変更されていないことを確認
-        $this->assertEquals([1, 2], $collection->toArray());
-    }
-
-    #[Test]
-    public function sortメソッドで要素をソートできる(): void
-    {
-        $collection = ListCollection::from([3, 1, 4, 2]);
-
-        $sorted = $collection->sort();
-
-        $this->assertEquals([1, 2, 3, 4], array_values($sorted->toArray()));
-    }
-
-    #[Test]
-    public function sortメソッドにクロージャを渡してカスタムソートができる(): void
-    {
-        $collection = ListCollection::from([3, 1, 4, 2]);
-
-        $sorted = $collection->sort(static fn ($a, $b) => $b <=> $a); // 降順
-
-        $this->assertEquals([4, 3, 2, 1], array_values($sorted->toArray()));
-    }
-
-    #[Test]
-    public function ArrayAccessインターフェースが実装されている(): void
+    public function 配列アクセスができる(): void
     {
         $collection = ListCollection::from(['a', 'b', 'c']);
 
@@ -399,5 +265,185 @@ final class ListCollectionTest extends TestCase
 
         $this->assertTrue(isset($collection[0]));
         $this->assertFalse(isset($collection[3]));
+    }
+
+    #[Test]
+    public function push関数で要素を追加したコレクションが取得できる(): void
+    {
+        $collection = ListCollection::from([1, 2, 3]);
+
+        $newCollection = $collection->push(4, 5);
+        $this->assertEquals([1, 2, 3, 4, 5], $newCollection->toArray());
+
+        // 元のコレクションは変更されない（イミュータブル）
+        $this->assertEquals([1, 2, 3], $collection->toArray());
+    }
+
+    #[Test]
+    public function add関数で要素を追加したコレクションが取得できる(): void
+    {
+        $collection = ListCollection::from([1, 2, 3]);
+
+        $newCollection = $collection->add(4);
+        $this->assertEquals([1, 2, 3, 4], $newCollection->toArray());
+
+        // 元のコレクションは変更されない（イミュータブル）
+        $this->assertEquals([1, 2, 3], $collection->toArray());
+    }
+
+    #[Test]
+    public function concat関数で別のコレクションと連結したコレクションが取得できる(): void
+    {
+        $collection1 = ListCollection::from([1, 2, 3]);
+        $collection2 = ListCollection::from([4, 5, 6]);
+
+        $concatCollection = $collection1->concat($collection2);
+        $this->assertEquals([1, 2, 3, 4, 5, 6], $concatCollection->toArray());
+
+        // 元のコレクションは変更されない（イミュータブル）
+        $this->assertEquals([1, 2, 3], $collection1->toArray());
+        $this->assertEquals([4, 5, 6], $collection2->toArray());
+    }
+
+    #[Test]
+    public function merge関数で別のコレクションと結合したコレクションが取得できる(): void
+    {
+        $collection1 = ListCollection::from([1, 2, 3]);
+        $collection2 = ListCollection::from([4, 5, 6]);
+
+        $mergedCollection = $collection1->merge($collection2);
+        $this->assertEquals([1, 2, 3, 4, 5, 6], $mergedCollection->toArray());
+
+        // 元のコレクションは変更されない（イミュータブル）
+        $this->assertEquals([1, 2, 3], $collection1->toArray());
+        $this->assertEquals([4, 5, 6], $collection2->toArray());
+    }
+
+    #[Test]
+    public function map関数で各要素を変換したコレクションが取得できる(): void
+    {
+        $collection = ListCollection::from([1, 2, 3]);
+
+        $mappedCollection = $collection->map(static fn ($value) => $value * 2);
+        $this->assertEquals([2, 4, 6], $mappedCollection->toArray());
+
+        // 元のコレクションは変更されない（イミュータブル）
+        $this->assertEquals([1, 2, 3], $collection->toArray());
+    }
+
+    #[Test]
+    public function mapStrict関数で型情報を保持したまま各要素を変換できる(): void
+    {
+        $collection = ListCollection::from([1, 2, 3]);
+
+        $mappedCollection = $collection->mapStrict(static fn ($value) => $value * 2);
+        $this->assertEquals([2, 4, 6], $mappedCollection->toArray());
+
+        // 同じ型のインスタンスである
+        $this->assertInstanceOf(ListCollection::class, $mappedCollection);
+    }
+
+    #[Test]
+    public function filter関数で条件に合う要素のみのコレクションが取得できる(): void
+    {
+        $collection = ListCollection::from([1, 2, 3, 4, 5]);
+
+        $filteredCollection = $collection->filter(static fn ($value) => $value % 2 === 0);
+        $this->assertEquals([1 => 2, 3 => 4], $filteredCollection->toArray());
+
+        // 元のコレクションは変更されない（イミュータブル）
+        $this->assertEquals([1, 2, 3, 4, 5], $collection->toArray());
+    }
+
+    #[Test]
+    public function reject関数で条件に合わない要素のみのコレクションが取得できる(): void
+    {
+        $collection = ListCollection::from([1, 2, 3, 4, 5]);
+
+        $rejectedCollection = $collection->reject(static fn ($value) => $value % 2 === 0);
+        $this->assertEquals([0 => 1, 2 => 3, 4 => 5], $rejectedCollection->toArray());
+
+        // 元のコレクションは変更されない（イミュータブル）
+        $this->assertEquals([1, 2, 3, 4, 5], $collection->toArray());
+    }
+
+    #[Test]
+    public function reduce関数で要素を集約できる(): void
+    {
+        $collection = ListCollection::from([1, 2, 3, 4, 5]);
+
+        $sum = $collection->reduce(static fn ($carry, $value) => $carry + $value, 0);
+        $this->assertEquals(15, $sum);
+
+        $product = $collection->reduce(static fn ($carry, $value) => $carry * $value, 1);
+        $this->assertEquals(120, $product);
+
+        $concatenated = ListCollection::from(['a', 'b', 'c'])
+            ->reduce(static fn ($carry, $value) => $carry . $value, '');
+        $this->assertEquals('abc', $concatenated);
+    }
+
+    #[Test]
+    public function unique関数で重複のない要素のコレクションが取得できる(): void
+    {
+        $collection = ListCollection::from([1, 2, 2, 3, 3, 3, 4]);
+
+        $uniqueCollection = $collection->unique();
+        $this->assertEquals([0 => 1, 1 => 2, 3 => 3, 6 => 4], $uniqueCollection->toArray());
+
+        // カスタムな一意性の基準
+        $users = ListCollection::from([
+            ['id' => 1, 'name' => 'Alice'],
+            ['id' => 2, 'name' => 'Bob'],
+            ['id' => 1, 'name' => 'Alice (duplicate)'],
+            ['id' => 3, 'name' => 'Charlie'],
+        ]);
+
+        $uniqueUsers = $users->unique(static fn ($user) => $user['id']);
+        $this->assertCount(3, $uniqueUsers);
+    }
+
+    #[Test]
+    public function contains関数で特定の要素が含まれているか確認できる(): void
+    {
+        $collection = ListCollection::from([1, 2, 3, 4, 5]);
+
+        $this->assertTrue($collection->contains(3));
+        $this->assertFalse($collection->contains(6));
+
+        // クロージャを使った検索
+        $this->assertTrue($collection->contains(static fn ($value) => $value > 4));
+        $this->assertFalse($collection->contains(static fn ($value) => $value > 5));
+    }
+
+    #[Test]
+    public function every関数ですべての要素が条件を満たすか確認できる(): void
+    {
+        $collection = ListCollection::from([2, 4, 6, 8]);
+
+        $this->assertTrue($collection->every(static fn ($value) => $value % 2 === 0));
+        $this->assertFalse($collection->every(static fn ($value) => $value > 5));
+
+        // 値の比較
+        $allTwos = ListCollection::from([2, 2, 2, 2]);
+        $this->assertTrue($allTwos->every(2));
+        $this->assertFalse($collection->every(2));
+    }
+
+    #[Test]
+    public function sort関数で要素をソートしたコレクションが取得できる(): void
+    {
+        $collection = ListCollection::from([3, 1, 4, 2, 5]);
+
+        // デフォルトソート（昇順）
+        $sortedCollection = $collection->sort();
+        $this->assertEquals([1, 2, 3, 4, 5], array_values($sortedCollection->toArray()));
+
+        // カスタムソート（降順）
+        $customSortedCollection = $collection->sort(static fn ($a, $b) => $b <=> $a);
+        $this->assertEquals([5, 4, 3, 2, 1], array_values($customSortedCollection->toArray()));
+
+        // 元のコレクションは変更されない（イミュータブル）
+        $this->assertEquals([3, 1, 4, 2, 5], $collection->toArray());
     }
 }

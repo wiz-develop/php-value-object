@@ -10,6 +10,7 @@ use Closure;
 use Generator;
 use OutOfBoundsException;
 use Override;
+use Stringable;
 use WizDevelop\PhpMonad\Result;
 use WizDevelop\PhpValueObject\Collection\Base\CollectionBase;
 use WizDevelop\PhpValueObject\Collection\Base\CollectionDefault;
@@ -116,7 +117,13 @@ readonly class MapCollection extends CollectionBase implements IMapCollection, I
     {
         // @phpstan-ignore-next-line
         return array_reduce($this->elements, static function (array $carry, Pair $pair) {
-            $carry[$pair->key] = $pair->value;
+            $key = match(true) {
+                is_int($pair->key) => $pair->key,
+                is_string($pair->key) => $pair->key,
+                $pair->key instanceof Stringable => (string)$pair->key,
+                default => throw new BadMethodCallException('The key must be an integer or string or Stringable.'),
+            };
+            $carry[$key] = $pair->value;
 
             return $carry;
         }, []);
@@ -205,7 +212,7 @@ readonly class MapCollection extends CollectionBase implements IMapCollection, I
     #[Override]
     final public function lastOrFail(?Closure $closure = null): Pair
     {
-        $element = $this->last();
+        $element = $this->last($closure);
 
         if ($element !== null) {
             return $element;
