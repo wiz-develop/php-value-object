@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace WizDevelop\PhpValueObject\Examples\Number\Decimal;
 
-use BCMath\Number;
+use BcMath\Number;
 use Override;
 use WizDevelop\PhpValueObject\Number\PositiveDecimalValue;
 use WizDevelop\PhpValueObject\ValueObjectMeta;

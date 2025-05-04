@@ -4,5 +4,10 @@ parameters:
     level: max
     paths:
         - src
+        - tests
     typeAliases:
         NumberValueBase: '\WizDevelop\PhpValueObject\Number\Decimal\DecimalValueBase|\WizDevelop\PhpValueObject\Number\Integer\IntegerValueBase'
+    ignoreErrors:
+        -
+            # NOTE: PHP-CS-Fixer のルールと競合するため
+            identifier: staticMethod.dynamicCall

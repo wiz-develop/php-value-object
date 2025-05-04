@@ -163,11 +163,10 @@ interface IMap extends ICollection
     public function reject(Closure $closure): static;
 
     /**
-     * @template TReduceInitial
-     * @template TReduceReturnType
-     * @param  Closure(TReduceInitial|TReduceReturnType,TValue,TKey): TReduceReturnType $closure
-     * @param  TReduceInitial                                                           $initial
-     * @return TReduceReturnType
+     * @template TCarry
+     * @param  Closure(TCarry,TValue,TKey): TCarry $closure
+     * @param  TCarry                              $initial
+     * @return TCarry
      */
     public function reduce(Closure $closure, $initial = null);
 

@@ -190,7 +190,7 @@ readonly class ArrayList extends CollectionBase implements IArrayList, IArrayLis
     #[Override]
     final public function sole(?Closure $closure = null)
     {
-        $items = $closure ? $this->filter($closure) : new static($this->elements);
+        $items = $closure === null ? new static($this->elements) : $this->filter($closure);
         $count = $items->count();
 
         if ($count === 0) {
@@ -306,16 +306,14 @@ readonly class ArrayList extends CollectionBase implements IArrayList, IArrayLis
     }
 
     /**
-     * @template TReduceInitial
-     * @template TReduceReturnType
-     * @param  Closure(TReduceInitial|TReduceReturnType,TValue,int): TReduceReturnType $closure
-     * @param  TReduceInitial                                                          $initial
-     * @return TReduceReturnType
+     * @template TCarry
+     * @param  Closure(TCarry,TValue,int): TCarry $closure
+     * @param  TCarry                             $initial
+     * @return TCarry
      */
     #[Override]
     final public function reduce(Closure $closure, $initial = null)
     {
-        /** @var TReduceReturnType */
         $carry = $initial;
 
         foreach ($this->elements as $index => $value) {
@@ -367,7 +365,11 @@ readonly class ArrayList extends CollectionBase implements IArrayList, IArrayLis
     {
         $elements = $this->elements;
 
-        $closure ? uasort($elements, $closure) : asort($elements, SORT_REGULAR);
+        if ($closure === null) {
+            asort($elements, SORT_REGULAR);
+        } else {
+            uasort($elements, $closure);
+        }
 
         return new static($elements);
     }

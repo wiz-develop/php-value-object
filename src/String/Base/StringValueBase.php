@@ -94,8 +94,9 @@ abstract readonly class StringValueBase implements IValueObject, IStringValueFac
     final protected static function isRegexValid(string $value): Result
     {
         $regex = static::regex();
+        $matchResult = preg_match($regex, $value);
 
-        if ($regex !== self::REGEX && !preg_match($regex, $value)) {
+        if ($regex !== self::REGEX && $matchResult !== 1) {
             return Result\err(StringValueError::invalidRegex(
                 className: static::class,
                 regex: $regex,

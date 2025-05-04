@@ -13,7 +13,7 @@ use WizDevelop\PhpValueObject\ValueObjectDefault;
  * @template TKey
  * @template TValue
  */
-final readonly class Pair implements IValueObject
+readonly class Pair implements IValueObject
 {
     use ValueObjectDefault;
 
@@ -23,7 +23,7 @@ final readonly class Pair implements IValueObject
      * @param TKey   $key
      * @param TValue $value
      */
-    private function __construct(
+    final private function __construct(
         public mixed $key,
         public mixed $value
     ) {
@@ -37,7 +37,7 @@ final readonly class Pair implements IValueObject
      * @param  TOfValue               $value
      * @return self<TOfKey, TOfValue>
      */
-    public static function of(
+    final public static function of(
         mixed $key,
         mixed $value
     ): self {
@@ -49,7 +49,7 @@ final readonly class Pair implements IValueObject
      *
      * @return self<TKey, TValue>
      */
-    public function copy(): self
+    final public function copy(): self
     {
         return new self($this->key, $this->value);
     }
@@ -57,7 +57,7 @@ final readonly class Pair implements IValueObject
     /**
      * @return array{key: TKey, value: TValue}
      */
-    public function toArray(): array
+    final public function toArray(): array
     {
         return [
             'key'   => $this->key,
