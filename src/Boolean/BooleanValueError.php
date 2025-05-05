@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace WizDevelop\PhpValueObject\Boolean;
 
 use WizDevelop\PhpValueObject\Boolean\Base\BooleanValueBase;
-use WizDevelop\PhpValueObject\ValueObjectError;
+use WizDevelop\PhpValueObject\Error\ValueObjectError;
 
 /**
  * BooleanValue エラー

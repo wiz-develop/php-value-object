@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace WizDevelop\PhpValueObject\String;
 
+use WizDevelop\PhpValueObject\Error\ValueObjectError;
 use WizDevelop\PhpValueObject\String\Base\StringValueBase;
-use WizDevelop\PhpValueObject\ValueObjectError;
 
 /**
  * StringValue エラー

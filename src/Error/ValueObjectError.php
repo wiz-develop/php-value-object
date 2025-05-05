@@ -2,35 +2,19 @@
 
 declare(strict_types=1);
 
-namespace WizDevelop\PhpValueObject;
+namespace WizDevelop\PhpValueObject\Error;
 
 use ReflectionClass;
 use ReflectionException;
+use WizDevelop\PhpValueObject\IValueObject;
+use WizDevelop\PhpValueObject\ValueObjectMeta;
 
 /**
  * ドメイン層エラー 基底クラス
  * @template TValueObject of IValueObject
  */
-abstract readonly class ValueObjectError implements IValueObject
+abstract readonly class ValueObjectError extends ErrorValue
 {
-    use ValueObjectDefault;
-
-    protected function __construct(
-        private string $code,
-        private string $message,
-    ) {
-    }
-
-    public function getCode(): string
-    {
-        return $this->code;
-    }
-
-    public function getMessage(): string
-    {
-        return $this->message;
-    }
-
     /**
      * ValueObjectMetaから表示名を取得する
      * クラスにValueObjectMeta属性が設定されていない場合はクラス名を返す

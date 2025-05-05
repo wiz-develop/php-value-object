@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace WizDevelop\PhpValueObject\Number;
 
 use BcMath\Number;
-use WizDevelop\PhpValueObject\ValueObjectError;
+use WizDevelop\PhpValueObject\Error\ValueObjectError;
 
 /**
  * NumberValue エラー

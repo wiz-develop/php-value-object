@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace WizDevelop\PhpValueObject\Collection;
+namespace WizDevelop\PhpValueObject;
 
-use WizDevelop\PhpValueObject\IValueObject;
+use WizDevelop\PhpValueObject\Collection\ArrayList;
 
 /**
  * @template TValue of IValueObject
  * @extends ArrayList<TValue>
  */
-readonly class ValueObjectList extends ArrayList
+readonly class ValueObjects extends ArrayList
 {
     /**
      * 存在するかどうか

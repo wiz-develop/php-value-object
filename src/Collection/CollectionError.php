@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace WizDevelop\PhpValueObject\Collection;
 
 use WizDevelop\PhpValueObject\Collection\Base\CollectionBase;
-use WizDevelop\PhpValueObject\ValueObjectError;
+use WizDevelop\PhpValueObject\Error\ValueObjectError;
 
 /**
  * Collection エラー
