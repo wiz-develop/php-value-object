@@ -1,6 +1,6 @@
 {
     "name": "wiz-develop/php-value-object",
-    "description": "📦 The PHP Value Object library is a comprehensive implementation of the Value Object design pattern in PHP. It provides a collection of immutable, type-safe, and self-validating objects for representing domain values, enabling developers to create more robust and expressive domain models.",
+    "description": "📦 The PHP Value Object library offers immutable, type-safe, and self-validating objects to model domain values using the Value Object pattern.",
     "require": {
         "php": ">=8.4"
     },
