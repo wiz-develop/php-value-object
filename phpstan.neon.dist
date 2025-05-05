@@ -5,6 +5,7 @@ parameters:
     paths:
         - src
         - tests
+        - examples
     typeAliases:
         NumberValueBase: '\WizDevelop\PhpValueObject\Number\Decimal\DecimalValueBase|\WizDevelop\PhpValueObject\Number\Integer\IntegerValueBase'
     ignoreErrors:
