@@ -310,7 +310,10 @@ final class IntegerValueTest extends TestCase
         // tryXxx系のメソッドを使用
         $tryMethodName = 'try' . ucfirst($operation);
 
-        /** @var Result<IntegerValueBase,NumberValueError> */
+        /**
+         * @var Result<IntegerValueBase,NumberValueError>
+         * @phpstan-ignore-next-line
+         */
         $result = $integer1->{$tryMethodName}($integer2);
         $this->assertInstanceOf(Result::class, $result);
 
@@ -325,7 +328,10 @@ final class IntegerValueTest extends TestCase
         // 例外を投げる通常メソッドのテスト
         if ($shouldSucceed) {
             try {
-                /** @var IntegerValueBase */
+                /**
+                 * @var IntegerValueBase
+                 * @phpstan-ignore-next-line
+                 */
                 $methodResult = $integer1->{$operation}($integer2);
                 $this->assertInstanceOf(IntegerValueBase::class, $methodResult);
                 $this->assertEquals($expected, $methodResult->value);
@@ -336,9 +342,11 @@ final class IntegerValueTest extends TestCase
             // 除算で0の場合は特別処理
             if ($operation === 'div' && $value2 === 0) {
                 $this->expectException(DivisionByZeroError::class);
+                // @phpstan-ignore-next-line
                 $integer1->{$operation}($integer2);
             } else {
                 try {
+                    // @phpstan-ignore-next-line
                     $integer1->{$operation}($integer2);
                     $this->fail("演算 {$value1} {$operation} {$value2} は例外を投げるべき");
                 } catch (Throwable $e) {

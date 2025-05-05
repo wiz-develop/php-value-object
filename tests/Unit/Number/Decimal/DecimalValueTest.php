@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace WizDevelop\PhpValueObject\Tests\Unit\Number\Decimal;
 
-use BCMath\Number;
+use BcMath\Number;
 use DivisionByZeroError;
 use Error;
 use Exception;
@@ -325,7 +325,10 @@ final class DecimalValueTest extends TestCase
         // tryXxx系のメソッドを使用
         $tryMethodName = 'try' . ucfirst($operation);
 
-        /** @var Result<DecimalValueBase,NumberValueError> */
+        /**
+         * @var Result<DecimalValueBase,NumberValueError>
+         * @phpstan-ignore-next-line
+         */
         $result = $decimal1->{$tryMethodName}($decimal2);
         $this->assertInstanceOf(Result::class, $result);
 
@@ -340,7 +343,10 @@ final class DecimalValueTest extends TestCase
         // 例外を投げる通常メソッドのテスト
         if ($shouldSucceed) {
             try {
-                /** @var DecimalValueBase */
+                /**
+                 * @var DecimalValueBase
+                 * @phpstan-ignore-next-line
+                 */
                 $methodResult = $decimal1->{$operation}($decimal2);
                 $this->assertInstanceOf(DecimalValueBase::class, $methodResult);
                 $this->assertEquals($expected, (string)$methodResult->value);
@@ -351,9 +357,11 @@ final class DecimalValueTest extends TestCase
             // 除算で0の場合は特別処理
             if ($operation === 'div' && $value2 === '0') {
                 $this->expectException(DivisionByZeroError::class);
+                // @phpstan-ignore-next-line
                 $decimal1->{$operation}($decimal2);
             } else {
                 try {
+                    // @phpstan-ignore-next-line
                     $decimal1->{$operation}($decimal2);
                     $this->fail("演算 {$value1} {$operation} {$value2} は例外を投げるべき");
                 } catch (Throwable $e) {

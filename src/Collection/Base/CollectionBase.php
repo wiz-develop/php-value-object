@@ -38,7 +38,7 @@ abstract readonly class CollectionBase implements IValueObject
     #[Override]
     final public function __toString(): string
     {
-        return (string)$this->jsonSerialize();
+        return $this->jsonSerialize();
     }
 
     #[Override]

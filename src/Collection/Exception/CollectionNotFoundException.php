@@ -13,10 +13,10 @@ final class CollectionNotFoundException extends RuntimeException
 {
     public function __construct(?string $className = null, ?string $message = null)
     {
-        if ($message) {
-            parent::__construct($message);
-        } else {
+        if ($message === null) {
             parent::__construct("{$className} が見つかりませんでした。");
+        } else {
+            parent::__construct($message);
         }
     }
 }

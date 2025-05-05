@@ -13,13 +13,13 @@ use Override;
 trait ValueObjectDefault
 {
     #[Override]
-    public function equals(IValueObject $other): bool
+    final public function equals(IValueObject $other): bool
     {
         return (string)$this === (string)$other;
     }
 
     #[Override]
-    public function __toString(): string
+    final public function __toString(): string
     {
         return json_encode($this->jsonSerialize(), JSON_THROW_ON_ERROR);
     }
@@ -28,7 +28,7 @@ trait ValueObjectDefault
      * @return array<mixed>
      */
     #[Override]
-    public function jsonSerialize(): array
+    final public function jsonSerialize(): array
     {
         return get_object_vars($this);
     }

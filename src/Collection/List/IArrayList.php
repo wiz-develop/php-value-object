@@ -153,11 +153,10 @@ interface IArrayList extends ICollection
     public function unique(?Closure $closure = null): static;
 
     /**
-     * @template TReduceInitial
-     * @template TReduceReturnType
-     * @param  Closure(TReduceInitial|TReduceReturnType,TValue,int): TReduceReturnType $closure
-     * @param  TReduceInitial                                                          $initial
-     * @return TReduceReturnType
+     * @template TCarry
+     * @param  Closure(TCarry,TValue,int): TCarry $closure
+     * @param  TCarry                             $initial
+     * @return TCarry
      */
     public function reduce(Closure $closure, $initial = null);
 

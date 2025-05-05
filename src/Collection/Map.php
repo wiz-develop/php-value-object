@@ -248,7 +248,7 @@ readonly class Map extends CollectionBase implements IMap, IMapFactory, ArrayAcc
     #[Override]
     final public function sole(?Closure $closure = null): Pair
     {
-        $items = $closure ? $this->filter($closure) : new static($this->elements);
+        $items = $closure === null ? new static($this->elements) : $this->filter($closure);
         $count = $items->count();
 
         if ($count === 0) {
@@ -316,14 +316,15 @@ readonly class Map extends CollectionBase implements IMap, IMapFactory, ArrayAcc
      * @param  self<TKey2,TValue2>             $other
      * @return self<TKey|TKey2,TValue|TValue2>
      */
+    /**
+     * @phpstan-ignore-next-line
+     */
     #[Override]
     final public function merge(IMap $other): self
     {
-        /** @var array<int,Pair<TKey|TKey2,TValue|TValue2>> */
         $elements = $this->elements;
 
         foreach ($other as $key => $value) {
-            /** @var Pair<TKey|TKey2,TValue|TValue2> */
             $puttingPair = Pair::of($key, $value);
             self::putPair($elements, $puttingPair);
         }
@@ -389,16 +390,14 @@ readonly class Map extends CollectionBase implements IMap, IMapFactory, ArrayAcc
     }
 
     /**
-     * @template TReduceInitial
-     * @template TReduceReturnType
-     * @param  Closure(TReduceInitial|TReduceReturnType,TValue,TKey): TReduceReturnType $closure
-     * @param  TReduceInitial                                                           $initial
-     * @return TReduceReturnType
+     * @template TCarry
+     * @param  Closure(TCarry,TValue,TKey): TCarry $closure
+     * @param  TCarry                              $initial
+     * @return TCarry
      */
     #[Override]
     final public function reduce(Closure $closure, $initial = null)
     {
-        /** @var TReduceReturnType */
         $carry = $initial;
 
         foreach ($this->elements as $index => $pair) {
@@ -419,10 +418,10 @@ readonly class Map extends CollectionBase implements IMap, IMapFactory, ArrayAcc
     {
         $elements = $this->elements;
 
-        if ($closure) {
-            usort($elements, static fn ($a, $b) => $closure($a->value, $b->value));
-        } else {
+        if ($closure === null) {
             usort($elements, static fn ($a, $b) => $a->value <=> $b->value);
+        } else {
+            usort($elements, static fn ($a, $b) => $closure($a->value, $b->value));
         }
 
         return new static($elements);

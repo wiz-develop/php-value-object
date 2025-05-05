@@ -69,7 +69,8 @@ readonly class EmailAddress extends StringValueBase
      */
     final protected static function isValidEmail(string $value): Result
     {
-        if (!filter_var($value, FILTER_VALIDATE_EMAIL)) {
+        $filteredValue = filter_var($value, FILTER_VALIDATE_EMAIL);
+        if ($filteredValue === false) {
             return Result\err(StringValueError::invalidEmail(
                 className: self::class,
                 value: $value,
