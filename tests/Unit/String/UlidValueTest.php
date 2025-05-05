@@ -41,6 +41,94 @@ final class UlidValueTest extends TestCase
     }
 
     #[Test]
+    public function generateWithTimestamp関数で指定したタイムスタンプのULIDが生成できる(): void
+    {
+        // 特定のタイムスタンプ（2023年1月1日）
+        $timestamp = strtotime('2023-01-01') * 1000;
+
+        // 同じタイムスタンプで2つのULIDを生成
+        $ulid1 = TestUlidValue::generateWithTimestamp($timestamp);
+        $ulid2 = TestUlidValue::generateWithTimestamp($timestamp);
+
+        // 両方とも正しい形式か確認
+        $this->assertMatchesRegularExpression('/^[0-9A-HJKMNP-TV-Z]{26}$/', $ulid1->value);
+        $this->assertMatchesRegularExpression('/^[0-9A-HJKMNP-TV-Z]{26}$/', $ulid2->value);
+
+        // タイムスタンプ部分が同じであることを確認
+        $timestampPart1 = mb_substr($ulid1->value, 0, 10);
+        $timestampPart2 = mb_substr($ulid2->value, 0, 10);
+        $this->assertEquals($timestampPart1, $timestampPart2);
+
+        // ランダム部分が異なることを確認
+        $randomPart1 = mb_substr($ulid1->value, 10);
+        $randomPart2 = mb_substr($ulid2->value, 10);
+        $this->assertNotEquals($randomPart1, $randomPart2);
+
+        // 抽出したタイムスタンプが元の値に近いことを確認
+        // （完全に一致しないことがあるため、許容範囲内であることを確認）
+        $extractedTimestamp = $ulid1->getTimestamp();
+        $this->assertLessThan(1000, abs($extractedTimestamp - $timestamp)); // 1秒以内の誤差
+    }
+
+    #[Test]
+    public function generateMonotonic関数で単調増加するULIDが生成できる(): void
+    {
+        // 特定のタイムスタンプ（2023年1月1日）
+        $timestamp = strtotime('2023-01-01') * 1000;
+
+        // 最初のULIDを生成
+        $ulid1 = TestUlidValue::generateMonotonic($timestamp);
+
+        // 同じタイムスタンプを使用して、前回のランダム部分を渡して次のULIDを生成
+        $ulid2 = TestUlidValue::generateMonotonic($timestamp, $ulid1->getRandomBits());
+
+        // さらに次のULIDを生成
+        $ulid3 = TestUlidValue::generateMonotonic($timestamp, $ulid2->getRandomBits());
+
+        // すべて正しい形式か確認
+        $this->assertMatchesRegularExpression('/^[0-9A-HJKMNP-TV-Z]{26}$/', $ulid1->value);
+        $this->assertMatchesRegularExpression('/^[0-9A-HJKMNP-TV-Z]{26}$/', $ulid2->value);
+        $this->assertMatchesRegularExpression('/^[0-9A-HJKMNP-TV-Z]{26}$/', $ulid3->value);
+
+        // タイムスタンプ部分が同じであることを確認
+        $timestampPart1 = mb_substr($ulid1->value, 0, 10);
+        $timestampPart2 = mb_substr($ulid2->value, 0, 10);
+        $timestampPart3 = mb_substr($ulid3->value, 0, 10);
+        $this->assertEquals($timestampPart1, $timestampPart2);
+        $this->assertEquals($timestampPart2, $timestampPart3);
+
+        // ランダム部分が順序付けされていることを確認（単調増加）
+        $randomPart1 = mb_substr($ulid1->value, 10);
+        $randomPart2 = mb_substr($ulid2->value, 10);
+        $randomPart3 = mb_substr($ulid3->value, 10);
+
+        // 辞書順で比較（文字列としての順序比較）
+        $this->assertLessThan($randomPart2, $randomPart1);
+        $this->assertLessThan($randomPart3, $randomPart2);
+
+        // 全体としても単調増加の順序になっていることを確認
+        $this->assertLessThan($ulid2->value, $ulid1->value);
+        $this->assertLessThan($ulid3->value, $ulid2->value);
+    }
+
+    #[Test]
+    public function getRandomBits関数でランダムビット部分を取得できる(): void
+    {
+        // 既知のULID
+        $ulid = TestUlidValue::from('01H34J1XAQX0VBW6G6ZK22HC1K');
+
+        // ランダムビット部分（後半16文字）を取得
+        $randomBits = $ulid->getRandomBits();
+
+        // 長さが16文字であることを確認
+        $this->assertEquals(16, mb_strlen($randomBits));
+
+        // 元のULIDから抽出した場合と同じであることを確認
+        $expectedRandomBits = mb_substr($ulid->value, 10, 16);
+        $this->assertEquals($expectedRandomBits, $randomBits);
+    }
+
+    #[Test]
     public function generate関数で新しいULIDが生成できる(): void
     {
         $ulidValue = TestUlidValue::generate();

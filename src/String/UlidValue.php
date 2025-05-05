@@ -98,29 +98,53 @@ readonly class UlidValue extends StringValueBase
 
     /**
      * 新しいULIDを生成する
+     *
+     * パターン1: デフォルト
+     * タイムスタンプとクリプトセキュアな擬似乱数生成アルゴリズムによって生成されたランダムビットを組み合わせて生成
      */
     final public static function generate(): static
     {
-        // microtimeを使用して、現在のタイムスタンプをミリ秒単位で取得
-        $msec = (int)(microtime(true) * 1000);
+        return self::from(self::generateUlid(timestamp: null, previousRandomBits: null));
+    }
 
-        // タイムスタンプ部分（最初の10文字）を生成
-        $timestampBytes = '';
-        for ($i = 9; $i >= 0; --$i) {
-            $mod = $msec % 32;
-            $msec = ($msec - $mod) / 32;
-            $timestampBytes = self::encodeChar($mod) . $timestampBytes;
-        }
+    /**
+     * 指定されたタイムスタンプを使用してULIDを生成する
+     *
+     * パターン2: タイムシード
+     * シードタイムを指定して生成します。同じシードタイムを使い生成すると、
+     * 生成されたULIDのタイムスタンプコンポーネント(先頭8バイト)は常に同じになります。
+     * ただし、ULIDの残り8バイトはランダムビットとなるため、タイムスタンプコンポーネントが同じでも異なるULIDが生成されます。
+     *
+     * @param int $timestamp ミリ秒単位のタイムスタンプ
+     */
+    final public static function generateWithTimestamp(int $timestamp): static
+    {
+        return self::from(self::generateUlid(timestamp: $timestamp, previousRandomBits: null));
+    }
 
-        // ランダム部分（残りの16文字）を生成
-        $randomBytes = '';
-        for ($i = 0; $i < 16; ++$i) {
-            $randomBytes .= self::encodeChar(random_int(0, 31));
-        }
+    /**
+     * 単調増加するULIDを生成する
+     *
+     * パターン3: 単調増加
+     * 単調増加するULIDを生成します。同じシードタイムを指定することで、
+     * 最下位のランダムビットを1ずつ増分し厳密な順序付けがされたULIDを生成します。
+     *
+     * @param int    $timestamp          ミリ秒単位のタイムスタンプ
+     * @param string $previousRandomBits 前回生成したULIDのランダムビット部分
+     */
+    final public static function generateMonotonic(int $timestamp, ?string $previousRandomBits = null): static
+    {
+        return self::from(self::generateUlid(timestamp: $timestamp, previousRandomBits: $previousRandomBits));
+    }
 
-        $ulid = $timestampBytes . $randomBytes;
-
-        return self::from($ulid);
+    /**
+     * ULID文字列からランダムビット部分を抽出する
+     *
+     * @return string 16文字のランダムビット部分
+     */
+    final public function getRandomBits(): string
+    {
+        return mb_substr($this->value, 10, 16);
     }
 
     /**
@@ -184,5 +208,76 @@ readonly class UlidValue extends StringValueBase
         ];
 
         return $charMap[$char] ?? 0;
+    }
+
+    /**
+     * ランダムビット部分を1増加させる
+     *
+     * @param  string $randomBits 16文字のランダムビット
+     * @return string 増分されたランダムビット
+     */
+    private static function incrementRandomBits(string $randomBits): string
+    {
+        // 文字列を数値配列に変換
+        $values = [];
+        for ($i = 0; $i < 16; ++$i) {
+            $values[$i] = self::decodeChar($randomBits[$i]);
+        }
+
+        // 最下位ビットから繰り上がりを考慮して1増加
+        $carry = 1;
+        for ($i = 15; $i >= 0; --$i) {
+            $values[$i] += $carry;
+            if ($values[$i] < 32) {
+                $carry = 0;
+
+                break;
+            }
+            $values[$i] = 0;
+        }
+
+        // 数値配列を文字列に戻す
+        $result = '';
+        for ($i = 0; $i < 16; ++$i) {
+            $result .= self::encodeChar($values[$i]);
+        }
+
+        return $result;
+    }
+
+    /**
+     * ULIDを生成する（内部メソッド）
+     *
+     * @param  int|null    $timestamp          ミリ秒単位のタイムスタンプ（nullの場合は現在時刻を使用）
+     * @param  string|null $previousRandomBits 前回生成したULIDのランダムビット部分
+     * @return string      生成されたULID
+     */
+    private static function generateUlid(?int $timestamp, ?string $previousRandomBits): string
+    {
+        // タイムスタンプが指定されていない場合は現在時刻を使用
+        $msec = $timestamp ?? (int)(microtime(true) * 1000);
+
+        // タイムスタンプ部分（最初の10文字）を生成
+        $timestampBytes = '';
+        for ($i = 9; $i >= 0; --$i) {
+            $mod = $msec % 32;
+            $msec = ($msec - $mod) / 32;
+            $timestampBytes = self::encodeChar($mod) . $timestampBytes;
+        }
+
+        // ランダム部分（残りの16文字）を生成または増分する
+        $randomBytes = '';
+        if ($previousRandomBits !== null && mb_strlen($previousRandomBits) === 16) {
+            // 前回のランダムビットを1増加させる
+            $randomBytes = self::incrementRandomBits($previousRandomBits);
+        } else {
+            // 初回またはリセット時はランダムに生成
+            for ($i = 0; $i < 16; ++$i) {
+                $randomBytes .= self::encodeChar(random_int(0, 31));
+            }
+        }
+
+        return $timestampBytes . $randomBytes;
+
     }
 }
