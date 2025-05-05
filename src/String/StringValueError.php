@@ -72,4 +72,20 @@ final readonly class StringValueError extends ValueObjectError
             message: "{$displayName}は有効なメールアドレス形式である必要があります。(値:{$value})",
         );
     }
+
+    /**
+     * ULIDの形式が無効
+     * @param class-string<StringValueBase> $className
+     */
+    public static function invalidUlid(
+        string $className,
+        string $value,
+    ): static {
+        $displayName = self::getDisplayName($className);
+
+        return new static(
+            code: __METHOD__,
+            message: "{$displayName}は有効なULID形式である必要があります。(値:{$value})",
+        );
+    }
 }
