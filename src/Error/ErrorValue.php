@@ -14,7 +14,7 @@ readonly class ErrorValue implements IValueObject
 {
     use ValueObjectDefault;
 
-    private const string SEPARATOR = '||';
+    final public const string SEPARATOR = '||';
 
     protected function __construct(
         private string $code,
