@@ -7,7 +7,7 @@ namespace WizDevelop\PhpValueObject\Number\Decimal;
 use BcMath\Number;
 use WizDevelop\PhpMonad\Option;
 use WizDevelop\PhpMonad\Result;
-use WizDevelop\PhpValueObject\Number\NumberValueError;
+use WizDevelop\PhpValueObject\Error\ValueObjectError;
 
 /**
  * 少数の値オブジェクト ファクトリインターフェース
@@ -28,13 +28,13 @@ interface IDecimalValueFactory
 
     /**
      * 信頼できないプリミティブ値からインスタンスを生成する
-     * @return Result<static,NumberValueError>
+     * @return Result<static,ValueObjectError>
      */
     public static function tryFrom(Number $value): Result;
 
     /**
      * 信頼できないプリミティブ値からインスタンスを生成する（Null許容）
-     * @return Result<Option<static>,NumberValueError>
+     * @return Result<Option<static>,ValueObjectError>
      */
     public static function tryFromNullable(?Number $value): Result;
 }

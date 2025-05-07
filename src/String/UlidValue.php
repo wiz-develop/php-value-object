@@ -7,6 +7,7 @@ namespace WizDevelop\PhpValueObject\String;
 use DateTimeImmutable;
 use Override;
 use WizDevelop\PhpMonad\Result;
+use WizDevelop\PhpValueObject\Error\ValueObjectError;
 use WizDevelop\PhpValueObject\String\Base\StringValueBase;
 use WizDevelop\PhpValueObject\String\Base\StringValueFactory;
 use WizDevelop\PhpValueObject\ValueObjectMeta;
@@ -81,14 +82,14 @@ readonly class UlidValue extends StringValueBase
 
     /**
      * ULIDとして有効かどうか
-     * @return Result<bool,StringValueError>
+     * @return Result<bool,ValueObjectError>
      */
     final protected static function isValidUlid(string $value): Result
     {
         $pregMatchResult = preg_match(self::ULID_REGEX, $value);
         if ($pregMatchResult !== 1) {
-            return Result\err(StringValueError::invalidUlid(
-                className: self::class,
+            return Result\err(ValueObjectError::string()->invalidUlid(
+                className: static::class,
                 value: $value,
             ));
         }

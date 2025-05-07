@@ -2,26 +2,15 @@
 
 declare(strict_types=1);
 
-namespace WizDevelop\PhpValueObject\Collection;
+namespace WizDevelop\PhpValueObject\Error;
 
 use WizDevelop\PhpValueObject\Collection\Base\CollectionBase;
-use WizDevelop\PhpValueObject\Error\ValueObjectError;
 
 /**
- * Collection エラー
- * @extends ValueObjectError<CollectionBase<mixed,mixed>>
+ * CollectionValue エラー
  */
-final readonly class CollectionError extends ValueObjectError
+final readonly class CollectionValueError
 {
-    public static function invalid(
-        string $message,
-    ): static {
-        return new self(
-            code: __METHOD__,
-            message: $message,
-        );
-    }
-
     /**
      * 最低要素数が無効
      * @param class-string<CollectionBase<mixed,mixed>> $className
@@ -30,11 +19,11 @@ final readonly class CollectionError extends ValueObjectError
         string $className,
         int $min,
         int $count,
-    ): static {
-        $displayName = self::getDisplayName($className);
+    ): ValueObjectError {
+        $displayName = ValueObjectError::getDisplayName($className);
 
-        return new static(
-            code: __METHOD__,
+        return ValueObjectError::of(
+            code: 'value_object.collection.invalid_min_count',
             message: "{$displayName}は{$min}個以上である必要があります。(要素数:{$count})",
         );
     }
@@ -47,11 +36,11 @@ final readonly class CollectionError extends ValueObjectError
         string $className,
         int $max,
         int $count,
-    ): static {
-        $displayName = self::getDisplayName($className);
+    ): ValueObjectError {
+        $displayName = ValueObjectError::getDisplayName($className);
 
-        return new static(
-            code: __METHOD__,
+        return ValueObjectError::of(
+            code: 'value_object.collection.invalid_max_count',
             message: "{$displayName}は{$max}個以下である必要があります。(要素数:{$count})",
         );
     }
@@ -65,11 +54,11 @@ final readonly class CollectionError extends ValueObjectError
         int $min,
         int $max,
         int $count,
-    ): static {
-        $displayName = self::getDisplayName($className);
+    ): ValueObjectError {
+        $displayName = ValueObjectError::getDisplayName($className);
 
-        return new static(
-            code: __METHOD__,
+        return ValueObjectError::of(
+            code: 'value_object.collection.invalid_range',
             message: "{$displayName}は{$min}個以上、{$max}個以下である必要があります。(要素数:{$count})",
         );
     }

@@ -7,6 +7,7 @@ namespace WizDevelop\PhpValueObject\Number;
 use BcMath\Number;
 use Override;
 use WizDevelop\PhpMonad\Result;
+use WizDevelop\PhpValueObject\Error\ValueObjectError;
 use WizDevelop\PhpValueObject\Number\Decimal\DecimalValueBase;
 use WizDevelop\PhpValueObject\Number\Decimal\DecimalValueFactory;
 
@@ -56,7 +57,7 @@ readonly class PositiveDecimalValue extends DecimalValueBase
         $maxValue = static::max() < $max ? static::max() : $max;
 
         if ($value < $minValue || $value > $maxValue) {
-            return Result\err(NumberValueError::invalidRange(
+            return Result\err(ValueObjectError::number()->invalidRange(
                 className: static::class,
                 min: $minValue,
                 max: $maxValue,

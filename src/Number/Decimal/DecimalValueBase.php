@@ -7,8 +7,8 @@ namespace WizDevelop\PhpValueObject\Number\Decimal;
 use BcMath\Number;
 use Override;
 use WizDevelop\PhpMonad\Result;
+use WizDevelop\PhpValueObject\Error\ValueObjectError;
 use WizDevelop\PhpValueObject\IValueObject;
-use WizDevelop\PhpValueObject\Number\NumberValueError;
 
 /**
  * 少数の値オブジェクトの基底クラス
@@ -84,13 +84,13 @@ abstract readonly class DecimalValueBase implements IValueObject, IArithmetic, I
 
     /**
      * 有効な範囲かどうか
-     * @return Result<bool,NumberValueError>
+     * @return Result<bool,ValueObjectError>
      */
     abstract protected static function isRangeValid(Number $value): Result;
 
     /**
      * 有効な桁数かどうか
-     * @return Result<bool,NumberValueError>
+     * @return Result<bool,ValueObjectError>
      */
     final protected static function isDigitsValid(Number $value): Result
     {
@@ -99,7 +99,7 @@ abstract readonly class DecimalValueBase implements IValueObject, IArithmetic, I
         $didits = mb_strlen($ret2); // 文字列の長さが有効桁数
 
         if ($didits > static::precision()) {
-            return Result\err(NumberValueError::invalidDigits(
+            return Result\err(ValueObjectError::number()->invalidDigits(
                 className: static::class,
                 precision: static::precision(),
                 actualDigits: $didits,
@@ -113,7 +113,7 @@ abstract readonly class DecimalValueBase implements IValueObject, IArithmetic, I
     /**
      * 有効な値かどうか
      * NOTE: 実装クラスでのオーバーライド用メソッド
-     * @return Result<bool,NumberValueError>
+     * @return Result<bool,ValueObjectError>
      */
     protected static function isValid(Number $value): Result
     {

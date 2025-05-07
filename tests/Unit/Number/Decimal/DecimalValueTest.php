@@ -15,10 +15,10 @@ use PHPUnit\Framework\Attributes\TestDox;
 use ReflectionClass;
 use Throwable;
 use WizDevelop\PhpMonad\Result;
+use WizDevelop\PhpValueObject\Error\ValueObjectError;
 use WizDevelop\PhpValueObject\Examples\Number\Decimal\TestDecimalValue;
 use WizDevelop\PhpValueObject\Number\Decimal\DecimalValueBase;
 use WizDevelop\PhpValueObject\Number\DecimalValue;
-use WizDevelop\PhpValueObject\Number\NumberValueError;
 use WizDevelop\PhpValueObject\Tests\TestCase;
 
 /**
@@ -115,7 +115,7 @@ final class DecimalValueTest extends TestCase
     {
         $result = TestDecimalValue::tryFrom(new Number($invalidValue));
         $this->assertFalse($result->isOk());
-        $this->assertInstanceOf(NumberValueError::class, $result->unwrapErr());
+        $this->assertInstanceOf(ValueObjectError::class, $result->unwrapErr());
     }
 
     // ------------------------------------------
@@ -128,12 +128,12 @@ final class DecimalValueTest extends TestCase
         // 最小値未満
         $result1 = TestDecimalValue::tryFrom(new Number('-1001'));
         $this->assertFalse($result1->isOk());
-        $this->assertInstanceOf(NumberValueError::class, $result1->unwrapErr());
+        $this->assertInstanceOf(ValueObjectError::class, $result1->unwrapErr());
 
         // 最大値超過
         $result2 = TestDecimalValue::tryFrom(new Number('1001'));
         $this->assertFalse($result2->isOk());
-        $this->assertInstanceOf(NumberValueError::class, $result2->unwrapErr());
+        $this->assertInstanceOf(ValueObjectError::class, $result2->unwrapErr());
 
         // エラーメッセージに範囲情報が含まれているか確認
         $errorMessage = $result2->unwrapErr()->getMessage();
@@ -176,7 +176,7 @@ final class DecimalValueTest extends TestCase
         // 無効な値（範囲外）
         $result3 = TestDecimalValue::tryFrom(new Number('1001'));
         $this->assertFalse($result3->isOk());
-        $this->assertInstanceOf(NumberValueError::class, $result3->unwrapErr());
+        $this->assertInstanceOf(ValueObjectError::class, $result3->unwrapErr());
     }
 
     // ------------------------------------------
@@ -213,7 +213,7 @@ final class DecimalValueTest extends TestCase
         // 無効な非Null値の場合
         $result3 = TestDecimalValue::tryFromNullable(new Number('1001')); // 範囲外
         $this->assertFalse($result3->isOk());
-        $this->assertInstanceOf(NumberValueError::class, $result3->unwrapErr());
+        $this->assertInstanceOf(ValueObjectError::class, $result3->unwrapErr());
     }
 
     // ------------------------------------------
@@ -273,7 +273,7 @@ final class DecimalValueTest extends TestCase
         // tryDiv（例外を投げない）
         $result = $value->tryDiv($divisor);
         $this->assertFalse($result->isOk());
-        $this->assertInstanceOf(NumberValueError::class, $result->unwrapErr());
+        $this->assertInstanceOf(ValueObjectError::class, $result->unwrapErr());
 
         // div（例外を投げる）
         $this->expectException(DivisionByZeroError::class);
@@ -326,7 +326,7 @@ final class DecimalValueTest extends TestCase
         $tryMethodName = 'try' . ucfirst($operation);
 
         /**
-         * @var Result<DecimalValueBase,NumberValueError>
+         * @var Result<DecimalValueBase,ValueObjectError>
          * @phpstan-ignore-next-line
          */
         $result = $decimal1->{$tryMethodName}($decimal2);
@@ -337,7 +337,7 @@ final class DecimalValueTest extends TestCase
             $this->assertEquals($expected, (string)$result->unwrap()->value);
         } else {
             $this->assertFalse($result->isOk(), "演算 {$value1} {$operation} {$value2} は失敗するべき");
-            $this->assertInstanceOf(NumberValueError::class, $result->unwrapErr());
+            $this->assertInstanceOf(ValueObjectError::class, $result->unwrapErr());
         }
 
         // 例外を投げる通常メソッドのテスト
@@ -613,7 +613,7 @@ final class DecimalValueTest extends TestCase
 
         $result = TestDecimalValue::tryFrom(new Number($largeDigitValue));
         $this->assertFalse($result->isOk());
-        $this->assertInstanceOf(NumberValueError::class, $result->unwrapErr());
+        $this->assertInstanceOf(ValueObjectError::class, $result->unwrapErr());
 
         $errorMessage = $result->unwrapErr()->getMessage();
         $this->assertStringContainsString('桁数', $errorMessage, 'エラーメッセージには桁数に関する情報が含まれるべき');

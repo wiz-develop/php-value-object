@@ -6,8 +6,8 @@ namespace WizDevelop\PhpValueObject\String\Base;
 
 use Override;
 use WizDevelop\PhpMonad\Result;
+use WizDevelop\PhpValueObject\Error\ValueObjectError;
 use WizDevelop\PhpValueObject\IValueObject;
-use WizDevelop\PhpValueObject\String\StringValueError;
 
 use function assert;
 
@@ -67,7 +67,7 @@ abstract readonly class StringValueBase implements IValueObject, IStringValueFac
 
     /**
      * 有効な文字列長かどうか
-     * @return Result<bool,StringValueError>
+     * @return Result<bool,ValueObjectError>
      */
     final protected static function isLengthValid(string $value): Result
     {
@@ -76,7 +76,7 @@ abstract readonly class StringValueBase implements IValueObject, IStringValueFac
         $max_length = static::maxLength() < self::MAX_LENGTH ? static::maxLength() : self::MAX_LENGTH;
 
         if (!($value_length >= $min_length && $value_length <= $max_length)) {
-            return Result\err(StringValueError::invalidLength(
+            return Result\err(ValueObjectError::string()->invalidLength(
                 className: static::class,
                 min_length: $min_length,
                 max_length: $max_length,
@@ -89,7 +89,7 @@ abstract readonly class StringValueBase implements IValueObject, IStringValueFac
 
     /**
      * 有効な正規表現かどうか
-     * @return Result<bool,StringValueError>
+     * @return Result<bool,ValueObjectError>
      */
     final protected static function isRegexValid(string $value): Result
     {
@@ -97,7 +97,7 @@ abstract readonly class StringValueBase implements IValueObject, IStringValueFac
         $matchResult = preg_match($regex, $value);
 
         if ($regex !== self::REGEX && $matchResult !== 1) {
-            return Result\err(StringValueError::invalidRegex(
+            return Result\err(ValueObjectError::string()->invalidRegex(
                 className: static::class,
                 regex: $regex,
                 value: $value,
@@ -110,7 +110,7 @@ abstract readonly class StringValueBase implements IValueObject, IStringValueFac
     /**
      * 有効な値かどうか
      * NOTE: 実装クラスでのオーバーライド用メソッド
-     * @return Result<bool,StringValueError>
+     * @return Result<bool,ValueObjectError>
      */
     protected static function isValid(string $value): Result
     {

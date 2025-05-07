@@ -9,8 +9,8 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
+use WizDevelop\PhpValueObject\Error\ValueObjectError;
 use WizDevelop\PhpValueObject\String\EmailAddress;
-use WizDevelop\PhpValueObject\String\StringValueError;
 
 #[TestDox('EmailAddressクラスのテスト')]
 #[CoversClass(EmailAddress::class)]
@@ -76,7 +76,7 @@ final class EmailAddressTest extends TestCase
         $result = EmailAddress::tryFrom($invalidEmail);
 
         $this->assertFalse($result->isOk());
-        $this->assertInstanceOf(StringValueError::class, $result->unwrapErr());
+        $this->assertInstanceOf(ValueObjectError::class, $result->unwrapErr());
     }
 
     #[Test]

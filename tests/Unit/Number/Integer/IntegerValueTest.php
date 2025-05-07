@@ -15,10 +15,10 @@ use PHPUnit\Framework\Attributes\TestDox;
 use ReflectionClass;
 use Throwable;
 use WizDevelop\PhpMonad\Result;
+use WizDevelop\PhpValueObject\Error\ValueObjectError;
 use WizDevelop\PhpValueObject\Examples\Number\Integer\TestIntegerValue;
 use WizDevelop\PhpValueObject\Number\Integer\IntegerValueBase;
 use WizDevelop\PhpValueObject\Number\IntegerValue;
-use WizDevelop\PhpValueObject\Number\NumberValueError;
 use WizDevelop\PhpValueObject\Tests\TestCase;
 
 /**
@@ -112,7 +112,7 @@ final class IntegerValueTest extends TestCase
     {
         $result = TestIntegerValue::tryFrom($invalidValue);
         $this->assertFalse($result->isOk());
-        $this->assertInstanceOf(NumberValueError::class, $result->unwrapErr());
+        $this->assertInstanceOf(ValueObjectError::class, $result->unwrapErr());
     }
 
     // ------------------------------------------
@@ -125,12 +125,12 @@ final class IntegerValueTest extends TestCase
         // 最小値未満
         $result1 = TestIntegerValue::tryFrom(-1001);
         $this->assertFalse($result1->isOk());
-        $this->assertInstanceOf(NumberValueError::class, $result1->unwrapErr());
+        $this->assertInstanceOf(ValueObjectError::class, $result1->unwrapErr());
 
         // 最大値超過
         $result2 = TestIntegerValue::tryFrom(1001);
         $this->assertFalse($result2->isOk());
-        $this->assertInstanceOf(NumberValueError::class, $result2->unwrapErr());
+        $this->assertInstanceOf(ValueObjectError::class, $result2->unwrapErr());
 
         // エラーメッセージに範囲情報が含まれているか確認
         $errorMessage = $result2->unwrapErr()->getMessage();
@@ -150,7 +150,7 @@ final class IntegerValueTest extends TestCase
         // 無効な値（範囲外）
         $result2 = TestIntegerValue::tryFrom(1001);
         $this->assertFalse($result2->isOk());
-        $this->assertInstanceOf(NumberValueError::class, $result2->unwrapErr());
+        $this->assertInstanceOf(ValueObjectError::class, $result2->unwrapErr());
     }
 
     // ------------------------------------------
@@ -187,7 +187,7 @@ final class IntegerValueTest extends TestCase
         // 無効な非Null値の場合
         $result3 = TestIntegerValue::tryFromNullable(1001); // 範囲外
         $this->assertFalse($result3->isOk());
-        $this->assertInstanceOf(NumberValueError::class, $result3->unwrapErr());
+        $this->assertInstanceOf(ValueObjectError::class, $result3->unwrapErr());
     }
 
     // ------------------------------------------
@@ -258,7 +258,7 @@ final class IntegerValueTest extends TestCase
         // tryDiv（例外を投げない）
         $result = $value->tryDiv($divisor);
         $this->assertFalse($result->isOk());
-        $this->assertInstanceOf(NumberValueError::class, $result->unwrapErr());
+        $this->assertInstanceOf(ValueObjectError::class, $result->unwrapErr());
 
         // div（例外を投げる）
         $this->expectException(DivisionByZeroError::class);
@@ -311,7 +311,7 @@ final class IntegerValueTest extends TestCase
         $tryMethodName = 'try' . ucfirst($operation);
 
         /**
-         * @var Result<IntegerValueBase,NumberValueError>
+         * @var Result<IntegerValueBase,ValueObjectError>
          * @phpstan-ignore-next-line
          */
         $result = $integer1->{$tryMethodName}($integer2);
@@ -322,7 +322,7 @@ final class IntegerValueTest extends TestCase
             $this->assertEquals($expected, $result->unwrap()->value);
         } else {
             $this->assertFalse($result->isOk(), "演算 {$value1} {$operation} {$value2} は失敗するべき");
-            $this->assertInstanceOf(NumberValueError::class, $result->unwrapErr());
+            $this->assertInstanceOf(ValueObjectError::class, $result->unwrapErr());
         }
 
         // 例外を投げる通常メソッドのテスト

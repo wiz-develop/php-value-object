@@ -6,7 +6,7 @@ namespace WizDevelop\PhpValueObject\Number\Decimal;
 
 use RoundingMode;
 use WizDevelop\PhpMonad\Result;
-use WizDevelop\PhpValueObject\Number\NumberValueError;
+use WizDevelop\PhpValueObject\Error\ValueObjectError;
 
 /**
  * 算術演算可能な少数の値オブジェクト
@@ -20,7 +20,7 @@ interface IArithmetic
 
     /**
      * 加算（例外を投げない）
-     * @return Result<static,NumberValueError>
+     * @return Result<static,ValueObjectError>
      */
     public function tryAdd(DecimalValueBase $other, ?int $scale = null): Result;
 
@@ -31,7 +31,7 @@ interface IArithmetic
 
     /**
      * 減算（例外を投げない）
-     * @return Result<static,NumberValueError>
+     * @return Result<static,ValueObjectError>
      */
     public function trySub(DecimalValueBase $other, ?int $scale = null): Result;
 
@@ -42,7 +42,7 @@ interface IArithmetic
 
     /**
      * 乗算（例外を投げない）
-     * @return Result<static,NumberValueError>
+     * @return Result<static,ValueObjectError>
      */
     public function tryMul(DecimalValueBase $other, ?int $scale = null): Result;
 
@@ -53,7 +53,7 @@ interface IArithmetic
 
     /**
      * 除算（例外を投げない）
-     * @return Result<static,NumberValueError>
+     * @return Result<static,ValueObjectError>
      */
     public function tryDiv(DecimalValueBase $other, ?int $scale = null): Result;
 

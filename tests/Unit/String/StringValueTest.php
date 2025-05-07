@@ -9,8 +9,8 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
+use WizDevelop\PhpValueObject\Error\ValueObjectError;
 use WizDevelop\PhpValueObject\Examples\String\TestStringValue;
-use WizDevelop\PhpValueObject\String\StringValueError;
 
 #[TestDox('StringValueクラスのテスト')]
 #[CoversClass(TestStringValue::class)]
@@ -47,7 +47,7 @@ final class StringValueTest extends TestCase
         $result = TestStringValue::tryFrom('');
 
         $this->assertFalse($result->isOk());
-        $this->assertInstanceOf(StringValueError::class, $result->unwrapErr());
+        $this->assertInstanceOf(ValueObjectError::class, $result->unwrapErr());
 
         // エラーメッセージに「文字列」（ValueObjectMetaで指定した表示名）が含まれていることを確認
         $this->assertStringContainsString('文字列', $result->unwrapErr()->getMessage());
@@ -60,7 +60,7 @@ final class StringValueTest extends TestCase
         $result = TestStringValue::tryFrom($value);
 
         $this->assertFalse($result->isOk());
-        $this->assertInstanceOf(StringValueError::class, $result->unwrapErr());
+        $this->assertInstanceOf(ValueObjectError::class, $result->unwrapErr());
 
         // エラーメッセージにメタ情報の表示名と長さ情報が含まれていることを確認
         $errorMessage = $result->unwrapErr()->getMessage();
@@ -88,7 +88,7 @@ final class StringValueTest extends TestCase
         $result = TestStringValue::tryFrom($invalidValue);
 
         $this->assertFalse($result->isOk());
-        $this->assertInstanceOf(StringValueError::class, $result->unwrapErr());
+        $this->assertInstanceOf(ValueObjectError::class, $result->unwrapErr());
 
         // エラーメッセージに表示名が含まれていることを確認
         $this->assertStringContainsString('文字列', $result->unwrapErr()->getMessage());

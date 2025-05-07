@@ -6,8 +6,8 @@ namespace WizDevelop\PhpValueObject\Number\Integer;
 
 use Override;
 use WizDevelop\PhpMonad\Result;
+use WizDevelop\PhpValueObject\Error\ValueObjectError;
 use WizDevelop\PhpValueObject\IValueObject;
-use WizDevelop\PhpValueObject\Number\NumberValueError;
 
 /**
  * 整数の値オブジェクトの基底クラス
@@ -60,14 +60,14 @@ abstract readonly class IntegerValueBase implements IValueObject, IArithmetic, I
 
     /**
      * 有効な範囲かどうか
-     * @return Result<bool,NumberValueError>
+     * @return Result<bool,ValueObjectError>
      */
     abstract protected static function isRangeValid(int $value): Result;
 
     /**
      * 有効な値かどうか
      * NOTE: 実装クラスでのオーバーライド用メソッド
-     * @return Result<bool,NumberValueError>
+     * @return Result<bool,ValueObjectError>
      */
     protected static function isValid(int $value): Result
     {

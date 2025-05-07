@@ -2,26 +2,15 @@
 
 declare(strict_types=1);
 
-namespace WizDevelop\PhpValueObject\String;
+namespace WizDevelop\PhpValueObject\Error;
 
-use WizDevelop\PhpValueObject\Error\ValueObjectError;
 use WizDevelop\PhpValueObject\String\Base\StringValueBase;
 
 /**
  * StringValue エラー
- * @extends ValueObjectError<StringValueBase>
  */
-final readonly class StringValueError extends ValueObjectError
+final readonly class StringValueError
 {
-    public static function invalid(
-        string $message,
-    ): static {
-        return new self(
-            code: __METHOD__,
-            message: $message,
-        );
-    }
-
     /**
      * 文字列の長さが無効
      * @param class-string<StringValueBase> $className
@@ -31,11 +20,11 @@ final readonly class StringValueError extends ValueObjectError
         int $min_length,
         int $max_length,
         string $value,
-    ): static {
-        $displayName = self::getDisplayName($className);
+    ): ValueObjectError {
+        $displayName = ValueObjectError::getDisplayName($className);
 
-        return new static(
-            code: __METHOD__,
+        return ValueObjectError::of(
+            code: 'value_object.string.invalid_length',
             message: "{$displayName}は{$min_length}文字以上{$max_length}文字以下である必要があります。(値:{$value})",
         );
     }
@@ -48,11 +37,11 @@ final readonly class StringValueError extends ValueObjectError
         string $className,
         string $regex,
         string $value,
-    ): static {
-        $displayName = self::getDisplayName($className);
+    ): ValueObjectError {
+        $displayName = ValueObjectError::getDisplayName($className);
 
-        return new static(
-            code: __METHOD__,
+        return ValueObjectError::of(
+            code: 'value_object.string.invalid_regex',
             message: "{$displayName}は正規表現({$regex})に一致する必要があります。(値:{$value})",
         );
     }
@@ -64,11 +53,11 @@ final readonly class StringValueError extends ValueObjectError
     public static function invalidEmail(
         string $className,
         string $value,
-    ): static {
-        $displayName = self::getDisplayName($className);
+    ): ValueObjectError {
+        $displayName = ValueObjectError::getDisplayName($className);
 
-        return new static(
-            code: __METHOD__,
+        return ValueObjectError::of(
+            code: 'value_object.string.invalid_email',
             message: "{$displayName}は有効なメールアドレス形式である必要があります。(値:{$value})",
         );
     }
@@ -80,11 +69,11 @@ final readonly class StringValueError extends ValueObjectError
     public static function invalidUlid(
         string $className,
         string $value,
-    ): static {
-        $displayName = self::getDisplayName($className);
+    ): ValueObjectError {
+        $displayName = ValueObjectError::getDisplayName($className);
 
-        return new static(
-            code: __METHOD__,
+        return ValueObjectError::of(
+            code: 'value_object.string.invalid_ulid',
             message: "{$displayName}は有効なULID形式である必要があります。(値:{$value})",
         );
     }

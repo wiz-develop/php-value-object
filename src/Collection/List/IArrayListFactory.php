@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace WizDevelop\PhpValueObject\Collection\List;
 
 use WizDevelop\PhpMonad\Result;
-use WizDevelop\PhpValueObject\Collection\CollectionError;
+use WizDevelop\PhpValueObject\Error\ValueObjectError;
 
 /**
  * リストコレクション ファクトリインターフェース
@@ -30,8 +30,8 @@ interface IArrayListFactory
      *
      * @template TTryFromValue of TValue
      *
-     * @param  array<int,TTryFromValue>                      $elements
-     * @return Result<static<TTryFromValue>,CollectionError>
+     * @param  array<int,TTryFromValue>                       $elements
+     * @return Result<static<TTryFromValue>,ValueObjectError>
      */
     public static function tryFrom(array $elements): Result;
 

@@ -12,8 +12,8 @@ use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestDox;
 use ReflectionClass;
 use Throwable;
+use WizDevelop\PhpValueObject\Error\ValueObjectError;
 use WizDevelop\PhpValueObject\Examples\Number\Integer\TestPositiveIntegerValue;
-use WizDevelop\PhpValueObject\Number\NumberValueError;
 use WizDevelop\PhpValueObject\Number\PositiveIntegerValue;
 use WizDevelop\PhpValueObject\Tests\TestCase;
 
@@ -38,7 +38,7 @@ final class PositiveIntegerValueTest extends TestCase
     {
         $result = TestPositiveIntegerValue::tryFrom(-1);
         $this->assertFalse($result->isOk());
-        $this->assertInstanceOf(NumberValueError::class, $result->unwrapErr());
+        $this->assertInstanceOf(ValueObjectError::class, $result->unwrapErr());
 
         // エラーメッセージに「正の整数」が含まれるか
         $errorMessage = $result->unwrapErr()->getMessage();
@@ -50,7 +50,7 @@ final class PositiveIntegerValueTest extends TestCase
     {
         $result = TestPositiveIntegerValue::tryFrom(0);
         $this->assertFalse($result->isOk());
-        $this->assertInstanceOf(NumberValueError::class, $result->unwrapErr());
+        $this->assertInstanceOf(ValueObjectError::class, $result->unwrapErr());
 
         // エラーメッセージに「正の整数」が含まれるか
         $errorMessage = $result->unwrapErr()->getMessage();
@@ -86,7 +86,7 @@ final class PositiveIntegerValueTest extends TestCase
             $this->assertEquals($value, $result->unwrap()->value);
         } else {
             $this->assertFalse($result->isOk(), "値:{$value} は失敗するべき");
-            $this->assertInstanceOf(NumberValueError::class, $result->unwrapErr());
+            $this->assertInstanceOf(ValueObjectError::class, $result->unwrapErr());
         }
     }
 
@@ -110,7 +110,7 @@ final class PositiveIntegerValueTest extends TestCase
         // 900 + 200 = 1100（最大値1000を超えるのでエラー）
         $result = $value1->tryAdd($value2);
         $this->assertFalse($result->isOk());
-        $this->assertInstanceOf(NumberValueError::class, $result->unwrapErr());
+        $this->assertInstanceOf(ValueObjectError::class, $result->unwrapErr());
     }
 
     #[Test]
@@ -134,7 +134,7 @@ final class PositiveIntegerValueTest extends TestCase
         // 10 - 20 = -10（負の値になるのでエラー）
         $result = $value1->trySub($value2);
         $this->assertFalse($result->isOk());
-        $this->assertInstanceOf(NumberValueError::class, $result->unwrapErr());
+        $this->assertInstanceOf(ValueObjectError::class, $result->unwrapErr());
     }
 
     #[Test]
@@ -158,7 +158,7 @@ final class PositiveIntegerValueTest extends TestCase
         // 500 * 3 = 1500（最大値1000を超えるのでエラー）
         $result = $value1->tryMul($value2);
         $this->assertFalse($result->isOk());
-        $this->assertInstanceOf(NumberValueError::class, $result->unwrapErr());
+        $this->assertInstanceOf(ValueObjectError::class, $result->unwrapErr());
     }
 
     #[Test]
@@ -264,7 +264,7 @@ final class PositiveIntegerValueTest extends TestCase
         $this->assertFalse($result->isOk());
 
         $error = $result->unwrapErr();
-        $this->assertInstanceOf(NumberValueError::class, $error);
+        $this->assertInstanceOf(ValueObjectError::class, $error);
 
         $errorMessage = $error->getMessage();
         // 値オブジェクトの名称が含まれているか
@@ -284,7 +284,7 @@ final class PositiveIntegerValueTest extends TestCase
         $this->assertFalse($result->isOk());
 
         $error = $result->unwrapErr();
-        $this->assertInstanceOf(NumberValueError::class, $error);
+        $this->assertInstanceOf(ValueObjectError::class, $error);
 
         $errorMessage = $error->getMessage();
         // 範囲に関する情報が含まれているか
@@ -302,7 +302,7 @@ final class PositiveIntegerValueTest extends TestCase
         $this->assertFalse($result->isOk());
 
         $error = $result->unwrapErr();
-        $this->assertInstanceOf(NumberValueError::class, $error);
+        $this->assertInstanceOf(ValueObjectError::class, $error);
 
         $errorMessage = $error->getMessage();
         // 範囲に関する情報が含まれているか
@@ -325,7 +325,7 @@ final class PositiveIntegerValueTest extends TestCase
         $this->assertFalse($result->isOk());
 
         $error = $result->unwrapErr();
-        $this->assertInstanceOf(NumberValueError::class, $error);
+        $this->assertInstanceOf(ValueObjectError::class, $error);
 
         $errorMessage = $error->getMessage();
         // 範囲に関する情報が含まれているか
