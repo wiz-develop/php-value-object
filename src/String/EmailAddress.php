@@ -6,6 +6,7 @@ namespace WizDevelop\PhpValueObject\String;
 
 use Override;
 use WizDevelop\PhpMonad\Result;
+use WizDevelop\PhpValueObject\Error\ValueObjectError;
 use WizDevelop\PhpValueObject\String\Base\StringValueBase;
 use WizDevelop\PhpValueObject\String\Base\StringValueFactory;
 use WizDevelop\PhpValueObject\ValueObjectMeta;
@@ -65,14 +66,14 @@ readonly class EmailAddress extends StringValueBase
 
     /**
      * 有効な正規表現かどうか
-     * @return Result<bool,StringValueError>
+     * @return Result<bool,ValueObjectError>
      */
     final protected static function isValidEmail(string $value): Result
     {
         $filteredValue = filter_var($value, FILTER_VALIDATE_EMAIL);
         if ($filteredValue === false) {
-            return Result\err(StringValueError::invalidEmail(
-                className: self::class,
+            return Result\err(ValueObjectError::string()->invalidEmail(
+                className: static::class,
                 value: $value,
             ));
         }

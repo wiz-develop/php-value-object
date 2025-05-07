@@ -194,8 +194,8 @@ public function jsonSerialize(): mixed             // JSON変換
 // 静的ファクトリメソッド
 StringValue::from(string $value): static                     // 安全な値から作成
 StringValue::fromNullable(?string $value): Option<static>    // null許容
-StringValue::tryFrom(string $value): Result<static, StringValueError>  // 検証付き作成
-StringValue::tryFromNullable(?string $value): Result<Option<static>, StringValueError>
+StringValue::tryFrom(string $value): Result<static, ValueObjectError>  // 検証付き作成
+StringValue::tryFromNullable(?string $value): Result<Option<static>, ValueObjectError>
 
 // オーバーライド可能なメソッド
 protected static function minLength(): int    // 最小文字数（デフォルト: 1）
@@ -210,8 +210,8 @@ protected static function isValid(string $value): Result  // 追加の検証ロ�
 // 静的ファクトリメソッド
 EmailAddress::from(string $value): static
 EmailAddress::fromNullable(?string $value): Option<static>
-EmailAddress::tryFrom(string $value): Result<static, StringValueError>
-EmailAddress::tryFromNullable(?string $value): Result<Option<static>, StringValueError>
+EmailAddress::tryFrom(string $value): Result<static, ValueObjectError>
+EmailAddress::tryFromNullable(?string $value): Result<Option<static>, ValueObjectError>
 
 // 制約設定（オーバーライド済み）
 minLength(): int  // 1
@@ -225,18 +225,18 @@ regex(): string   // 基底クラスの正規表現
 // 静的ファクトリメソッド
 IntegerValue::from(int $value): static
 IntegerValue::fromNullable(?int $value): Option<static>
-IntegerValue::tryFrom(int $value): Result<static, NumberValueError>
-IntegerValue::tryFromNullable(?int $value): Result<Option<static>, NumberValueError>
+IntegerValue::tryFrom(int $value): Result<static, ValueObjectError>
+IntegerValue::tryFromNullable(?int $value): Result<Option<static>, ValueObjectError>
 
 // 算術演算
 public function add(IntegerValueBase $other): static
-public function tryAdd(IntegerValueBase $other): Result<static, NumberValueError>
+public function tryAdd(IntegerValueBase $other): Result<static, ValueObjectError>
 public function sub(IntegerValueBase $other): static
-public function trySub(IntegerValueBase $other): Result<static, NumberValueError>
+public function trySub(IntegerValueBase $other): Result<static, ValueObjectError>
 public function mul(IntegerValueBase $other): static
-public function tryMul(IntegerValueBase $other): Result<static, NumberValueError>
+public function tryMul(IntegerValueBase $other): Result<static, ValueObjectError>
 public function div(IntegerValueBase $other): static
-public function tryDiv(IntegerValueBase $other): Result<static, NumberValueError>
+public function tryDiv(IntegerValueBase $other): Result<static, ValueObjectError>
 
 // 比較
 public function isZero(): bool
@@ -259,18 +259,18 @@ protected static function isValid(int $value): Result  // 追加の検証ロジ�
 // 静的ファクトリメソッド
 DecimalValue::from(\BcMath\Number $value): static
 DecimalValue::fromNullable(?\BcMath\Number $value): Option<static>
-DecimalValue::tryFrom(\BcMath\Number $value): Result<static, NumberValueError>
-DecimalValue::tryFromNullable(?\BcMath\Number $value): Result<Option<static>, NumberValueError>
+DecimalValue::tryFrom(\BcMath\Number $value): Result<static, ValueObjectError>
+DecimalValue::tryFromNullable(?\BcMath\Number $value): Result<Option<static>, ValueObjectError>
 
 // 算術演算
 public function add(DecimalValueBase $other): static
-public function tryAdd(DecimalValueBase $other): Result<static, NumberValueError>
+public function tryAdd(DecimalValueBase $other): Result<static, ValueObjectError>
 public function sub(DecimalValueBase $other): static
-public function trySub(DecimalValueBase $other): Result<static, NumberValueError>
+public function trySub(DecimalValueBase $other): Result<static, ValueObjectError>
 public function mul(DecimalValueBase $other): static
-public function tryMul(DecimalValueBase $other): Result<static, NumberValueError>
+public function tryMul(DecimalValueBase $other): Result<static, ValueObjectError>
 public function div(DecimalValueBase $other): static
-public function tryDiv(DecimalValueBase $other): Result<static, NumberValueError>
+public function tryDiv(DecimalValueBase $other): Result<static, ValueObjectError>
 
 // 比較
 public function isZero(): bool
@@ -402,7 +402,7 @@ final readonly class Username extends StringValue
         $reservedWords = ['admin', 'root', 'system'];
 
         if (in_array(strtolower($value), $reservedWords, true)) {
-            return Result\err(StringValueError::custom(
+            return Result\err(ValueObjectError::custom(
                 className: static::class,
                 message: '予約語は使用できません',
                 value: $value,
@@ -440,7 +440,7 @@ final readonly class Age extends IntegerValue
     {
         // 例: 偶数のみ許可
         if ($value % 2 !== 0) {
-            return Result\err(NumberValueError::custom(
+            return Result\err(ValueObjectError::custom(
                 className: static::class,
                 message: '年齢は偶数のみ許可されます',
                 value: $value,

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace WizDevelop\PhpValueObject\Collection\Map;
 
 use WizDevelop\PhpMonad\Result;
-use WizDevelop\PhpValueObject\Collection\CollectionError;
 use WizDevelop\PhpValueObject\Collection\Pair;
+use WizDevelop\PhpValueObject\Error\ValueObjectError;
 
 /**
  * マップコレクション ファクトリインターフェース
@@ -34,8 +34,8 @@ interface IMapFactory
      * @template TTryFromKey of TKey
      * @template TTryFromValue of TValue
      *
-     * @param  Pair<TTryFromKey,TTryFromValue>                           ...$values
-     * @return Result<static<TTryFromKey,TTryFromValue>,CollectionError>
+     * @param  Pair<TTryFromKey,TTryFromValue>                            ...$values
+     * @return Result<static<TTryFromKey,TTryFromValue>,ValueObjectError>
      */
     public static function tryFrom(Pair ...$values): Result;
 

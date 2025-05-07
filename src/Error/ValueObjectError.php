@@ -10,14 +10,15 @@ use WizDevelop\PhpValueObject\IValueObject;
 use WizDevelop\PhpValueObject\ValueObjectMeta;
 
 /**
- * ドメイン層エラー 基底クラス
- * @template TValueObject of IValueObject
+ * 値オブジェクトエラー
  */
-abstract readonly class ValueObjectError extends ErrorValue
+final readonly class ValueObjectError extends ErrorValue
 {
     /**
      * ValueObjectMetaから表示名を取得する
      * クラスにValueObjectMeta属性が設定されていない場合はクラス名を返す
+     *
+     * @template TValueObject of IValueObject
      * @param class-string<TValueObject> $className
      */
     public static function getDisplayName(string $className): string
@@ -39,5 +40,30 @@ abstract readonly class ValueObjectError extends ErrorValue
         $parts = explode('\\', $className);
 
         return end($parts);
+    }
+
+    public static function general(): GeneralError
+    {
+        return new GeneralError();
+    }
+
+    public static function string(): StringValueError
+    {
+        return new StringValueError();
+    }
+
+    public static function number(): NumberValueError
+    {
+        return new NumberValueError();
+    }
+
+    public static function collection(): CollectionValueError
+    {
+        return new CollectionValueError();
+    }
+
+    public static function boolean(): BooleanValueError
+    {
+        return new BooleanValueError();
     }
 }

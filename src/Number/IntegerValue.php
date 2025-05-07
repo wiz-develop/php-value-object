@@ -6,6 +6,7 @@ namespace WizDevelop\PhpValueObject\Number;
 
 use Override;
 use WizDevelop\PhpMonad\Result;
+use WizDevelop\PhpValueObject\Error\ValueObjectError;
 use WizDevelop\PhpValueObject\Number\Integer\IntegerValueBase;
 use WizDevelop\PhpValueObject\Number\Integer\IntegerValueFactory;
 
@@ -51,7 +52,7 @@ readonly class IntegerValue extends IntegerValueBase
         $maxValue = min(static::max(), IntegerValueBase::MAX_VALUE);
 
         if ($value < $minValue || $value > $maxValue) {
-            return Result\err(NumberValueError::invalidRange(
+            return Result\err(ValueObjectError::number()->invalidRange(
                 className: static::class,
                 min: $minValue,
                 max: $maxValue,

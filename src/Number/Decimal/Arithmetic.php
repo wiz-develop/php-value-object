@@ -8,7 +8,7 @@ use DivisionByZeroError;
 use Override;
 use RoundingMode;
 use WizDevelop\PhpMonad\Result;
-use WizDevelop\PhpValueObject\Number\NumberValueError;
+use WizDevelop\PhpValueObject\Error\ValueObjectError;
 
 /**
  * Default implementation of IArithmetic
@@ -25,7 +25,7 @@ trait Arithmetic
     }
 
     /**
-     * @return Result<static,NumberValueError>
+     * @return Result<static,ValueObjectError>
      */
     #[Override]
     final public function tryAdd(DecimalValueBase $other, ?int $scale = null): Result
@@ -40,7 +40,7 @@ trait Arithmetic
     }
 
     /**
-     * @return Result<static,NumberValueError>
+     * @return Result<static,ValueObjectError>
      */
     #[Override]
     final public function trySub(DecimalValueBase $other, ?int $scale = null): Result
@@ -55,7 +55,7 @@ trait Arithmetic
     }
 
     /**
-     * @return Result<static,NumberValueError>
+     * @return Result<static,ValueObjectError>
      */
     #[Override]
     final public function tryMul(DecimalValueBase $other, ?int $scale = null): Result
@@ -74,13 +74,13 @@ trait Arithmetic
     }
 
     /**
-     * @return Result<static,NumberValueError>
+     * @return Result<static,ValueObjectError>
      */
     #[Override]
     final public function tryDiv(DecimalValueBase $other, ?int $scale = null): Result
     {
         if ($other->isZero()) {
-            return Result\err(NumberValueError::invalidDivideByZero(
+            return Result\err(ValueObjectError::number()->invalidDivideByZero(
                 className: static::class,
             ));
         }

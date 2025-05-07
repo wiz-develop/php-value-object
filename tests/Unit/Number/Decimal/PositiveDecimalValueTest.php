@@ -12,8 +12,8 @@ use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestDox;
 use ReflectionClass;
 use Throwable;
+use WizDevelop\PhpValueObject\Error\ValueObjectError;
 use WizDevelop\PhpValueObject\Examples\Number\Decimal\TestPositiveDecimalValue;
-use WizDevelop\PhpValueObject\Number\NumberValueError;
 use WizDevelop\PhpValueObject\Number\PositiveDecimalValue;
 use WizDevelop\PhpValueObject\Tests\TestCase;
 
@@ -38,7 +38,7 @@ final class PositiveDecimalValueTest extends TestCase
     {
         $result = TestPositiveDecimalValue::tryFrom(new Number('-100.50'));
         $this->assertFalse($result->isOk());
-        $this->assertInstanceOf(NumberValueError::class, $result->unwrapErr());
+        $this->assertInstanceOf(ValueObjectError::class, $result->unwrapErr());
 
         // エラーメッセージに正の値であるべきというメッセージが含まれていることを確認
         $errorMessage = $result->unwrapErr()->getMessage();
@@ -50,7 +50,7 @@ final class PositiveDecimalValueTest extends TestCase
     {
         $result = TestPositiveDecimalValue::tryFrom(new Number('0.00'));
         $this->assertFalse($result->isOk());
-        $this->assertInstanceOf(NumberValueError::class, $result->unwrapErr());
+        $this->assertInstanceOf(ValueObjectError::class, $result->unwrapErr());
 
         // エラーメッセージに正の値であるべきというメッセージが含まれていることを確認
         $errorMessage = $result->unwrapErr()->getMessage();
@@ -87,7 +87,7 @@ final class PositiveDecimalValueTest extends TestCase
             $this->assertEquals($value, (string)$result->unwrap()->value);
         } else {
             $this->assertFalse($result->isOk(), "値:{$value} は失敗するべき");
-            $this->assertInstanceOf(NumberValueError::class, $result->unwrapErr());
+            $this->assertInstanceOf(ValueObjectError::class, $result->unwrapErr());
         }
     }
 
@@ -111,7 +111,7 @@ final class PositiveDecimalValueTest extends TestCase
         // 900 + 200 = 1100（最大値1000を超えるのでエラー）
         $result = $value1->tryAdd($value2);
         $this->assertFalse($result->isOk());
-        $this->assertInstanceOf(NumberValueError::class, $result->unwrapErr());
+        $this->assertInstanceOf(ValueObjectError::class, $result->unwrapErr());
     }
 
     #[Test]
@@ -135,7 +135,7 @@ final class PositiveDecimalValueTest extends TestCase
         // 10.5 - 20.5 = -10.0（負の値になるのでエラー）
         $result = $value1->trySub($value2);
         $this->assertFalse($result->isOk());
-        $this->assertInstanceOf(NumberValueError::class, $result->unwrapErr());
+        $this->assertInstanceOf(ValueObjectError::class, $result->unwrapErr());
     }
 
     #[Test]
@@ -159,7 +159,7 @@ final class PositiveDecimalValueTest extends TestCase
         // 500 * 3 = 1500（最大値1000を超えるのでエラー）
         $result = $value1->tryMul($value2);
         $this->assertFalse($result->isOk());
-        $this->assertInstanceOf(NumberValueError::class, $result->unwrapErr());
+        $this->assertInstanceOf(ValueObjectError::class, $result->unwrapErr());
     }
 
     #[Test]
@@ -283,7 +283,7 @@ final class PositiveDecimalValueTest extends TestCase
         $this->assertFalse($result->isOk());
 
         $error = $result->unwrapErr();
-        $this->assertInstanceOf(NumberValueError::class, $error);
+        $this->assertInstanceOf(ValueObjectError::class, $error);
 
         $errorMessage = $error->getMessage();
         // クラス名が含まれているか
@@ -303,7 +303,7 @@ final class PositiveDecimalValueTest extends TestCase
         $this->assertFalse($result->isOk());
 
         $error = $result->unwrapErr();
-        $this->assertInstanceOf(NumberValueError::class, $error);
+        $this->assertInstanceOf(ValueObjectError::class, $error);
 
         $errorMessage = $error->getMessage();
         // 範囲に関する情報が含まれているか
@@ -321,7 +321,7 @@ final class PositiveDecimalValueTest extends TestCase
         $this->assertFalse($result->isOk());
 
         $error = $result->unwrapErr();
-        $this->assertInstanceOf(NumberValueError::class, $error);
+        $this->assertInstanceOf(ValueObjectError::class, $error);
 
         $errorMessage = $error->getMessage();
         // 範囲に関する情報が含まれているか
@@ -341,7 +341,7 @@ final class PositiveDecimalValueTest extends TestCase
         $this->assertFalse($result->isOk());
 
         $error = $result->unwrapErr();
-        $this->assertInstanceOf(NumberValueError::class, $error);
+        $this->assertInstanceOf(ValueObjectError::class, $error);
 
         $errorMessage = $error->getMessage();
         // 範囲に関する情報が含まれているか

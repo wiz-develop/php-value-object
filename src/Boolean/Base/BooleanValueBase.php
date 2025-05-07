@@ -6,7 +6,7 @@ namespace WizDevelop\PhpValueObject\Boolean\Base;
 
 use Override;
 use WizDevelop\PhpMonad\Result;
-use WizDevelop\PhpValueObject\Boolean\BooleanValueError;
+use WizDevelop\PhpValueObject\Error\ValueObjectError;
 use WizDevelop\PhpValueObject\IValueObject;
 
 /**
@@ -40,7 +40,7 @@ abstract readonly class BooleanValueBase implements IValueObject, IBooleanValueF
     /**
      * 有効な値かどうか
      * NOTE: 実装クラスでのオーバーライド用メソッド
-     * @return Result<bool,BooleanValueError>
+     * @return Result<bool,ValueObjectError>
      */
     protected static function isValid(bool $value): Result
     {

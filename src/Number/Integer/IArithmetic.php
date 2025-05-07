@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace WizDevelop\PhpValueObject\Number\Integer;
 
 use WizDevelop\PhpMonad\Result;
-use WizDevelop\PhpValueObject\Number\NumberValueError;
+use WizDevelop\PhpValueObject\Error\ValueObjectError;
 
 /**
  * 算術演算可能な整数の値オブジェクト
@@ -19,7 +19,7 @@ interface IArithmetic
 
     /**
      * 加算（例外を投げない）
-     * @return Result<static,NumberValueError>
+     * @return Result<static,ValueObjectError>
      */
     public function tryAdd(IntegerValueBase $other): Result;
 
@@ -30,7 +30,7 @@ interface IArithmetic
 
     /**
      * 減算（例外を投げない）
-     * @return Result<static,NumberValueError>
+     * @return Result<static,ValueObjectError>
      */
     public function trySub(IntegerValueBase $other): Result;
 
@@ -41,7 +41,7 @@ interface IArithmetic
 
     /**
      * 乗算（例外を投げない）
-     * @return Result<static,NumberValueError>
+     * @return Result<static,ValueObjectError>
      */
     public function tryMul(IntegerValueBase $other): Result;
 
@@ -52,7 +52,7 @@ interface IArithmetic
 
     /**
      * 除算（例外を投げない）
-     * @return Result<static,NumberValueError>
+     * @return Result<static,ValueObjectError>
      */
     public function tryDiv(IntegerValueBase $other): Result;
 }

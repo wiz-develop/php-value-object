@@ -6,7 +6,7 @@ namespace WizDevelop\PhpValueObject\Boolean\Base;
 
 use WizDevelop\PhpMonad\Option;
 use WizDevelop\PhpMonad\Result;
-use WizDevelop\PhpValueObject\Boolean\BooleanValueError;
+use WizDevelop\PhpValueObject\Error\ValueObjectError;
 
 /**
  * 真偽値の値オブジェクト ファクトリインターフェース
@@ -27,13 +27,13 @@ interface IBooleanValueFactory
 
     /**
      * 信頼できないプリミティブ値からインスタンスを生成する
-     * @return Result<static,BooleanValueError>
+     * @return Result<static,ValueObjectError>
      */
     public static function tryFrom(bool $value): Result;
 
     /**
      * 信頼できないプリミティブ値からインスタンスを生成する（Null許容）
-     * @return Result<Option<static>,BooleanValueError>
+     * @return Result<Option<static>,ValueObjectError>
      */
     public static function tryFromNullable(?bool $value): Result;
 

@@ -6,7 +6,7 @@ namespace WizDevelop\PhpValueObject\Number\Integer;
 
 use WizDevelop\PhpMonad\Option;
 use WizDevelop\PhpMonad\Result;
-use WizDevelop\PhpValueObject\Number\NumberValueError;
+use WizDevelop\PhpValueObject\Error\ValueObjectError;
 
 /**
  * 整数の値オブジェクト ファクトリインターフェース
@@ -27,13 +27,13 @@ interface IIntegerValueFactory
 
     /**
      * 信頼できないプリミティブ値からインスタンスを生成する
-     * @return Result<static,NumberValueError>
+     * @return Result<static,ValueObjectError>
      */
     public static function tryFrom(int $value): Result;
 
     /**
      * 信頼できないプリミティブ値からインスタンスを生成する（Null許容）
-     * @return Result<Option<static>,NumberValueError>
+     * @return Result<Option<static>,ValueObjectError>
      */
     public static function tryFromNullable(?int $value): Result;
 }

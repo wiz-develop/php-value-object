@@ -12,8 +12,8 @@ use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestDox;
 use ReflectionClass;
+use WizDevelop\PhpValueObject\Error\ValueObjectError;
 use WizDevelop\PhpValueObject\Examples\String\TestUlidValue;
-use WizDevelop\PhpValueObject\String\StringValueError;
 use WizDevelop\PhpValueObject\String\UlidValue;
 use WizDevelop\PhpValueObject\Tests\TestCase;
 
@@ -175,7 +175,7 @@ final class UlidValueTest extends TestCase
         $result = TestUlidValue::tryFrom($invalidUlid);
 
         $this->assertFalse($result->isOk());
-        $this->assertInstanceOf(StringValueError::class, $result->unwrapErr());
+        $this->assertInstanceOf(ValueObjectError::class, $result->unwrapErr());
     }
 
     // ------------------------------------------

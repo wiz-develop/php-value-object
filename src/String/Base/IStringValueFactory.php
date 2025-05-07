@@ -6,7 +6,7 @@ namespace WizDevelop\PhpValueObject\String\Base;
 
 use WizDevelop\PhpMonad\Option;
 use WizDevelop\PhpMonad\Result;
-use WizDevelop\PhpValueObject\String\StringValueError;
+use WizDevelop\PhpValueObject\Error\ValueObjectError;
 
 /**
  * 文字列の値オブジェクト ファクトリインターフェース
@@ -27,13 +27,13 @@ interface IStringValueFactory
 
     /**
      * 信頼できないプリミティブ値からインスタンスを生成する
-     * @return Result<static,StringValueError>
+     * @return Result<static,ValueObjectError>
      */
     public static function tryFrom(string $value): Result;
 
     /**
      * 信頼できないプリミティブ値からインスタンスを生成する（Null許容）
-     * @return Result<Option<static>,StringValueError>
+     * @return Result<Option<static>,ValueObjectError>
      */
     public static function tryFromNullable(?string $value): Result;
 }

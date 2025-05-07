@@ -7,7 +7,7 @@ namespace WizDevelop\PhpValueObject\Number\Integer;
 use DivisionByZeroError;
 use Override;
 use WizDevelop\PhpMonad\Result;
-use WizDevelop\PhpValueObject\Number\NumberValueError;
+use WizDevelop\PhpValueObject\Error\ValueObjectError;
 
 /**
  * Default implementation of IArithmetic
@@ -24,7 +24,7 @@ trait Arithmetic
     }
 
     /**
-     * @return Result<static,NumberValueError>
+     * @return Result<static,ValueObjectError>
      */
     #[Override]
     final public function tryAdd(IntegerValueBase $other): Result
@@ -39,7 +39,7 @@ trait Arithmetic
     }
 
     /**
-     * @return Result<static,NumberValueError>
+     * @return Result<static,ValueObjectError>
      */
     #[Override]
     final public function trySub(IntegerValueBase $other): Result
@@ -54,7 +54,7 @@ trait Arithmetic
     }
 
     /**
-     * @return Result<static,NumberValueError>
+     * @return Result<static,ValueObjectError>
      */
     #[Override]
     final public function tryMul(IntegerValueBase $other): Result
@@ -74,13 +74,13 @@ trait Arithmetic
     }
 
     /**
-     * @return Result<static,NumberValueError>
+     * @return Result<static,ValueObjectError>
      */
     #[Override]
     final public function tryDiv(IntegerValueBase $other): Result
     {
         if ($other->isZero()) {
-            return Result\err(NumberValueError::invalidDivideByZero(
+            return Result\err(ValueObjectError::number()->invalidDivideByZero(
                 className: static::class,
             ));
         }

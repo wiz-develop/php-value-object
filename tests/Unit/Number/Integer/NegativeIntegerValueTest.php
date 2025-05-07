@@ -11,10 +11,10 @@ use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestDox;
 use ReflectionClass;
 use Throwable;
+use WizDevelop\PhpValueObject\Error\ValueObjectError;
 use WizDevelop\PhpValueObject\Examples\Number\Integer\TestNegativeIntegerValue;
 use WizDevelop\PhpValueObject\Examples\Number\Integer\TestPositiveIntegerValue;
 use WizDevelop\PhpValueObject\Number\NegativeIntegerValue;
-use WizDevelop\PhpValueObject\Number\NumberValueError;
 use WizDevelop\PhpValueObject\Tests\TestCase;
 
 /**
@@ -38,7 +38,7 @@ final class NegativeIntegerValueTest extends TestCase
     {
         $result = TestNegativeIntegerValue::tryFrom(1);
         $this->assertFalse($result->isOk());
-        $this->assertInstanceOf(NumberValueError::class, $result->unwrapErr());
+        $this->assertInstanceOf(ValueObjectError::class, $result->unwrapErr());
 
         // エラーメッセージに「負の整数」が含まれるか
         $errorMessage = $result->unwrapErr()->getMessage();
@@ -50,7 +50,7 @@ final class NegativeIntegerValueTest extends TestCase
     {
         $result = TestNegativeIntegerValue::tryFrom(0);
         $this->assertFalse($result->isOk());
-        $this->assertInstanceOf(NumberValueError::class, $result->unwrapErr());
+        $this->assertInstanceOf(ValueObjectError::class, $result->unwrapErr());
 
         // エラーメッセージに「負の整数」が含まれるか
         $errorMessage = $result->unwrapErr()->getMessage();
@@ -86,7 +86,7 @@ final class NegativeIntegerValueTest extends TestCase
             $this->assertEquals($value, $result->unwrap()->value);
         } else {
             $this->assertFalse($result->isOk(), "値:{$value} は失敗するべき");
-            $this->assertInstanceOf(NumberValueError::class, $result->unwrapErr());
+            $this->assertInstanceOf(ValueObjectError::class, $result->unwrapErr());
         }
     }
 
@@ -246,7 +246,7 @@ final class NegativeIntegerValueTest extends TestCase
         $this->assertFalse($result->isOk());
 
         $error = $result->unwrapErr();
-        $this->assertInstanceOf(NumberValueError::class, $error);
+        $this->assertInstanceOf(ValueObjectError::class, $error);
 
         $errorMessage = $error->getMessage();
         // クラス名が含まれているか
@@ -266,7 +266,7 @@ final class NegativeIntegerValueTest extends TestCase
         $this->assertFalse($result->isOk());
 
         $error = $result->unwrapErr();
-        $this->assertInstanceOf(NumberValueError::class, $error);
+        $this->assertInstanceOf(ValueObjectError::class, $error);
 
         $errorMessage = $error->getMessage();
         // 範囲に関する情報が含まれているか
@@ -284,7 +284,7 @@ final class NegativeIntegerValueTest extends TestCase
         $this->assertFalse($result->isOk());
 
         $error = $result->unwrapErr();
-        $this->assertInstanceOf(NumberValueError::class, $error);
+        $this->assertInstanceOf(ValueObjectError::class, $error);
 
         $errorMessage = $error->getMessage();
         // 範囲に関する情報が含まれているか
@@ -306,7 +306,7 @@ final class NegativeIntegerValueTest extends TestCase
         $this->assertFalse($result->isOk());
 
         $error = $result->unwrapErr();
-        $this->assertInstanceOf(NumberValueError::class, $error);
+        $this->assertInstanceOf(ValueObjectError::class, $error);
 
         $errorMessage = $error->getMessage();
         // 負の数であるべきという情報が含まれているか

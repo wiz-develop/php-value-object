@@ -2,26 +2,15 @@
 
 declare(strict_types=1);
 
-namespace WizDevelop\PhpValueObject\Number;
+namespace WizDevelop\PhpValueObject\Error;
 
 use BcMath\Number;
-use WizDevelop\PhpValueObject\Error\ValueObjectError;
 
 /**
  * NumberValue エラー
- * @extends ValueObjectError<NumberValueBase>
  */
-final readonly class NumberValueError extends ValueObjectError
+final readonly class NumberValueError
 {
-    public static function invalid(
-        string $message,
-    ): static {
-        return new self(
-            code: __METHOD__,
-            message: $message,
-        );
-    }
-
     /**
      * 数値の範囲が無効
      * @param class-string<NumberValueBase> $className
@@ -33,13 +22,13 @@ final readonly class NumberValueError extends ValueObjectError
         Number|int $value,
         bool $isMinInclusive = true,
         bool $isMaxInclusive = true,
-    ): static {
-        $displayName = self::getDisplayName($className);
+    ): ValueObjectError {
+        $displayName = ValueObjectError::getDisplayName($className);
         $minText = $isMinInclusive ? '以上' : 'より大きい';
         $maxText = $isMaxInclusive ? '以下' : '未満';
 
-        return new static(
-            code: __METHOD__,
+        return ValueObjectError::of(
+            code: 'value_object.number.invalid_range',
             message: "{$displayName}は{$min}{$minText}かつ{$max}{$maxText}である必要があります。(値:{$value})",
         );
     }
@@ -50,11 +39,11 @@ final readonly class NumberValueError extends ValueObjectError
      */
     public static function invalidDivideByZero(
         string $className,
-    ): static {
-        $displayName = self::getDisplayName($className);
+    ): ValueObjectError {
+        $displayName = ValueObjectError::getDisplayName($className);
 
-        return new static(
-            code: __METHOD__,
+        return ValueObjectError::of(
+            code: 'value_object.number.invalid_divide_by_zero',
             message: "{$displayName}はゼロによる除算ができません。",
         );
     }
@@ -68,11 +57,11 @@ final readonly class NumberValueError extends ValueObjectError
         int $precision,
         int $actualDigits,
         Number|int $value,
-    ): static {
-        $displayName = self::getDisplayName($className);
+    ): ValueObjectError {
+        $displayName = ValueObjectError::getDisplayName($className);
 
-        return new static(
-            code: __METHOD__,
+        return ValueObjectError::of(
+            code: 'value_object.number.invalid_digits',
             message: "{$displayName}は桁数{$precision}桁まで許容されますが、{$actualDigits}桁の値が指定されました。(値:{$value})",
         );
     }

@@ -6,7 +6,7 @@ namespace WizDevelop\PhpValueObject\Collection\Base;
 
 use Override;
 use WizDevelop\PhpMonad\Result;
-use WizDevelop\PhpValueObject\Collection\CollectionError;
+use WizDevelop\PhpValueObject\Error\ValueObjectError;
 use WizDevelop\PhpValueObject\IValueObject;
 
 use function count;
@@ -66,7 +66,7 @@ abstract readonly class CollectionBase implements IValueObject
      * @template TIsValidCountKey of TKey|array-key
      * @template TIsValidCountValue of TValue
      * @param  array<TIsValidCountKey,TIsValidCountValue> $elements
-     * @return Result<bool,CollectionError>
+     * @return Result<bool,ValueObjectError>
      */
     final protected static function isValidCount(array $elements): Result
     {
@@ -75,7 +75,7 @@ abstract readonly class CollectionBase implements IValueObject
         $max_count = static::maxCount() < self::MAX_COUNT ? static::maxCount() : self::MAX_COUNT;
 
         if ($element_count < $min_count && $element_count > $max_count) {
-            return Result\err(CollectionError::invalidRange(
+            return Result\err(ValueObjectError::collection()->invalidRange(
                 className: static::class,
                 min: $min_count,
                 max: $max_count,
@@ -83,14 +83,14 @@ abstract readonly class CollectionBase implements IValueObject
             ));
         }
         if ($element_count < $min_count) {
-            return Result\err(CollectionError::invalidMinCount(
+            return Result\err(ValueObjectError::collection()->invalidMinCount(
                 className: static::class,
                 min: $min_count,
                 count: $element_count,
             ));
         }
         if ($element_count > $max_count) {
-            return Result\err(CollectionError::invalidMaxCount(
+            return Result\err(ValueObjectError::collection()->invalidMaxCount(
                 className: static::class,
                 max: $max_count,
                 count: $element_count,
