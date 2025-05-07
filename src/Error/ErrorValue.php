@@ -18,7 +18,7 @@ readonly class ErrorValue implements IErrorValue
     ) {
     }
 
-    public static function of(string $code, string $message): static
+    final public static function of(string $code, string $message): static
     {
         return new static($code, $message);
     }
