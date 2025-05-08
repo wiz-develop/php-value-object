@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace WizDevelop\PhpValueObject\Boolean\Base;
 
 use Override;
+use Stringable;
 use WizDevelop\PhpMonad\Result;
 use WizDevelop\PhpValueObject\Error\ValueObjectError;
 use WizDevelop\PhpValueObject\IValueObject;
@@ -12,7 +13,7 @@ use WizDevelop\PhpValueObject\IValueObject;
 /**
  * 真偽値の値オブジェクトの基底クラス
  */
-abstract readonly class BooleanValueBase implements IValueObject, IBooleanValueFactory
+abstract readonly class BooleanValueBase implements IValueObject, Stringable, IBooleanValueFactory
 {
     protected function __construct(public bool $value)
     {
@@ -22,7 +23,7 @@ abstract readonly class BooleanValueBase implements IValueObject, IBooleanValueF
     #[Override]
     final public function equals(IValueObject $other): bool
     {
-        return (string)$this === (string)$other;
+        return $this->value === $other->value;
     }
 
     #[Override]

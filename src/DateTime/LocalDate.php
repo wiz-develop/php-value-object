@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;
 use Override;
+use Stringable;
 use WizDevelop\PhpMonad\Option;
 use WizDevelop\PhpMonad\Result;
 use WizDevelop\PhpValueObject\Error\ValueObjectError;
@@ -18,7 +19,7 @@ use WizDevelop\PhpValueObject\ValueObjectMeta;
  * ローカル日付を表す値オブジェクト
  */
 #[ValueObjectMeta(displayName: 'ローカル日付')]
-readonly class LocalDate implements IValueObject
+readonly class LocalDate implements IValueObject, Stringable
 {
     /**
      * The minimum supported year for instances of `LocalDate`.

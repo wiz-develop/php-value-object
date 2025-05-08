@@ -7,8 +7,9 @@ namespace WizDevelop\PhpValueObject;
 use Override;
 
 /**
- * Default implementation of IValueObject
- * @see IValueObject
+ * Default implementation of IValueObject and Stringable.
+ * @see WizDevelop\PhpValueObject\IValueObject
+ * @see Stringable
  */
 trait ValueObjectDefault
 {

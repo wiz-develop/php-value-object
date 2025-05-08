@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace WizDevelop\PhpValueObject\Collection;
 
+use Stringable;
 use WizDevelop\PhpValueObject\IValueObject;
 use WizDevelop\PhpValueObject\ValueObjectDefault;
 
@@ -13,7 +14,7 @@ use WizDevelop\PhpValueObject\ValueObjectDefault;
  * @template TKey
  * @template TValue
  */
-readonly class Pair implements IValueObject
+readonly class Pair implements IValueObject, Stringable
 {
     use ValueObjectDefault;
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace WizDevelop\PhpValueObject\Collection\Base;
 
 use Override;
+use Stringable;
 use WizDevelop\PhpMonad\Result;
 use WizDevelop\PhpValueObject\Error\ValueObjectError;
 use WizDevelop\PhpValueObject\IValueObject;
@@ -16,7 +17,7 @@ use function count;
  * @template TKey
  * @template TValue
  */
-abstract readonly class CollectionBase implements IValueObject
+abstract readonly class CollectionBase implements IValueObject, Stringable
 {
     final protected const int MIN_COUNT = 0;
     final protected const int MAX_COUNT = 99999999;
@@ -38,13 +39,16 @@ abstract readonly class CollectionBase implements IValueObject
     #[Override]
     final public function __toString(): string
     {
-        return $this->jsonSerialize();
+        return json_encode($this->jsonSerialize(), JSON_THROW_ON_ERROR);
     }
 
+    /**
+     * @return array<TKey,TValue>
+     */
     #[Override]
-    final public function jsonSerialize(): string
+    final public function jsonSerialize(): array
     {
-        return json_encode($this->elements, JSON_THROW_ON_ERROR);
+        return $this->elements;
     }
 
     /**
