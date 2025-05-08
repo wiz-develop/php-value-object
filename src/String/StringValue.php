@@ -28,8 +28,8 @@ readonly class StringValue extends StringValueBase
     final public static function tryFrom(string $value): Result
     {
         return static::isValid($value)
-            ->andThen(static fn () => self::isLengthValid($value))
-            ->andThen(static fn () => self::isRegexValid($value))
+            ->andThen(static fn () => self::isValidLength($value))
+            ->andThen(static fn () => self::isValidRegex($value))
             ->andThen(static fn () => Result\ok(static::from($value)));
     }
 

@@ -24,7 +24,7 @@ abstract readonly class IntegerValueBase implements IValueObject, IArithmetic, I
     {
         // NOTE: 不変条件（invariant）
         assert(static::min() <= static::max());
-        assert(static::isRangeValid($value)->isOk());
+        assert(static::isValidRange($value)->isOk());
         assert(static::isValid($value)->isOk());
     }
 
@@ -62,7 +62,7 @@ abstract readonly class IntegerValueBase implements IValueObject, IArithmetic, I
      * 有効な範囲かどうか
      * @return Result<bool,ValueObjectError>
      */
-    abstract protected static function isRangeValid(int $value): Result;
+    abstract protected static function isValidRange(int $value): Result;
 
     /**
      * 有効な値かどうか

@@ -34,8 +34,8 @@ readonly class EmailAddress extends StringValueBase
         $sanitizedValue = filter_var($value, FILTER_SANITIZE_EMAIL);
 
         return self::isValid($sanitizedValue)
-            ->andThen(static fn () => self::isLengthValid($sanitizedValue))
-            ->andThen(static fn () => self::isRegexValid($sanitizedValue))
+            ->andThen(static fn () => self::isValidLength($sanitizedValue))
+            ->andThen(static fn () => self::isValidRegex($sanitizedValue))
             ->andThen(static fn () => self::isValidEmail($sanitizedValue))
             ->andThen(static fn () => Result\ok(self::from($sanitizedValue)));
     }

@@ -27,8 +27,8 @@ abstract readonly class DecimalValueBase implements IValueObject, IArithmetic, I
         assert(static::min() <= static::max());
         // assert(static::min()->scale <= static::scale());
         // assert(static::max()->scale <= static::scale());
-        assert(static::isRangeValid($value)->isOk());
-        assert(static::isDigitsValid($value)->isOk());
+        assert(static::isValidRange($value)->isOk());
+        assert(static::isValidDigits($value)->isOk());
         assert(static::isValid($value)->isOk());
     }
 
@@ -86,13 +86,13 @@ abstract readonly class DecimalValueBase implements IValueObject, IArithmetic, I
      * 有効な範囲かどうか
      * @return Result<bool,ValueObjectError>
      */
-    abstract protected static function isRangeValid(Number $value): Result;
+    abstract protected static function isValidRange(Number $value): Result;
 
     /**
      * 有効な桁数かどうか
      * @return Result<bool,ValueObjectError>
      */
-    final protected static function isDigitsValid(Number $value): Result
+    final protected static function isValidDigits(Number $value): Result
     {
         $ret1 = str_replace('-', '', (string)$value); // マイナス記号を削除
         $ret2 = str_replace('.', '', $ret1); // 小数点を削除
