@@ -14,7 +14,7 @@ use WizDevelop\PhpValueObject\ValueObjectMeta;
 /**
  * メールアドレスの値オブジェクト
  */
-#[ValueObjectMeta(displayName: 'メールアドレス', description: 'メールアドレスの値オブジェクト')]
+#[ValueObjectMeta(name: 'メールアドレス')]
 readonly class EmailAddress extends StringValueBase
 {
     use StringValueFactory;

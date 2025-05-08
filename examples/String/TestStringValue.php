@@ -11,7 +11,7 @@ use WizDevelop\PhpValueObject\ValueObjectMeta;
 /**
  * 文字列の値オブジェクトの例
  */
-#[ValueObjectMeta(displayName: '文字列', description: '文字列の値オブジェクトの例')]
+#[ValueObjectMeta(name: '文字列', description: '文字列の値オブジェクトの例')]
 final readonly class TestStringValue extends StringValue
 {
     #[Override]

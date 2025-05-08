@@ -18,7 +18,7 @@ use WizDevelop\PhpValueObject\ValueObjectMeta;
 /**
  * ローカル時刻を表す値オブジェクト
  */
-#[ValueObjectMeta(displayName: 'ローカル時刻')]
+#[ValueObjectMeta(name: 'ローカル時刻')]
 readonly class LocalTime implements IValueObject, Stringable
 {
     final public const int MONTHS_PER_YEAR = 12;

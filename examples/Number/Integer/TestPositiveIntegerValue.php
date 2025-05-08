@@ -12,7 +12,7 @@ use WizDevelop\PhpValueObject\ValueObjectMeta;
  * PositiveIntegerValue抽象クラスのテスト用実装
  * 単にPositiveIntegerValueを実装するだけのシンプルなクラス
  */
-#[ValueObjectMeta(displayName: '正の整数')]
+#[ValueObjectMeta(name: '正の整数')]
 final readonly class TestPositiveIntegerValue extends PositiveIntegerValue
 {
     #[Override]

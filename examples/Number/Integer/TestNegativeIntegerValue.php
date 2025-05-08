@@ -12,7 +12,7 @@ use WizDevelop\PhpValueObject\ValueObjectMeta;
  * NegativeIntegerValue抽象クラスのテスト用実装
  * 単にNegativeIntegerValueを実装するだけのシンプルなクラス
  */
-#[ValueObjectMeta(displayName: '負の整数')]
+#[ValueObjectMeta(name: '負の整数')]
 final readonly class TestNegativeIntegerValue extends NegativeIntegerValue
 {
     #[Override]

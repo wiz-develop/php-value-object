@@ -13,7 +13,7 @@ use Attribute;
 final readonly class ValueObjectMeta
 {
     public function __construct(
-        public string $displayName,
+        public string $name,
         public ?string $description = null,
     ) {
     }

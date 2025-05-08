@@ -10,7 +10,7 @@ use WizDevelop\PhpValueObject\Collection\ArrayList;
  * @template TValue of IValueObject
  * @extends ArrayList<TValue>
  */
-readonly class ValueObjects extends ArrayList
+readonly class ValueObjectList extends ArrayList
 {
     /**
      * 存在するかどうか

@@ -13,7 +13,7 @@ use WizDevelop\PhpValueObject\ValueObjectMeta;
  * DecimalValue抽象クラスのテスト用実装
  * 単にDecimalValueを実装するだけのシンプルなクラス
  */
-#[ValueObjectMeta(displayName: '数値')]
+#[ValueObjectMeta(name: '数値')]
 final readonly class TestDecimalValue extends DecimalValue
 {
     #[Override]
