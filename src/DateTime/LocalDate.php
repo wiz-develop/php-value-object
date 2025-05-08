@@ -56,6 +56,7 @@ readonly class LocalDate implements IValueObject
         assert(static::isValidYear($year)->isOk());
         assert(static::isValidMonth($month)->isOk());
         assert(static::isValidDay($day)->isOk());
+        assert(static::isValidDate($year, $month, $day)->isOk());
     }
 
     // -------------------------------------------------------------------------
@@ -126,6 +127,7 @@ readonly class LocalDate implements IValueObject
             ->andThen(static fn () => static::isValidYear($year))
             ->andThen(static fn () => static::isValidMonth($month))
             ->andThen(static fn () => static::isValidDay($day))
+            ->andThen(static fn () => static::isValidDate($year, $month, $day))
             ->andThen(static fn () => Result\ok(new static($year, $month, $day)));
     }
 
@@ -257,6 +259,44 @@ readonly class LocalDate implements IValueObject
             );
         }
 
+
+
+        return Result\ok(true);
+    }
+
+    /**
+     * 有効な日かどうかを判定
+     * @param  int                           $year        年
+     * @param  int<1, 12>                    $monthOfYear 月
+     * @param  int<1, 31>                    $dayOfMonth  日
+     * @return Result<bool,ValueObjectError>
+     */
+    final protected static function isValidDate(int $year, int $monthOfYear, int $dayOfMonth): Result
+    {
+        $monthLength = self::lengthOfMonth($year, $monthOfYear);
+
+        if ($dayOfMonth > $monthLength) {
+            if ($dayOfMonth === 29) {
+                return Result\err(
+                    ValueObjectError::dateTime()->invalidLeapYear(
+                        className: static::class,
+                        year: (string)$year,
+                        month: (string)$monthOfYear,
+                        day: (string)$dayOfMonth,
+                    )
+                );
+            }
+
+            return Result\err(
+                ValueObjectError::dateTime()->invalidDate(
+                    className: static::class,
+                    year: (string)$year,
+                    month: (string)$monthOfYear,
+                    day: (string)$dayOfMonth,
+                )
+            );
+        }
+
         return Result\ok(true);
     }
 
@@ -333,11 +373,7 @@ readonly class LocalDate implements IValueObject
      */
     final public function getLengthOfMonth(): int
     {
-        return match ($this->month) {
-            2 => $this->isLeapYear() ? 29 : 28,
-            4, 6, 9, 11 => 30,
-            default => 31,
-        };
+        return self::lengthOfMonth($this->year, $this->month);
     }
 
     // -------------------------------------------------------------------------
@@ -407,7 +443,7 @@ readonly class LocalDate implements IValueObject
             return $this;
         }
 
-        return $this->resolvePreviousValid($this->year + $years, $this->month, $this->day);
+        return self::resolvePreviousValid($this->year + $years, $this->month, $this->day);
     }
 
     /**
@@ -418,18 +454,20 @@ readonly class LocalDate implements IValueObject
      */
     final public function addMonths(int $months): static
     {
+        if ($months === 0) {
+            return $this;
+        }
+
         $month = $this->month + $months - 1;
 
-        // 月を12で割った商（小数点以下切り捨て）
-        $yearDiff = intdiv($month, 12);
+        $yearDiff = Math::floorDiv($month, 12);
 
-        // 月を12で割った余りに1を足す（NOTE: $monthが負の場合でも正しく動作するようにしている）
         /** @var int<1, 12> $month */
-        $month = ($month % 12 + 12) % 12 + 1;
+        $month = Math::floorMod($month, 12) + 1;
 
         $year = $this->year + $yearDiff;
 
-        return $this->resolvePreviousValid($year, $month, $this->day);
+        return self::resolvePreviousValid($year, $month, $this->day);
     }
 
     /**
@@ -455,7 +493,7 @@ readonly class LocalDate implements IValueObject
 
         // Performance optimization for a common use case.
         if ($days === 1) {
-            if ($this->day >= 28 && $this->isEndOfMonth()) {
+            if ($this->day >= 28 && self::isEndOfMonth($this->year, $this->month, $this->day)) {
                 return new static($this->year + intdiv($this->month, 12), ($this->month % 12) + 1, 1);
             }
 
@@ -540,7 +578,7 @@ readonly class LocalDate implements IValueObject
 
         if ($m > 2) {
             --$total;
-            if (! $this->isLeapYear()) {
+            if (! self::isLeapYear($this->year)) {
                 --$total;
             }
         }
@@ -575,10 +613,10 @@ readonly class LocalDate implements IValueObject
      * @param int<1, 12> $month the month-of-year to represent
      * @param int<1, 31> $day   the day-of-month to represent, validated from 1 to 31
      */
-    private function resolvePreviousValid(int $year, int $month, int $day): static
+    private static function resolvePreviousValid(int $year, int $month, int $day): static
     {
         if ($day > 28) {
-            $day = min($day, $this->getLengthOfMonth());
+            $day = min($day, self::lengthOfMonth($year, $month));
         }
 
         return new static($year, $month, $day);
@@ -587,16 +625,31 @@ readonly class LocalDate implements IValueObject
     /**
      * Returns whether the year is a leap year.
      */
-    private function isLeapYear(): bool
+    private static function isLeapYear(int $year): bool
     {
-        return (($this->year & 3) === 0) && (($this->year % 100) !== 0 || ($this->year % 400) === 0);
+        return (($year & 3) === 0) && (($year % 100) !== 0 || ($year % 400) === 0);
+    }
+
+    /**
+     * @param  int<1, 12>  $month
+     * @return int<28, 31>
+     */
+    private static function lengthOfMonth(int $year, int $month): int
+    {
+        return match ($month) {
+            2 => self::isLeapYear($year) ? 29 : 28,
+            4, 6, 9, 11 => 30,
+            default => 31,
+        };
     }
 
     /**
      * Returns whether this date is the last day of the month.
+     * @param int<1, 12> $month
+     * @param int<1, 31> $day
      */
-    private function isEndOfMonth(): bool
+    private static function isEndOfMonth(int $year, int $month, int $day): bool
     {
-        return $this->day === $this->getLengthOfMonth();
+        return $day === self::lengthOfMonth($year, $month);
     }
 }

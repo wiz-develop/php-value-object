@@ -493,17 +493,18 @@ readonly class LocalTime implements IValueObject
             return $this;
         }
 
-        $divBase = intdiv($this->micro, self::MICROS_PER_SECOND);
-        $modBase = $this->micro % self::MICROS_PER_SECOND;
+        $divBase = Math::floorDiv($this->micro, self::MICROS_PER_SECOND);
+        $modBase = Math::floorMod($this->micro, self::MICROS_PER_SECOND);
 
-        // $microsは負の可能性があるので調整が必要
-        $divPlus = ($micros < 0)
-            ? intdiv($micros - self::MICROS_PER_SECOND + 1, self::MICROS_PER_SECOND)
-            : intdiv($micros, self::MICROS_PER_SECOND);
-
-        $modPlus = ($micros % self::MICROS_PER_SECOND + self::MICROS_PER_SECOND) % self::MICROS_PER_SECOND;
+        $divPlus = Math::floorDiv($micros, self::MICROS_PER_SECOND);
+        $modPlus = Math::floorMod($micros, self::MICROS_PER_SECOND);
 
         $diffSeconds = $divBase + $divPlus;
+
+        /**
+         * HACK: `new static($this->hour, $this->minute, $this->second, $micro)` にて発生するphpstan静的エラーを回避するため
+         * @var int<0, 1_000_000>
+         */
         $micro = $modBase + $modPlus;
 
         if ($micro >= self::MICROS_PER_SECOND) {

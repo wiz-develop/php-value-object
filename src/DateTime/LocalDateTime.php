@@ -360,15 +360,15 @@ readonly class LocalDateTime implements IValueObject
     }
 
     /**
-     * Returns a copy of this LocalDateTime with the specified period in nanoseconds added.
+     * Returns a copy of this LocalDateTime with the specified period in microseconds added.
      */
-    final public function addNanos(int $nanos): static
+    final public function addMicros(int $micros): static
     {
-        if ($nanos === 0) {
+        if ($micros === 0) {
             return $this;
         }
 
-        return $this->addWithOverflow(0, 0, 0, $nanos, 1);
+        return $this->addWithOverflow(0, 0, 0, $micros, 1);
     }
 
     /**
@@ -456,15 +456,15 @@ readonly class LocalDateTime implements IValueObject
     }
 
     /**
-     * Returns a copy of this LocalDateTime with the specified period in nanoseconds subtracted.
+     * Returns a copy of this LocalDateTime with the specified period in microseconds subtracted.
      */
-    final public function subNanos(int $nanos): static
+    final public function subMicros(int $micros): static
     {
-        if ($nanos === 0) {
+        if ($micros === 0) {
             return $this;
         }
 
-        return $this->addWithOverflow(0, 0, 0, $nanos, -1);
+        return $this->addWithOverflow(0, 0, 0, $micros, -1);
     }
 
     // -------------------------------------------------------------------------
@@ -514,19 +514,15 @@ readonly class LocalDateTime implements IValueObject
         $totSeconds = $totSeconds * $sign + $curSoD;
 
         $totMicros = $micros * $sign + $this->time->getMicro();
-        $totSeconds += (int)floor($totMicros / LocalTime::MICROS_PER_SECOND);
-        $newMicro = $totMicros % LocalTime::MICROS_PER_SECOND;
-        if ($newMicro < 0) {
-            $newMicro += LocalTime::MICROS_PER_SECOND;
-            --$totSeconds;
-        }
+        $totSeconds += Math::floorDiv($totMicros, LocalTime::MICROS_PER_SECOND);
 
-        $totDays += (int)floor($totSeconds / LocalTime::SECONDS_PER_DAY);
-        $newSoD = $totSeconds % LocalTime::SECONDS_PER_DAY;
-        if ($newSoD < 0) {
-            $newSoD += LocalTime::SECONDS_PER_DAY;
-            --$totDays;
-        }
+        /** @var int<0, 999999> */
+        $newMicro = Math::floorMod($totMicros, LocalTime::MICROS_PER_SECOND);
+
+        $totDays += Math::floorDiv($totSeconds, LocalTime::SECONDS_PER_DAY);
+
+        /** @var int<0, 86399> */
+        $newSoD = Math::floorMod($totSeconds, LocalTime::SECONDS_PER_DAY);
 
         $newDate = $this->date->addDays($totDays);
         $newTime = ($newSoD === $curSoD ? $this->time : LocalTime::ofSecondOfDay($newSoD, $newMicro));

@@ -37,4 +37,42 @@ final readonly class DateTimeValueError
             message: $message,
         );
     }
+
+    /**
+     * Invalid date February 29 as $year is not a leap year
+     * @param class-string<DateTimeValueBase> $className
+     */
+    public static function invalidLeapYear(
+        string $className,
+        string $year,
+        string $month,
+        string $day,
+    ): ValueObjectError {
+        $displayName = ValueObjectError::getDisplayName($className);
+        $message = "{$displayName}の{$year}年はうるう年ではないため、{$month}月{$day}日は無効な日付です。";
+
+        return ValueObjectError::of(
+            code: 'value_object.datetime.invalid_leap_year',
+            message: $message,
+        );
+    }
+
+    /**
+     * 日付が無効
+     * @param class-string<DateTimeValueBase> $className
+     */
+    public static function invalidDate(
+        string $className,
+        string $year,
+        string $month,
+        string $day,
+    ): ValueObjectError {
+        $displayName = ValueObjectError::getDisplayName($className);
+        $message = "{$displayName}の{$year}年{$month}月{$day}日は無効な日付です。";
+
+        return ValueObjectError::of(
+            code: 'value_object.datetime.invalid_date',
+            message: $message,
+        );
+    }
 }
