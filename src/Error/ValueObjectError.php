@@ -66,4 +66,9 @@ final readonly class ValueObjectError extends ErrorValue
     {
         return new BooleanValueError();
     }
+
+    public static function dateTime(): DateTimeValueError
+    {
+        return new DateTimeValueError();
+    }
 }

@@ -36,11 +36,11 @@ trait DecimalValueFactory
     final public static function tryFromNullable(?Number $value): Result
     {
         if ($value === null) {
-            // @phpstan-ignore-next-line
+            // @phpstan-ignore return.type
             return Result\ok(Option\none());
         }
 
-        // @phpstan-ignore-next-line
+        // @phpstan-ignore return.type
         return static::tryFrom($value)->map(static fn ($result) => Option\some($result));
     }
 }
