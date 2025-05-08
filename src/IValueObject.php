@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace WizDevelop\PhpValueObject;
 
 use JsonSerializable;
-use Stringable;
 
 /**
  * すべての値オブジェクトの基底インターフェース
  * @see WizDevelop\PhpValueObject\ValueObjectDefault
  */
-interface IValueObject extends Stringable, JsonSerializable
+interface IValueObject extends JsonSerializable
 {
     /**
      * 値オブジェクトの等価性を比較する

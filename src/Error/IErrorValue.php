@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace WizDevelop\PhpValueObject\Error;
 
+use Stringable;
 use WizDevelop\PhpValueObject\IValueObject;
 
 /**
  * エラー値オブジェクト インターフェース
  */
-interface IErrorValue extends IValueObject
+interface IErrorValue extends IValueObject, Stringable
 {
     /**
      * シリアライズする際の区切り文字列

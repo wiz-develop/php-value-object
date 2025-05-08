@@ -6,6 +6,7 @@ namespace WizDevelop\PhpValueObject\Number\Decimal;
 
 use BcMath\Number;
 use Override;
+use Stringable;
 use WizDevelop\PhpMonad\Result;
 use WizDevelop\PhpValueObject\Error\ValueObjectError;
 use WizDevelop\PhpValueObject\IValueObject;
@@ -13,7 +14,7 @@ use WizDevelop\PhpValueObject\IValueObject;
 /**
  * 少数の値オブジェクトの基底クラス
  */
-abstract readonly class DecimalValueBase implements IValueObject, IArithmetic, IComparison, IDecimalValueFactory
+abstract readonly class DecimalValueBase implements IValueObject, Stringable, IArithmetic, IComparison, IDecimalValueFactory
 {
     use Arithmetic;
     use Comparison;
@@ -35,7 +36,7 @@ abstract readonly class DecimalValueBase implements IValueObject, IArithmetic, I
     #[Override]
     final public function equals(IValueObject $other): bool
     {
-        return (string)$this === (string)$other;
+        return $this->value->compare($other->value) === 0;
     }
 
     #[Override]
@@ -47,7 +48,7 @@ abstract readonly class DecimalValueBase implements IValueObject, IArithmetic, I
     #[Override]
     final public function jsonSerialize(): string
     {
-        return (string)$this;
+        return (string)$this->value;
     }
 
     /**

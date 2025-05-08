@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;
 use Override;
+use Stringable;
 use WizDevelop\PhpMonad\Option;
 use WizDevelop\PhpMonad\Result;
 use WizDevelop\PhpValueObject\Error\ValueObjectError;
@@ -18,7 +19,7 @@ use WizDevelop\PhpValueObject\ValueObjectMeta;
  * ローカル時刻を表す値オブジェクト
  */
 #[ValueObjectMeta(displayName: 'ローカル時刻')]
-readonly class LocalTime implements IValueObject
+readonly class LocalTime implements IValueObject, Stringable
 {
     final public const int MONTHS_PER_YEAR = 12;
     final public const int DAYS_PER_WEEK = 7;

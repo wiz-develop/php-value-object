@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace WizDevelop\PhpValueObject\Number\Integer;
 
 use Override;
+use Stringable;
 use WizDevelop\PhpMonad\Result;
 use WizDevelop\PhpValueObject\Error\ValueObjectError;
 use WizDevelop\PhpValueObject\IValueObject;
@@ -12,7 +13,7 @@ use WizDevelop\PhpValueObject\IValueObject;
 /**
  * 整数の値オブジェクトの基底クラス
  */
-abstract readonly class IntegerValueBase implements IValueObject, IArithmetic, IComparison, IIntegerValueFactory
+abstract readonly class IntegerValueBase implements IValueObject, Stringable, IArithmetic, IComparison, IIntegerValueFactory
 {
     use Arithmetic;
     use Comparison;
@@ -31,7 +32,7 @@ abstract readonly class IntegerValueBase implements IValueObject, IArithmetic, I
     #[Override]
     final public function equals(IValueObject $other): bool
     {
-        return (string)$this === (string)$other;
+        return $this->value === $other->value;
     }
 
     #[Override]
