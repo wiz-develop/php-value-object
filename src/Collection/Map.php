@@ -147,8 +147,8 @@ readonly class Map extends CollectionBase implements IMap, IMapFactory, ArrayAcc
     #[Override]
     final public static function tryFrom(Pair ...$values): Result
     {
-        // @phpstan-ignore-next-line
-        return static::isValidCount($values)
+        return static::isValid($values) // @phpstan-ignore argument.type
+            ->andThen(static fn () => static::isValidCount($values)) // @phpstan-ignore argument.type
             ->andThen(static fn () => Result\ok(static::from(...$values)));
     }
 
