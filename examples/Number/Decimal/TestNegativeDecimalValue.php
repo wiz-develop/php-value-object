@@ -13,7 +13,7 @@ use WizDevelop\PhpValueObject\ValueObjectMeta;
  * NegativeDecimalValue抽象クラスのテスト用実装
  * ゼロを含まない負の小数値オブジェクト
  */
-#[ValueObjectMeta(displayName: '負の数値')]
+#[ValueObjectMeta(name: '負の数値')]
 final readonly class TestNegativeDecimalValue extends NegativeDecimalValue
 {
     #[Override]

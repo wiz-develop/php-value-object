@@ -18,7 +18,7 @@ use WizDevelop\PhpValueObject\ValueObjectMeta;
 /**
  * ローカル日付を表す値オブジェクト
  */
-#[ValueObjectMeta(displayName: 'ローカル日付')]
+#[ValueObjectMeta(name: 'ローカル日付')]
 readonly class LocalDate implements IValueObject, Stringable
 {
     /**

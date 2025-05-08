@@ -12,7 +12,7 @@ use WizDevelop\PhpValueObject\ValueObjectMeta;
  * IntegerValue抽象クラスのテスト用実装
  * 単にIntegerValueを実装するだけのシンプルなクラス
  */
-#[ValueObjectMeta(displayName: '整数')]
+#[ValueObjectMeta(name: '整数')]
 final readonly class TestIntegerValue extends IntegerValue
 {
     #[Override]

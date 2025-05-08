@@ -30,7 +30,7 @@ final readonly class ValueObjectError extends ErrorValue
             if (count($attributes) > 0) {
                 $metaAttribute = $attributes[0]->newInstance();
 
-                return $metaAttribute->displayName;
+                return $metaAttribute->name;
             }
         } catch (ReflectionException $e) {
             // 何もしない
