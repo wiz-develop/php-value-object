@@ -28,7 +28,7 @@ readonly class PositiveIntegerValue extends IntegerValueBase
     #[Override]
     final public static function tryFrom(int $value): Result
     {
-        return static::isRangeValid($value)
+        return static::isValidRange($value)
             ->andThen(static fn () => static::isValid($value))
             ->andThen(static fn () => Result\ok(static::from($value)));
     }
@@ -52,7 +52,7 @@ readonly class PositiveIntegerValue extends IntegerValueBase
     }
 
     #[Override]
-    final protected static function isRangeValid(int $value): Result
+    final protected static function isValidRange(int $value): Result
     {
         $minValue = max(static::min(), 0);
         $maxValue = min(static::max(), IntegerValueBase::MAX_VALUE);

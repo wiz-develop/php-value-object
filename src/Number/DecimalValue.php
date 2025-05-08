@@ -29,8 +29,8 @@ readonly class DecimalValue extends DecimalValueBase
     #[Override]
     final public static function tryFrom(Number $value): Result
     {
-        return static::isRangeValid($value)
-            ->andThen(static fn () => static::isDigitsValid($value))
+        return static::isValidRange($value)
+            ->andThen(static fn () => static::isValidDigits($value))
             ->andThen(static fn () => static::isValid($value))
             ->andThen(static fn () => Result\ok(static::from($value)));
     }
@@ -48,7 +48,7 @@ readonly class DecimalValue extends DecimalValueBase
     }
 
     #[Override]
-    final protected static function isRangeValid(Number $value): Result
+    final protected static function isValidRange(Number $value): Result
     {
         $min = new Number(DecimalValueBase::MIN_VALUE);
         $max = new Number(DecimalValueBase::MAX_VALUE);

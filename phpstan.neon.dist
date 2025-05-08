@@ -8,6 +8,7 @@ parameters:
         - examples
     typeAliases:
         NumberValueBase: '\WizDevelop\PhpValueObject\Number\Decimal\DecimalValueBase|\WizDevelop\PhpValueObject\Number\Integer\IntegerValueBase'
+        DateTimeValueBase: '\WizDevelop\PhpValueObject\DateTime\LocalDate|\WizDevelop\PhpValueObject\DateTime\LocalTime|\WizDevelop\PhpValueObject\DateTime\LocalDateTime'
     ignoreErrors:
         -
             # NOTE: PHP-CS-Fixer のルールと競合するため

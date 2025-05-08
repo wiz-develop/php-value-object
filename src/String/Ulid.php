@@ -20,7 +20,7 @@ use WizDevelop\PhpValueObject\ValueObjectMeta;
  * @see https://github.com/ulid/spec
  */
 #[ValueObjectMeta(displayName: 'ULID', description: 'ULIDの値オブジェクト')]
-readonly class UlidValue extends StringValueBase
+readonly class Ulid extends StringValueBase
 {
     use StringValueFactory;
 
@@ -47,8 +47,8 @@ readonly class UlidValue extends StringValueBase
     final public static function tryFrom(string $value): Result
     {
         return self::isValid($value)
-            ->andThen(static fn () => self::isLengthValid($value))
-            ->andThen(static fn () => self::isRegexValid($value))
+            ->andThen(static fn () => self::isValidLength($value))
+            ->andThen(static fn () => self::isValidRegex($value))
             ->andThen(static fn () => self::isValidUlid($value))
             ->andThen(static fn () => Result\ok(self::from($value)));
     }
