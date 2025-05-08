@@ -27,6 +27,7 @@ abstract readonly class CollectionBase implements IValueObject, Stringable
      */
     protected function __construct(protected array $elements)
     {
+        assert(static::isValid($elements)->isOk());
         assert(static::isValidCount($elements)->isOk());
     }
 
@@ -101,6 +102,20 @@ abstract readonly class CollectionBase implements IValueObject, Stringable
             ));
         }
 
+        return Result\ok(true);
+    }
+
+    /**
+     * 有効な値かどうか
+     * NOTE: 実装クラスでのオーバーライド用メソッド
+     *
+     * @template TIsValidKey of TKey|array-key
+     * @template TIsValidValue of TValue
+     * @param  array<TIsValidKey,TIsValidValue> $elements
+     * @return Result<bool,ValueObjectError>
+     */
+    protected static function isValid(array $elements): Result
+    {
         return Result\ok(true);
     }
 }

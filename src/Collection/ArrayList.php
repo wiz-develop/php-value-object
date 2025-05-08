@@ -91,7 +91,8 @@ readonly class ArrayList extends CollectionBase implements IArrayList, IArrayLis
     #[Override]
     final public static function tryFrom(array $elements): Result
     {
-        return static::isValidCount($elements)
+        return static::isValid($elements)
+            ->andThen(static fn () => static::isValidCount($elements))
             ->andThen(static fn () => Result\ok(static::from($elements)));
     }
 
