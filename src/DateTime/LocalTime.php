@@ -94,6 +94,10 @@ readonly class LocalTime implements IValueObject
      */
     final public static function ofSecondOfDay(int $secondOfDay, int $microOfSecond = 0): static
     {
+        // NOTE: 事前条件
+        // @phpstan-ignore-next-line
+        assert($secondOfDay >= 0 && $secondOfDay < self::SECONDS_PER_DAY);
+
         /** @var int<0, 23> */
         $hours = intdiv($secondOfDay, self::SECONDS_PER_HOUR);
 
@@ -340,8 +344,8 @@ readonly class LocalTime implements IValueObject
      */
     final public function toSecondOfDay(): int
     {
-        return $this->hour * 3600
-            + $this->minute * 60
+        return $this->hour * self::SECONDS_PER_HOUR
+            + $this->minute * self::SECONDS_PER_MINUTE
             + $this->second;
     }
 
