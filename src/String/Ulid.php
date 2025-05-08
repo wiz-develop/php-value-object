@@ -20,7 +20,7 @@ use WizDevelop\PhpValueObject\ValueObjectMeta;
  * @see https://github.com/ulid/spec
  */
 #[ValueObjectMeta(displayName: 'ULID', description: 'ULIDの値オブジェクト')]
-readonly class UlidValue extends StringValueBase
+readonly class Ulid extends StringValueBase
 {
     use StringValueFactory;
 

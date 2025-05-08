@@ -14,7 +14,7 @@ use PHPUnit\Framework\Attributes\TestDox;
 use ReflectionClass;
 use WizDevelop\PhpValueObject\Error\ValueObjectError;
 use WizDevelop\PhpValueObject\Examples\String\TestUlidValue;
-use WizDevelop\PhpValueObject\String\UlidValue;
+use WizDevelop\PhpValueObject\String\Ulid;
 use WizDevelop\PhpValueObject\Tests\TestCase;
 
 /**
@@ -22,7 +22,7 @@ use WizDevelop\PhpValueObject\Tests\TestCase;
  */
 #[TestDox('UlidValueクラスのテスト')]
 #[Group('UlidValue')]
-#[CoversClass(UlidValue::class)]
+#[CoversClass(Ulid::class)]
 #[CoversClass(TestUlidValue::class)]
 final class UlidValueTest extends TestCase
 {
