@@ -20,20 +20,20 @@ interface IArrayListFactory
      *
      * @template TFromValue of TValue
      *
-     * @param  array<int,TFromValue> $elements
+     * @param  iterable<int,TFromValue> $elements
      * @return static<TFromValue>
      */
-    public static function from(array $elements): static;
+    public static function from(iterable $elements): static;
 
     /**
      * 信頼できないプリミティブ値からインスタンスを生成する
      *
      * @template TTryFromValue of TValue
      *
-     * @param  array<int,TTryFromValue>                       $elements
+     * @param  iterable<int,TTryFromValue>                    $elements
      * @return Result<static<TTryFromValue>,ValueObjectError>
      */
-    public static function tryFrom(array $elements): Result;
+    public static function tryFrom(iterable $elements): Result;
 
     /**
      * 空のコレクションを作成する
