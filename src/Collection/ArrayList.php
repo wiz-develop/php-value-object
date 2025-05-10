@@ -83,17 +83,23 @@ readonly class ArrayList extends CollectionBase implements IArrayList, IArrayLis
     // NOTE: IArrayListFactory
     // -------------------------------------------------------------------------
     #[Override]
-    final public static function from(array $elements): static
+    final public static function from(iterable $elements): static
     {
-        return new static($elements);
+        if (is_array($elements)) {
+            return new static($elements);
+        }
+
+        return new static(iterator_to_array($elements));
     }
 
     #[Override]
-    final public static function tryFrom(array $elements): Result
+    final public static function tryFrom(iterable $elements): Result
     {
+        $elements = is_array($elements) ? $elements : iterator_to_array($elements);
+
         return static::isValid($elements)
             ->andThen(static fn () => static::isValidCount($elements))
-            ->andThen(static fn () => Result\ok(static::from($elements)));
+            ->andThen(static fn () => Result\ok(new static($elements)));
     }
 
     #[Override]
