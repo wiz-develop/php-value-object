@@ -18,6 +18,7 @@ use WizDevelop\PhpValueObject\Collection\Exception\CollectionNotFoundException;
 use WizDevelop\PhpValueObject\Collection\Exception\MultipleCollectionsFoundException;
 use WizDevelop\PhpValueObject\Collection\List\IArrayList;
 use WizDevelop\PhpValueObject\Collection\List\IArrayListFactory;
+use WizDevelop\PhpValueObject\Error\ValueObjectError;
 
 /**
  * リストコレクション
@@ -97,6 +98,38 @@ readonly class ArrayList extends CollectionBase implements IArrayList, IArrayLis
     {
         $elements = is_array($elements) ? $elements : iterator_to_array($elements);
 
+        return static::isValid($elements)
+            ->andThen(static fn () => static::isValidCount($elements))
+            ->andThen(static fn () => Result\ok(new static($elements)));
+    }
+
+    /**
+     * 信頼できないResult型のプリミティブ値からインスタンスを生成する
+     *
+     * @template TTryFromValue of TValue
+     *
+     * @param  iterable<int,(Result<TTryFromValue,IErrorValue>|Result)> $results
+     * @return Result<static<TTryFromValue>,ValueObjectError>
+     */
+    /**
+     * @phpstan-ignore-next-line
+     */
+    #[Override]
+    final public static function tryFromResults(iterable $results): Result
+    {
+        $elements = is_array($results) ? $results : iterator_to_array($results);
+
+        $elementsResult = Result\combineWithErrorValue(...$elements);
+        if ($elementsResult->isErr()) {
+            return Result\err(ValueObjectError::collection()->invalidElementValues(
+                static::class,
+                ...$elementsResult->unwrapErr()
+            ));
+        }
+
+        $elements = array_map(static fn ($result) => $result->unwrap(), $elements);
+
+        // @phpstan-ignore return.type
         return static::isValid($elements)
             ->andThen(static fn () => static::isValidCount($elements))
             ->andThen(static fn () => Result\ok(new static($elements)));

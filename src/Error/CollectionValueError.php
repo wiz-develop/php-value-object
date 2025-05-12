@@ -62,4 +62,23 @@ final readonly class CollectionValueError
             message: "{$displayName}は{$min}個以上、{$max}個以下である必要があります。(要素数:{$count})",
         );
     }
+
+    /**
+     * 要素が無効
+     * @param class-string<CollectionBase<mixed,mixed>> $className
+     */
+    public static function invalidElementValues(string $className, IErrorValue ...$errors): ValueObjectError
+    {
+        $displayName = ValueObjectError::getDisplayName($className);
+
+        $errorsStr = implode(
+            ', ',
+            array_map(static fn (IErrorValue $error) => $error->getMessage(), $errors),
+        );
+
+        return ValueObjectError::of(
+            code: 'value_object.collection.invalid_element_values',
+            message: "{$displayName}に無効な要素が含まれています。(無効な要素の詳細: {$errorsStr})",
+        );
+    }
 }
