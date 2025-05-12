@@ -71,4 +71,9 @@ final readonly class ValueObjectError extends ErrorValue
     {
         return new DateTimeValueError();
     }
+
+    public static function enum(): EnumValueError
+    {
+        return new EnumValueError();
+    }
 }
