@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace WizDevelop\PhpValueObject\Collection\List;
 
 use WizDevelop\PhpMonad\Result;
+use WizDevelop\PhpValueObject\Error\IErrorValue;
 use WizDevelop\PhpValueObject\Error\ValueObjectError;
 
 /**
@@ -34,6 +35,16 @@ interface IArrayListFactory
      * @return Result<static<TTryFromValue>,ValueObjectError>
      */
     public static function tryFrom(iterable $elements): Result;
+
+    /**
+     * 信頼できないResult型のプリミティブ値からインスタンスを生成する
+     *
+     * @template TTryFromValue of TValue
+     *
+     * @param  iterable<int,(Result<TTryFromValue,IErrorValue>|Result)> $results
+     * @return Result<static<TTryFromValue>,ValueObjectError>
+     */
+    public static function tryFromResults(iterable $results): Result; /** @phpstan-ignore-line */
 
     /**
      * 空のコレクションを作成する
