@@ -20,6 +20,8 @@ use WizDevelop\PhpValueObject\Collection\Exception\CollectionNotFoundException;
 use WizDevelop\PhpValueObject\Collection\Exception\MultipleCollectionsFoundException;
 use WizDevelop\PhpValueObject\Collection\Map\IMap;
 use WizDevelop\PhpValueObject\Collection\Map\IMapFactory;
+use WizDevelop\PhpValueObject\Error\IErrorValue;
+use WizDevelop\PhpValueObject\Error\ValueObjectError;
 use WizDevelop\PhpValueObject\IValueObject;
 
 /**
@@ -150,6 +152,54 @@ readonly class Map extends CollectionBase implements IMap, IMapFactory, ArrayAcc
         return static::isValid($values) // @phpstan-ignore argument.type
             ->andThen(static fn () => static::isValidCount($values)) // @phpstan-ignore argument.type
             ->andThen(static fn () => Result\ok(static::from(...$values)));
+    }
+
+    /**
+     * 信頼できるプリミティブ値からインスタンスを生成する
+     *
+     * @template TTryFromKey of TKey
+     * @template TTryFromValue of TValue
+     *
+     * @param  (Pair<Result<TTryFromKey,IErrorValue>,Result<TTryFromValue,IErrorValue>>|Pair) ...$values
+     * @return Result<static<TTryFromKey,TTryFromValue>,ValueObjectError>
+     */
+    /**
+     * @phpstan-ignore-next-line
+     */
+    #[Override]
+    final public static function tryFromResults(Pair ...$values): Result
+    {
+        /**
+         * @var array<int,Result<TTryFromKey,IErrorValue>>
+         * @phpstan-ignore-next-line
+         * */
+        $keysResults = array_map(static fn ($pair) => $pair->key, $values);
+
+        /**
+         * @var array<int,Result<TTryFromValue,IErrorValue>>
+         * @phpstan-ignore-next-line
+         */
+        $valuesResults = array_map(static fn ($pair) => $pair->value, $values);
+
+        $pairsResult = Result\combineWithErrorValue(
+            ...$keysResults,
+            ...$valuesResults
+        );
+
+        if ($pairsResult->isErr()) {
+            return Result\err(ValueObjectError::collection()->invalidElementValues(
+                static::class,
+                ...$pairsResult->unwrapErr()
+            ));
+        }
+
+        /** @var array<int,Pair<TTryFromKey,TTryFromValue>> */
+        $values = array_map(static fn ($pair) => Pair::of($pair->key->unwrap(), $pair->value->unwrap()), $values); // @phpstan-ignore-line
+
+        // @phpstan-ignore return.type
+        return static::isValid($values) // @phpstan-ignore argument.type
+            ->andThen(static fn () => static::isValidCount($values)) // @phpstan-ignore argument.type
+            ->andThen(static fn () => Result\ok(static::from(...$values))); // @phpstan-ignore-line
     }
 
     #[Override]
