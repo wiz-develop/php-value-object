@@ -18,6 +18,7 @@ use WizDevelop\PhpValueObject\Collection\Exception\CollectionNotFoundException;
 use WizDevelop\PhpValueObject\Collection\Exception\MultipleCollectionsFoundException;
 use WizDevelop\PhpValueObject\Collection\List\IArrayList;
 use WizDevelop\PhpValueObject\Collection\List\IArrayListFactory;
+use WizDevelop\PhpValueObject\Error\IErrorValue;
 use WizDevelop\PhpValueObject\Error\ValueObjectError;
 
 /**

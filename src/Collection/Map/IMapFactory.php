@@ -6,6 +6,7 @@ namespace WizDevelop\PhpValueObject\Collection\Map;
 
 use WizDevelop\PhpMonad\Result;
 use WizDevelop\PhpValueObject\Collection\Pair;
+use WizDevelop\PhpValueObject\Error\IErrorValue;
 use WizDevelop\PhpValueObject\Error\ValueObjectError;
 
 /**
@@ -38,6 +39,17 @@ interface IMapFactory
      * @return Result<static<TTryFromKey,TTryFromValue>,ValueObjectError>
      */
     public static function tryFrom(Pair ...$values): Result;
+
+    /**
+     * 信頼できるプリミティブ値からインスタンスを生成する
+     *
+     * @template TTryFromKey of TKey
+     * @template TTryFromValue of TValue
+     *
+     * @param  (Pair<Result<TTryFromKey,IErrorValue>,Result<TTryFromValue,IErrorValue>>|Pair) ...$values
+     * @return Result<static<TTryFromKey,TTryFromValue>,ValueObjectError>
+     */
+    public static function tryFromResults(Pair ...$values): Result; /** @phpstan-ignore-line */
 
     /**
      * 空のコレクションを作成する
