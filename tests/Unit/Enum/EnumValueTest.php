@@ -66,6 +66,7 @@ final class EnumValueTest extends TestCase
         $result = TestEnumValue::tryFrom2('InvalidValue');
 
         $this->assertFalse($result->isOk());
+        // @phpstan-ignore method.alreadyNarrowedType
         $this->assertTrue($result->isErr());
 
         $error = $result->unwrapErr();
