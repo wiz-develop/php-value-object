@@ -23,6 +23,13 @@ final readonly class StringValueError
     ): ValueObjectError {
         $displayName = ValueObjectError::getDisplayName($className);
 
+        if ($min_length === $max_length) {
+            return ValueObjectError::of(
+                code: 'value_object.string.invalid_length_exact',
+                message: "{$displayName}は{$min_length}文字である必要があります。(値:{$value})",
+            );
+        }
+
         return ValueObjectError::of(
             code: 'value_object.string.invalid_length',
             message: "{$displayName}は{$min_length}文字以上{$max_length}文字以下である必要があります。(値:{$value})",
