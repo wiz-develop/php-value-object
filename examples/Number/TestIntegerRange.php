@@ -125,4 +125,19 @@ $jsonRange = IntegerRange::halfOpenRight(0, 100);
 $json = json_encode($jsonRange);
 
 echo "範囲: {$jsonRange}\n";
-echo "JSON: {$json}\n";
+echo "JSON: {$json}\n\n";
+
+// 13. toがnullの場合（最大値まで）
+echo "=== toがnullの場合（最大値まで） ===\n";
+$openEndRange = IntegerRange::closed(0, null);
+
+echo "0から最大値までの範囲: {$openEndRange}\n";
+echo "最大値: " . $openEndRange->getTo() . "\n";
+echo "1000を含む: " . ($openEndRange->contains(1000) ? 'はい' : 'いいえ') . "\n";
+
+// fromNullableでもtoはnullを許容
+$optionalRange = IntegerRange::fromNullable(100, null);
+if ($optionalRange->isSome()) {
+    $range = $optionalRange->unwrap();
+    echo "100から最大値までの範囲（Optional）: {$range}\n";
+}

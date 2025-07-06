@@ -21,6 +21,8 @@ use WizDevelop\PhpValueObject\ValueObjectMeta;
 #[ValueObjectMeta(name: '整数範囲')]
 final readonly class IntegerRange implements IValueObject, Stringable, JsonSerializable
 {
+    private const int MAX_INT = PHP_INT_MAX;
+
     /**
      * @param int       $from      開始値
      * @param int       $to        終了値
@@ -39,55 +41,65 @@ final readonly class IntegerRange implements IValueObject, Stringable, JsonSeria
      * 指定された整数値から範囲を生成する
      *
      * @param int       $from      開始値
-     * @param int       $to        終了値
+     * @param int|null  $to        終了値（nullの場合は最大値）
      * @param RangeType $rangeType 範囲タイプ（デフォルト：HALF_OPEN_RIGHT）
      */
-    public static function from(int $from, int $to, RangeType $rangeType = RangeType::HALF_OPEN_RIGHT): self
+    public static function from(int $from, ?int $to = null, RangeType $rangeType = RangeType::HALF_OPEN_RIGHT): self
     {
+        $to ??= self::MAX_INT;
+
         return new self($from, $to, $rangeType);
     }
 
     /**
      * 閉区間 [from, to] を生成する
      *
-     * @param int $from 開始値
-     * @param int $to   終了値
+     * @param int      $from 開始値
+     * @param int|null $to   終了値（nullの場合は最大値）
      */
-    public static function closed(int $from, int $to): self
+    public static function closed(int $from, ?int $to = null): self
     {
+        $to ??= self::MAX_INT;
+
         return new self($from, $to, RangeType::CLOSED);
     }
 
     /**
      * 開区間 (from, to) を生成する
      *
-     * @param int $from 開始値
-     * @param int $to   終了値
+     * @param int      $from 開始値
+     * @param int|null $to   終了値（nullの場合は最大値）
      */
-    public static function open(int $from, int $to): self
+    public static function open(int $from, ?int $to = null): self
     {
+        $to ??= self::MAX_INT;
+
         return new self($from, $to, RangeType::OPEN);
     }
 
     /**
      * 左開区間 (from, to] を生成する
      *
-     * @param int $from 開始値
-     * @param int $to   終了値
+     * @param int      $from 開始値
+     * @param int|null $to   終了値（nullの場合は最大値）
      */
-    public static function halfOpenLeft(int $from, int $to): self
+    public static function halfOpenLeft(int $from, ?int $to = null): self
     {
+        $to ??= self::MAX_INT;
+
         return new self($from, $to, RangeType::HALF_OPEN_LEFT);
     }
 
     /**
      * 右開区間 [from, to) を生成する
      *
-     * @param int $from 開始値
-     * @param int $to   終了値
+     * @param int      $from 開始値
+     * @param int|null $to   終了値（nullの場合は最大値）
      */
-    public static function halfOpenRight(int $from, int $to): self
+    public static function halfOpenRight(int $from, ?int $to = null): self
     {
+        $to ??= self::MAX_INT;
+
         return new self($from, $to, RangeType::HALF_OPEN_RIGHT);
     }
 
@@ -95,12 +107,13 @@ final readonly class IntegerRange implements IValueObject, Stringable, JsonSeria
      * 指定された整数値から範囲を生成する（エラーハンドリング付き）
      *
      * @param  int                            $from      開始値
-     * @param  int                            $to        終了値
+     * @param  int|null                       $to        終了値（nullの場合は最大値）
      * @param  RangeType                      $rangeType 範囲タイプ（デフォルト：HALF_OPEN_RIGHT）
      * @return Result<self, ValueObjectError>
      */
-    public static function tryFrom(int $from, int $to, RangeType $rangeType = RangeType::HALF_OPEN_RIGHT): Result
+    public static function tryFrom(int $from, ?int $to = null, RangeType $rangeType = RangeType::HALF_OPEN_RIGHT): Result
     {
+        $to ??= self::MAX_INT;
         $validationResult = self::isValid($from, $to);
         if ($validationResult->isErr()) {
             return $validationResult;
@@ -113,15 +126,17 @@ final readonly class IntegerRange implements IValueObject, Stringable, JsonSeria
      * 指定された整数値から範囲を生成する（null許容）
      *
      * @param  int|null     $from      開始値
-     * @param  int|null     $to        終了値
+     * @param  int|null     $to        終了値（nullの場合は最大値）
      * @param  RangeType    $rangeType 範囲タイプ（デフォルト：HALF_OPEN_RIGHT）
      * @return Option<self>
      */
-    public static function fromNullable(?int $from, ?int $to, RangeType $rangeType = RangeType::HALF_OPEN_RIGHT): Option
+    public static function fromNullable(?int $from, ?int $to = null, RangeType $rangeType = RangeType::HALF_OPEN_RIGHT): Option
     {
-        if ($from === null || $to === null) {
+        if ($from === null) {
             return Option\none();
         }
+
+        $to ??= self::MAX_INT;
 
         return Option\some(new self($from, $to, $rangeType));
     }
@@ -130,16 +145,18 @@ final readonly class IntegerRange implements IValueObject, Stringable, JsonSeria
      * 指定された整数値から範囲を生成する（null許容、エラーハンドリング付き）
      *
      * @param  int|null                               $from      開始値
-     * @param  int|null                               $to        終了値
+     * @param  int|null                               $to        終了値（nullの場合は最大値）
      * @param  RangeType                              $rangeType 範囲タイプ（デフォルト：HALF_OPEN_RIGHT）
      * @return Result<Option<self>, ValueObjectError>
      */
-    public static function tryFromNullable(?int $from, ?int $to, RangeType $rangeType = RangeType::HALF_OPEN_RIGHT): Result
+    public static function tryFromNullable(?int $from, ?int $to = null, RangeType $rangeType = RangeType::HALF_OPEN_RIGHT): Result
     {
-        if ($from === null || $to === null) {
+        if ($from === null) {
             // @phpstan-ignore-next-line
             return Result\ok(Option\none());
         }
+
+        $to ??= self::MAX_INT;
 
         // @phpstan-ignore-next-line
         return self::tryFrom($from, $to, $rangeType)->map(

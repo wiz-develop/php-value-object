@@ -347,18 +347,6 @@ final class IntegerRangeTest extends TestCase
         ], $json);
     }
 
-    public function test_fromNullable_nullが渡された場合Noneを返す(): void
-    {
-        // Act
-        $result1 = IntegerRange::fromNullable(null, 10);
-        $result2 = IntegerRange::fromNullable(1, null);
-        $result3 = IntegerRange::fromNullable(null, null);
-
-        // Assert
-        $this->assertTrue($result1->isNone());
-        $this->assertTrue($result2->isNone());
-        $this->assertTrue($result3->isNone());
-    }
 
     public function test_fromNullable_有効な値が渡された場合Someを返す(): void
     {
@@ -372,16 +360,6 @@ final class IntegerRangeTest extends TestCase
         $this->assertSame(10, $range->getTo());
     }
 
-    public function test_tryFromNullable_nullが渡された場合Ok_Noneを返す(): void
-    {
-        // Act
-        $result = IntegerRange::tryFromNullable(null, 10);
-
-        // Assert
-        $this->assertTrue($result->isOk());
-        $option = $result->unwrap();
-        $this->assertTrue($option->isNone());
-    }
 
     public function test_tryFromNullable_無効な値が渡された場合Errを返す(): void
     {
@@ -433,5 +411,69 @@ final class IntegerRangeTest extends TestCase
         // Assert
         $this->assertTrue($range->contains(0));
         $this->assertSame(11, $range->count());
+    }
+
+    public function test_toがnullの場合は最大値が設定される(): void
+    {
+        // Act
+        $range = IntegerRange::closed(1, null);
+
+        // Assert
+        $this->assertSame(1, $range->getFrom());
+        $this->assertSame(PHP_INT_MAX, $range->getTo());
+    }
+
+    public function test_各ファクトリメソッドでtoがnullの場合は最大値が設定される(): void
+    {
+        // Act
+        $closed = IntegerRange::closed(1, null);
+        $open = IntegerRange::open(1, null);
+        $halfOpenLeft = IntegerRange::halfOpenLeft(1, null);
+        $halfOpenRight = IntegerRange::halfOpenRight(1, null);
+
+        // Assert
+        $this->assertSame(PHP_INT_MAX, $closed->getTo());
+        $this->assertSame(PHP_INT_MAX, $open->getTo());
+        $this->assertSame(PHP_INT_MAX, $halfOpenLeft->getTo());
+        $this->assertSame(PHP_INT_MAX, $halfOpenRight->getTo());
+    }
+
+    public function test_fromNullable_fromがnullの場合のみNoneを返す(): void
+    {
+        // Act
+        $result1 = IntegerRange::fromNullable(null, 10);
+        $result2 = IntegerRange::fromNullable(1, null);
+        $result3 = IntegerRange::fromNullable(null, null);
+
+        // Assert
+        $this->assertTrue($result1->isNone());
+        $this->assertTrue($result2->isSome());
+        $this->assertTrue($result3->isNone());
+
+        // toがnullの場合は最大値が設定される
+        $range = $result2->unwrap();
+        $this->assertSame(1, $range->getFrom());
+        $this->assertSame(PHP_INT_MAX, $range->getTo());
+    }
+
+    public function test_tryFromNullable_fromがnullの場合のみNoneを返す(): void
+    {
+        // Act
+        $result1 = IntegerRange::tryFromNullable(null, 10);
+        $result2 = IntegerRange::tryFromNullable(1, null);
+
+        // Assert
+        $this->assertTrue($result1->isOk());
+        $option1 = $result1->unwrap();
+        $this->assertTrue($option1->isNone());
+
+        $this->assertTrue($result2->isOk());
+        $option2 = $result2->unwrap();
+        $this->assertTrue($option2->isSome());
+
+        // toがnullの場合は最大値が設定される
+        $range = $option2->unwrap();
+        $this->assertSame(1, $range->getFrom());
+        $this->assertSame(PHP_INT_MAX, $range->getTo());
     }
 }
