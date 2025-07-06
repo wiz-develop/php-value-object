@@ -122,7 +122,7 @@ final class ArrayListFromResultsTest extends TestCase
         $error = $result->unwrapErr();
         $this->assertInstanceOf(ValueObjectError::class, $error);
         $this->assertStringContainsString('無効な要素が含まれています', $error->getMessage());
-        $this->assertStringContainsString('テストエラー', $error->getMessage());
+        $this->assertStringContainsString('テストエラー', $error->serialize());
     }
 
     #[Test]
@@ -146,8 +146,8 @@ final class ArrayListFromResultsTest extends TestCase
         $error = $result->unwrapErr();
         $this->assertInstanceOf(ValueObjectError::class, $error);
         $this->assertStringContainsString('無効な要素が含まれています', $error->getMessage());
-        $this->assertStringContainsString('エラー1', $error->getMessage());
-        $this->assertStringContainsString('エラー2', $error->getMessage());
+        $this->assertStringContainsString('エラー1', $error->serialize());
+        $this->assertStringContainsString('エラー2', $error->serialize());
     }
 
     #[Test]

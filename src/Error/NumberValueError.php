@@ -24,6 +24,14 @@ final readonly class NumberValueError
         bool $isMaxInclusive = true,
     ): ValueObjectError {
         $displayName = ValueObjectError::getDisplayName($className);
+
+        if ($min === $max) {
+            return ValueObjectError::of(
+                code: 'value_object.number.invalid_range_exact',
+                message: "{$displayName}は{$min}である必要があります。(値:{$value})",
+            );
+        }
+
         $minText = $isMinInclusive ? '以上' : 'より大きい';
         $maxText = $isMaxInclusive ? '以下' : '未満';
 

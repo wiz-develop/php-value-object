@@ -22,6 +22,14 @@ final readonly class DateTimeValueError
         ?string $maxValue = null,
     ): ValueObjectError {
         $displayName = ValueObjectError::getDisplayName($className);
+
+        if ($minValue === $maxValue) {
+            return ValueObjectError::of(
+                code: 'value_object.datetime.invalid_range_exact',
+                message: "{$displayName}は{$minValue}である必要があります。(値:{$value})",
+            );
+        }
+
         $message = "{$displayName}は有効な{$attributeName}の範囲内である必要があります。(値:{$value})";
 
         if ($minValue !== null && $maxValue !== null) {

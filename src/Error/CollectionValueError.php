@@ -57,6 +57,13 @@ final readonly class CollectionValueError
     ): ValueObjectError {
         $displayName = ValueObjectError::getDisplayName($className);
 
+        if ($min === $max) {
+            return ValueObjectError::of(
+                code: 'value_object.collection.invalid_count_exact',
+                message: "{$displayName}は{$min}個である必要があります。(要素数:{$count})",
+            );
+        }
+
         return ValueObjectError::of(
             code: 'value_object.collection.invalid_range',
             message: "{$displayName}は{$min}個以上、{$max}個以下である必要があります。(要素数:{$count})",
@@ -71,14 +78,10 @@ final readonly class CollectionValueError
     {
         $displayName = ValueObjectError::getDisplayName($className);
 
-        $errorsStr = implode(
-            ', ',
-            array_map(static fn (IErrorValue $error) => $error->getMessage(), $errors),
-        );
-
         return ValueObjectError::of(
             code: 'value_object.collection.invalid_element_values',
-            message: "{$displayName}に無効な要素が含まれています。(無効な要素の詳細: {$errorsStr})",
+            message: "{$displayName}に無効な要素が含まれています。",
+            details: $errors,
         );
     }
 }

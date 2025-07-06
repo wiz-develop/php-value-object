@@ -140,7 +140,7 @@ final class MapFromResultsTest extends TestCase
         $error = $result->unwrapErr();
         $this->assertInstanceOf(ValueObjectError::class, $error);
         $this->assertStringContainsString('無効な要素が含まれています', $error->getMessage());
-        $this->assertStringContainsString('キーエラー', $error->getMessage());
+        $this->assertStringContainsString('キーエラー', $error->serialize());
     }
 
     #[Test]
@@ -163,7 +163,7 @@ final class MapFromResultsTest extends TestCase
         $error = $result->unwrapErr();
         $this->assertInstanceOf(ValueObjectError::class, $error);
         $this->assertStringContainsString('無効な要素が含まれています', $error->getMessage());
-        $this->assertStringContainsString('値エラー', $error->getMessage());
+        $this->assertStringContainsString('値エラー', $error->serialize());
     }
 
     #[Test]
@@ -187,10 +187,10 @@ final class MapFromResultsTest extends TestCase
         $error = $result->unwrapErr();
         $this->assertInstanceOf(ValueObjectError::class, $error);
         $this->assertStringContainsString('無効な要素が含まれています', $error->getMessage());
-        $this->assertStringContainsString('キーエラー1', $error->getMessage());
-        $this->assertStringContainsString('値エラー1', $error->getMessage());
-        $this->assertStringContainsString('キーエラー2', $error->getMessage());
-        $this->assertStringContainsString('値エラー2', $error->getMessage());
+        $this->assertStringContainsString('キーエラー1', $error->serialize());
+        $this->assertStringContainsString('値エラー1', $error->serialize());
+        $this->assertStringContainsString('キーエラー2', $error->serialize());
+        $this->assertStringContainsString('値エラー2', $error->serialize());
     }
 
     #[Test]

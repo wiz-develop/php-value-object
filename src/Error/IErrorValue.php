@@ -29,6 +29,13 @@ interface IErrorValue extends IValueObject, Stringable
     public function getMessage(): string;
 
     /**
+     * エラーの詳細を取得する
+     *
+     * @return IErrorValue[] エラーの詳細
+     */
+    public function getDetails(): array;
+
+    /**
      * エラーをシリアライズする
      */
     public function serialize(): string;
@@ -36,8 +43,8 @@ interface IErrorValue extends IValueObject, Stringable
     /**
      * シリアライズされたエラーをデシリアライズする
      *
-     * @param  string $serialized シリアライズされたエラー
-     * @return static デシリアライズされたエラー
+     * @param  string      $serialized シリアライズされたエラー
+     * @return IErrorValue デシリアライズされたエラー
      */
-    public static function deserialize(string $serialized): static;
+    public static function deserialize(string $serialized): self;
 }
