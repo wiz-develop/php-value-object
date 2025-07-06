@@ -22,7 +22,7 @@ trait ValueObjectDefault
     #[Override]
     final public function __toString(): string
     {
-        return json_encode($this->jsonSerialize(), JSON_THROW_ON_ERROR);
+        return json_encode($this->jsonSerialize(), JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
     }
 
     /**

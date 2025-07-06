@@ -5,13 +5,15 @@ declare(strict_types=1);
 namespace WizDevelop\PhpValueObject\Error;
 
 use Override;
-use WizDevelop\PhpValueObject\IValueObject;
+use WizDevelop\PhpValueObject\ValueObjectDefault;
 
 /**
  * エラー値オブジェクト
  */
 readonly class ErrorValue implements IErrorValue
 {
+    use ValueObjectDefault;
+
     /**
      * @param IErrorValue[] $details
      */
@@ -28,42 +30,6 @@ readonly class ErrorValue implements IErrorValue
     final public static function of(string $code, string $message, array $details = []): static
     {
         return new static($code, $message, $details);
-    }
-
-    #[Override]
-    final public function equals(IValueObject $other): bool
-    {
-        if ($this->code !== $other->getCode() || $this->message !== $other->getMessage()) {
-            return false;
-        }
-
-        $otherDetails = $other->getDetails();
-        if (count($this->details) !== count($otherDetails)) {
-            return false;
-        }
-
-        foreach ($this->details as $i => $detail) {
-            if (!$detail->equals($otherDetails[$i])) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    #[Override]
-    final public function __toString(): string
-    {
-        return $this->serialize();
-    }
-
-    /**
-     * @return array<mixed>
-     */
-    #[Override]
-    final public function jsonSerialize(): array
-    {
-        return get_object_vars($this);
     }
 
     #[Override]
@@ -123,7 +89,7 @@ readonly class ErrorValue implements IErrorValue
     }
 
     /**
-     * @param array<int, string> $parts
+     * @param  array<int, string>      $parts
      * @return array{IErrorValue, int}
      */
     private static function parseDetail(array $parts, int $index): array

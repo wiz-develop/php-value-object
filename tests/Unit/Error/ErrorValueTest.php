@@ -54,9 +54,6 @@ final class ErrorValueTest extends TestCase
         $detail = ErrorValue::of('E003', '詳細エラー', [$nestedDetail, $nestedDetail2]);
         $error = ErrorValue::of('E001', 'メインエラー', [$detail]);
 
-        var_dump('⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️');
-        var_dump($error->serialize());
-
         $this->assertEquals('E001', $error->getCode());
         $this->assertEquals('メインエラー', $error->getMessage());
 
@@ -75,9 +72,12 @@ final class ErrorValueTest extends TestCase
     #[Test]
     public function toString変換が正しく動作する(): void
     {
-        $error = ErrorValue::of('E001', 'エラーメッセージ');
+        $nestedDetail = ErrorValue::of('E004', 'ネストした詳細エラー');
+        $nestedDetail2 = ErrorValue::of('E005', 'ネストした詳細エラー');
+        $detail = ErrorValue::of('E003', '詳細エラー', [$nestedDetail, $nestedDetail2]);
+        $error = ErrorValue::of('E001', 'メインエラー', [$detail]);
 
-        $this->assertEquals('E001' . ErrorValue::SEPARATOR . 'エラーメッセージ', (string)$error);
+        $this->assertEquals('{"code":"E001","message":"メインエラー","details":[{"code":"E003","message":"詳細エラー","details":[{"code":"E004","message":"ネストした詳細エラー","details":[]},{"code":"E005","message":"ネストした詳細エラー","details":[]}]}]}', (string)$error);
     }
 
     #[Test]
