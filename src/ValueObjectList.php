@@ -38,4 +38,13 @@ readonly class ValueObjectList extends ArrayList
     {
         return $this->mapStrict(static fn (IValueObject $e) => $e->equals($element) ? $element : $e);
     }
+
+    /**
+     * 他のコレクションと比較し、差分を取得する
+     * @param self<TValue> $other
+     */
+    public function diff(self $other): static
+    {
+        return $this->filter(static fn (IValueObject $e) => !$other->has($e));
+    }
 }
