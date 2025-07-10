@@ -7,6 +7,7 @@ namespace WizDevelop\PhpValueObject\Collection;
 use ArrayAccess;
 use Closure;
 use Generator;
+use LogicException;
 use Override;
 use WizDevelop\PhpMonad\Option;
 use WizDevelop\PhpMonad\Result;
@@ -109,7 +110,7 @@ readonly class ArrayList extends CollectionBase implements IArrayList, IArrayLis
      *
      * @template TTryFromValue of TValue
      *
-     * @param  iterable<int,(Result<TTryFromValue,IErrorValue>|Result)> $results
+     * @param  iterable<int,(Result<TTryFromValue,IErrorValue>|Result<TTryFromValue,IErrorValue[]>|Result)> $results
      * @return Result<static<TTryFromValue>,ValueObjectError>
      */
     /**
@@ -122,9 +123,30 @@ readonly class ArrayList extends CollectionBase implements IArrayList, IArrayLis
 
         $elementsResult = Result\combineWithErrorValue(...$elements);
         if ($elementsResult->isErr()) {
+            $flattenErrs = [];
+            foreach ($elementsResult->unwrapErr() as $err) {
+                if ($err instanceof IErrorValue) { // @phpstan-ignore-line
+                    $flattenErrs[] = $err;
+                } elseif (is_array($err)) {
+                    foreach ($err as $e) {
+                        if ($e instanceof IErrorValue) { // @phpstan-ignore-line
+                            $flattenErrs[] = $e;
+                        } else {
+                            throw new LogicException(
+                                'Invalid error value type in array. Expected IErrorValue.',
+                            );
+                        }
+                    }
+                } else {
+                    throw new LogicException(
+                        'Invalid error value type. Expected IErrorValue or array of IErrorValue.',
+                    );
+                }
+            }
+
             return Result\err(ValueObjectError::collection()->invalidElementValues(
                 static::class,
-                ...$elementsResult->unwrapErr()
+                ...$flattenErrs,
             ));
         }
 
