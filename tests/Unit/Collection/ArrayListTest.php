@@ -467,4 +467,60 @@ final class ArrayListTest extends TestCase
         // 元のコレクションは変更されない（イミュータブル）
         $this->assertEquals([3, 1, 4, 2, 5], $collection->toArray());
     }
+
+    #[Test]
+    public function filter関数でselfを返すことができる(): void
+    {
+        $collection = ArrayList::from([1, 2, 3, 4, 5]);
+        
+        $filtered = $collection->filter(static fn ($value) => $value % 2 === 0);
+        
+        // 戻り値がArrayListインスタンス（self）であることを確認
+        $this->assertInstanceOf(ArrayList::class, $filtered);
+        $this->assertEquals([1 => 2, 3 => 4], $filtered->toArray());
+        
+        // 元のコレクションは変更されない（イミュータブル）
+        $this->assertEquals([1, 2, 3, 4, 5], $collection->toArray());
+    }
+
+    #[Test]
+    public function filterStrict関数でstaticを返すことができる(): void
+    {
+        $collection = ArrayList::from([1, 2, 3, 4, 5]);
+        
+        $filtered = $collection->filterStrict(static fn ($value) => $value % 2 === 0);
+        
+        // 戻り値が正確な型（static）であることを確認
+        $this->assertInstanceOf(ArrayList::class, $filtered);
+        $this->assertEquals([1 => 2, 3 => 4], $filtered->toArray());
+        
+        // 元のコレクションは変更されない（イミュータブル）
+        $this->assertEquals([1, 2, 3, 4, 5], $collection->toArray());
+    }
+
+    #[Test]
+    public function flatten関数で2次元配列を1次元に変換できる(): void
+    {
+        // 基本的な2次元配列
+        $collection = ArrayList::from([[1, 2], [3, 4], [5, 6]]);
+        $flattened = $collection->flatten();
+        
+        $this->assertInstanceOf(ArrayList::class, $flattened);
+        $this->assertEquals([1, 2, 3, 4, 5, 6], $flattened->toArray());
+        
+        // 空の配列を含む場合
+        $collectionWithEmpty = ArrayList::from([[1, 2], [], [3, 4]]);
+        $flattenedWithEmpty = $collectionWithEmpty->flatten();
+        
+        $this->assertEquals([1, 2, 3, 4], $flattenedWithEmpty->toArray());
+        
+        // 混合型（配列と非配列要素）
+        $mixedCollection = ArrayList::from([[1, 2], 3, [4, 5], 6]);
+        $flattenedMixed = $mixedCollection->flatten();
+        
+        $this->assertEquals([1, 2, 3, 4, 5, 6], $flattenedMixed->toArray());
+        
+        // 元のコレクションは変更されない（イミュータブル）
+        $this->assertEquals([[1, 2], [3, 4], [5, 6]], $collection->toArray());
+    }
 }

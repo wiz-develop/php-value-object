@@ -338,9 +338,14 @@ readonly class ArrayList extends CollectionBase implements IArrayList, IArrayLis
     }
 
     #[Override]
-    final public function filter(Closure $closure): static
+    final public function filter(Closure $closure): self
     {
+        return new self(array_filter($this->elements, $closure, ARRAY_FILTER_USE_BOTH));
+    }
 
+    #[Override]
+    final public function filterStrict(Closure $closure): static
+    {
         return new static(array_filter($this->elements, $closure, ARRAY_FILTER_USE_BOTH));
     }
 
@@ -435,5 +440,23 @@ readonly class ArrayList extends CollectionBase implements IArrayList, IArrayLis
         }
 
         return new static($elements);
+    }
+
+    #[Override]
+    final public function flatten(): self
+    {
+        $result = [];
+        
+        foreach ($this->elements as $item) {
+            if (is_array($item)) {
+                foreach ($item as $subItem) {
+                    $result[] = $subItem;
+                }
+            } else {
+                $result[] = $item;
+            }
+        }
+        
+        return new self($result);
     }
 }

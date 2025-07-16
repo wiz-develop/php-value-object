@@ -134,9 +134,17 @@ interface IArrayList extends ICollection
     /**
      * 与えられた真理判定に合格するすべての要素のコレクションを作成する。
      * @param  Closure(TValue,int): bool $closure
+     * @return self<TValue>
+     */
+    public function filter(Closure $closure): self;
+
+    /**
+     * 与えられた真理判定に合格するすべての要素のコレクションを作成する。
+     * (strict version - 正確な型を保持)
+     * @param  Closure(TValue,int): bool $closure
      * @return static<TValue>
      */
-    public function filter(Closure $closure): static;
+    public function filterStrict(Closure $closure): static;
 
     /**
      * 与えられた真理判定に合格しないすべての要素のコレクションを作成する。
@@ -186,4 +194,10 @@ interface IArrayList extends ICollection
      * @return static<TValue>
      */
     public function sort(?Closure $closure = null): static;
+
+    /**
+     * 2次元配列を1次元に変換する
+     * @return self
+     */
+    public function flatten(): self;
 }
