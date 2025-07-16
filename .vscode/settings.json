@@ -7,7 +7,7 @@
     },
     // php-cs-fixer settings
     "php-cs-fixer.config": ".php-cs-fixer.dist.php",
-    "php-cs-fixer.executablePath": "${extensionPath}/php-cs-fixer.phar",
+    "php-cs-fixer.executablePath": "${workspaceFolder}/vendor/friendsofphp/php-cs-fixer/php-cs-fixer",
     // HACK: PHP8.4 に PHP-CS-Fixer が対応していないが強制的に実行するための設定
     // TODO: PHP-CS-Fixer が PHP8.4 に対応したら削除すること！！！！
     "php-cs-fixer.ignorePHPVersion": true,

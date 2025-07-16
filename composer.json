@@ -26,7 +26,7 @@
     ],
     "minimum-stability": "stable",
     "require-dev": {
-        "wiz-develop/php-cs-fixer-config": "^8.3",
+        "wiz-develop/php-cs-fixer-config": "^8.4",
         "phpunit/php-code-coverage": "^11.0",
         "phpunit/phpunit": "^11.3",
         "phpstan/phpstan": "^2.1",
