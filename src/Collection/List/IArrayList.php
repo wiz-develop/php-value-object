@@ -126,6 +126,14 @@ interface IArrayList extends ICollection
     public function map(Closure $closure): self;
 
     /**
+     * 各要素に関数を適用し、結果を平坦化したコレクションを返す
+     * @template TFlatMapValue
+     * @param  Closure(TValue,int): iterable<TFlatMapValue> $closure
+     * @return self<TFlatMapValue>
+     */
+    public function flatMap(Closure $closure): self;
+
+    /**
      * @param  Closure(TValue,int): TValue $closure
      * @return static<TValue>
      */
@@ -134,9 +142,17 @@ interface IArrayList extends ICollection
     /**
      * 与えられた真理判定に合格するすべての要素のコレクションを作成する。
      * @param  Closure(TValue,int): bool $closure
+     * @return self<TValue>
+     */
+    public function filter(Closure $closure): self;
+
+    /**
+     * 与えられた真理判定に合格するすべての要素のコレクションを作成する。
+     * (strict version - 正確な型を保持)
+     * @param  Closure(TValue,int): bool $closure
      * @return static<TValue>
      */
-    public function filter(Closure $closure): static;
+    public function filterStrict(Closure $closure): static;
 
     /**
      * 与えられた真理判定に合格しないすべての要素のコレクションを作成する。

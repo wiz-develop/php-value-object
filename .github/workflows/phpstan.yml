@@ -68,4 +68,4 @@ jobs:
           key: "phpstan-result-cache-${{ github.run_id }}"
 
       - name: Run PHPUnit tests
-        run: vendor/bin/phpunit --configuration=phpunit.xml.dist --testdox --colors=always
+        run: php -d zend.assertions=1 vendor/bin/phpunit --configuration=phpunit.xml.dist --testdox --colors=always

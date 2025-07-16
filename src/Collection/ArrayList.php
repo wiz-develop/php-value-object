@@ -253,7 +253,7 @@ readonly class ArrayList extends CollectionBase implements IArrayList, IArrayLis
     #[Override]
     final public function sole(?Closure $closure = null)
     {
-        $items = $closure === null ? new static($this->elements) : $this->filter($closure);
+        $items = $closure === null ? new static($this->elements) : $this->filterStrict($closure);
         $count = $items->count();
 
         if ($count === 0) {
@@ -337,17 +337,47 @@ readonly class ArrayList extends CollectionBase implements IArrayList, IArrayLis
         return new static(array_map($closure, $this->elements, $keys));
     }
 
+    /**
+     * @template TFlatMapValue
+     * @param  Closure(TValue,int): iterable<TFlatMapValue> $closure
+     * @return self<TFlatMapValue>
+     */
     #[Override]
-    final public function filter(Closure $closure): static
+    final public function flatMap(Closure $closure): self
     {
+        $result = [];
 
+        foreach ($this->elements as $index => $item) {
+            $mapped = $closure($item, $index);
+
+            foreach ($mapped as $subItem) {
+                $result[] = $subItem;
+            }
+        }
+
+        return new self($result);
+    }
+
+    /**
+     * @param  Closure(TValue,int): bool $closure
+     * @return self<TValue>
+     */
+    #[Override]
+    final public function filter(Closure $closure): self
+    {
+        return new self(array_filter($this->elements, $closure, ARRAY_FILTER_USE_BOTH));
+    }
+
+    #[Override]
+    final public function filterStrict(Closure $closure): static
+    {
         return new static(array_filter($this->elements, $closure, ARRAY_FILTER_USE_BOTH));
     }
 
     #[Override]
     final public function reject(Closure $closure): static
     {
-        return $this->filter(static fn ($value, $key) => !$closure($value, $key));
+        return $this->filterStrict(static fn ($value, $key) => !$closure($value, $key));
     }
 
     #[Override]
