@@ -253,7 +253,7 @@ readonly class ArrayList extends CollectionBase implements IArrayList, IArrayLis
     #[Override]
     final public function sole(?Closure $closure = null)
     {
-        $items = $closure === null ? new static($this->elements) : $this->filter($closure);
+        $items = $closure === null ? new static($this->elements) : $this->filterStrict($closure);
         $count = $items->count();
 
         if ($count === 0) {
@@ -352,7 +352,7 @@ readonly class ArrayList extends CollectionBase implements IArrayList, IArrayLis
     #[Override]
     final public function reject(Closure $closure): static
     {
-        return $this->filter(static fn ($value, $key) => !$closure($value, $key));
+        return $this->filterStrict(static fn ($value, $key) => !$closure($value, $key));
     }
 
     #[Override]

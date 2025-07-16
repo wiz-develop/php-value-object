@@ -27,7 +27,7 @@ readonly class ValueObjectList extends ArrayList
      */
     public function remove(IValueObject $element): static
     {
-        return $this->filter(static fn (IValueObject $e) => !$e->equals($element));
+        return $this->filterStrict(static fn (IValueObject $e) => !$e->equals($element));
     }
 
     /**
@@ -45,6 +45,6 @@ readonly class ValueObjectList extends ArrayList
      */
     public function diff(self $other): static
     {
-        return $this->filter(static fn (IValueObject $e) => !$other->has($e));
+        return $this->filterStrict(static fn (IValueObject $e) => !$other->has($e));
     }
 }
