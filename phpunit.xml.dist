@@ -12,6 +12,13 @@
   timeoutForMediumTests="10"
   timeoutForLargeTests="60"
 >
+  <php>
+    <!-- NOTE: アサーションを有効化（CI環境用） -->
+    <ini name="assert.active" value="1"/>
+    <ini name="assert.exception" value="1"/>
+    <ini name="zend.assertions" value="1"/>
+  </php>
+
   <testsuites>
     <testsuite name="Unit">
       <directory suffix="Test.php">tests/Unit</directory>

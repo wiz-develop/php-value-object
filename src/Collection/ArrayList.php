@@ -337,6 +337,31 @@ readonly class ArrayList extends CollectionBase implements IArrayList, IArrayLis
         return new static(array_map($closure, $this->elements, $keys));
     }
 
+    /**
+     * @template TFlatMapValue
+     * @param  Closure(TValue,int): iterable<TFlatMapValue> $closure
+     * @return self<TFlatMapValue>
+     */
+    #[Override]
+    final public function flatMap(Closure $closure): self
+    {
+        $result = [];
+
+        foreach ($this->elements as $index => $item) {
+            $mapped = $closure($item, $index);
+
+            foreach ($mapped as $subItem) {
+                $result[] = $subItem;
+            }
+        }
+
+        return new self($result);
+    }
+
+    /**
+     * @param  Closure(TValue,int): bool $closure
+     * @return self<TValue>
+     */
     #[Override]
     final public function filter(Closure $closure): self
     {
@@ -440,23 +465,5 @@ readonly class ArrayList extends CollectionBase implements IArrayList, IArrayLis
         }
 
         return new static($elements);
-    }
-
-    #[Override]
-    final public function flatten(): self
-    {
-        $result = [];
-        
-        foreach ($this->elements as $item) {
-            if (is_array($item)) {
-                foreach ($item as $subItem) {
-                    $result[] = $subItem;
-                }
-            } else {
-                $result[] = $item;
-            }
-        }
-        
-        return new self($result);
     }
 }

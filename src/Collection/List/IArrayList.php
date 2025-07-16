@@ -126,6 +126,14 @@ interface IArrayList extends ICollection
     public function map(Closure $closure): self;
 
     /**
+     * 各要素に関数を適用し、結果を平坦化したコレクションを返す
+     * @template TFlatMapValue
+     * @param  Closure(TValue,int): iterable<TFlatMapValue> $closure
+     * @return self<TFlatMapValue>
+     */
+    public function flatMap(Closure $closure): self;
+
+    /**
      * @param  Closure(TValue,int): TValue $closure
      * @return static<TValue>
      */
@@ -194,10 +202,4 @@ interface IArrayList extends ICollection
      * @return static<TValue>
      */
     public function sort(?Closure $closure = null): static;
-
-    /**
-     * 2次元配列を1次元に変換する
-     * @return self
-     */
-    public function flatten(): self;
 }

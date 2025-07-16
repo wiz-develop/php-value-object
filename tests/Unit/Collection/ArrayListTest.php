@@ -472,13 +472,13 @@ final class ArrayListTest extends TestCase
     public function filter関数でselfを返すことができる(): void
     {
         $collection = ArrayList::from([1, 2, 3, 4, 5]);
-        
+
         $filtered = $collection->filter(static fn ($value) => $value % 2 === 0);
-        
+
         // 戻り値がArrayListインスタンス（self）であることを確認
         $this->assertInstanceOf(ArrayList::class, $filtered);
         $this->assertEquals([1 => 2, 3 => 4], $filtered->toArray());
-        
+
         // 元のコレクションは変更されない（イミュータブル）
         $this->assertEquals([1, 2, 3, 4, 5], $collection->toArray());
     }
@@ -487,40 +487,56 @@ final class ArrayListTest extends TestCase
     public function filterStrict関数でstaticを返すことができる(): void
     {
         $collection = ArrayList::from([1, 2, 3, 4, 5]);
-        
+
         $filtered = $collection->filterStrict(static fn ($value) => $value % 2 === 0);
-        
+
         // 戻り値が正確な型（static）であることを確認
         $this->assertInstanceOf(ArrayList::class, $filtered);
         $this->assertEquals([1 => 2, 3 => 4], $filtered->toArray());
-        
+
         // 元のコレクションは変更されない（イミュータブル）
         $this->assertEquals([1, 2, 3, 4, 5], $collection->toArray());
     }
 
     #[Test]
-    public function flatten関数で2次元配列を1次元に変換できる(): void
+    public function flatMap関数で各要素を変換して平坦化できる(): void
     {
-        // 基本的な2次元配列
-        $collection = ArrayList::from([[1, 2], [3, 4], [5, 6]]);
-        $flattened = $collection->flatten();
-        
-        $this->assertInstanceOf(ArrayList::class, $flattened);
+        // 基本的な変換（各数値を2倍にして配列に包む）
+        $collection = ArrayList::from([1, 2, 3]);
+        $mapped = $collection->flatMap(static fn ($value) => [$value * 2]);
+
+        $this->assertInstanceOf(ArrayList::class, $mapped);
+        $this->assertEquals([2, 4, 6], $mapped->toArray());
+
+        // 各要素を複数の要素に展開
+        $collection2 = ArrayList::from([1, 2, 3]);
+        $expanded = $collection2->flatMap(static fn ($value) => [$value, $value * 10]);
+
+        $this->assertEquals([1, 10, 2, 20, 3, 30], $expanded->toArray());
+
+        // 空の配列を返す場合
+        $collection3 = ArrayList::from([1, 2, 3]);
+        $filtered = $collection3->flatMap(static fn ($value) => $value % 2 === 0 ? [$value] : []);
+
+        $this->assertEquals([2], $filtered->toArray());
+
+        // 2次元配列の平坦化（従来のflattenと同等の動作）
+        $collection4 = ArrayList::from([[1, 2], [3, 4], [5, 6]]);
+        $flattened = $collection4->flatMap(static fn ($array) => $array);
+
         $this->assertEquals([1, 2, 3, 4, 5, 6], $flattened->toArray());
-        
-        // 空の配列を含む場合
-        $collectionWithEmpty = ArrayList::from([[1, 2], [], [3, 4]]);
-        $flattenedWithEmpty = $collectionWithEmpty->flatten();
-        
-        $this->assertEquals([1, 2, 3, 4], $flattenedWithEmpty->toArray());
-        
-        // 混合型（配列と非配列要素）
-        $mixedCollection = ArrayList::from([[1, 2], 3, [4, 5], 6]);
-        $flattenedMixed = $mixedCollection->flatten();
-        
-        $this->assertEquals([1, 2, 3, 4, 5, 6], $flattenedMixed->toArray());
-        
         // 元のコレクションは変更されない（イミュータブル）
-        $this->assertEquals([[1, 2], [3, 4], [5, 6]], $collection->toArray());
+        $this->assertEquals([1, 2, 3], $collection->toArray());
+
+        // objectの2次元配列の平坦化（従来のflattenと同等の動作）
+        $collection5 = ArrayList::from([
+            ArrayList::from([1, 2]),
+            ArrayList::from([3, 4]),
+            ArrayList::from([5, 6]),
+        ]);
+        $flattenedObjects = $collection5->flatMap(static fn ($array) => $array);
+        $this->assertEquals([1, 2, 3, 4, 5, 6], $flattenedObjects->toArray());
+        // 元のコレクションは変更されない（イミュータブル）
+        $this->assertEquals([ArrayList::from([1, 2]), ArrayList::from([3, 4]), ArrayList::from([5, 6])], $collection5->toArray());
     }
 }
