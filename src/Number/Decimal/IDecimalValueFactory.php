@@ -37,4 +37,9 @@ interface IDecimalValueFactory
      * @return Result<Option<static>,ValueObjectError>
      */
     public static function tryFromNullable(?Number $value): Result;
+
+    /**
+     * ゼロの値オブジェクトを生成する
+     */
+    public static function zero(): static;
 }

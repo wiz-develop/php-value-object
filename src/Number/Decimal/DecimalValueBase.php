@@ -130,6 +130,22 @@ abstract readonly class DecimalValueBase implements IValueObject, Stringable, IA
     }
 
     /**
+     * 正の値かどうか
+     */
+    final public function isPositive(): bool
+    {
+        return $this->value->compare(0) > 0;
+    }
+
+    /**
+     * 負の値かどうか
+     */
+    final public function isNegative(): bool
+    {
+        return $this->value->compare(0) < 0;
+    }
+
+    /**
      * 小数点以下の桁数を指定してフォーマットする
      * @param positive-int|0|null $decimals 小数点以下の桁数
      */

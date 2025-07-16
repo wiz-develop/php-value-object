@@ -42,4 +42,10 @@ trait IntegerValueFactory
         // @phpstan-ignore return.type
         return static::tryFrom($value)->map(static fn ($result) => Option\some($result));
     }
+
+    #[Override]
+    public static function zero(): static
+    {
+        return static::from(0);
+    }
 }

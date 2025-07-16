@@ -71,6 +71,30 @@ final class DecimalValueTest extends TestCase
         $this->assertFalse($nonZeroValue->isZero());
     }
 
+    #[Test]
+    public function isPositive関数で正の値かどうかを判定できる(): void
+    {
+        $positiveValue = TestDecimalValue::from(new Number('123.45'));
+        $negativeValue = TestDecimalValue::from(new Number('-123.45'));
+        $zeroValue = TestDecimalValue::from(new Number('0'));
+
+        $this->assertTrue($positiveValue->isPositive());
+        $this->assertFalse($negativeValue->isPositive());
+        $this->assertFalse($zeroValue->isPositive());
+    }
+
+    #[Test]
+    public function isNegative関数で負の値かどうかを判定できる(): void
+    {
+        $positiveValue = TestDecimalValue::from(new Number('123.45'));
+        $negativeValue = TestDecimalValue::from(new Number('-123.45'));
+        $zeroValue = TestDecimalValue::from(new Number('0'));
+
+        $this->assertFalse($positiveValue->isNegative());
+        $this->assertTrue($negativeValue->isNegative());
+        $this->assertFalse($zeroValue->isNegative());
+    }
+
     /**
      * @return array<string, array{string}>
      */
@@ -621,6 +645,77 @@ final class DecimalValueTest extends TestCase
         $this->assertStringContainsString('30', $errorMessage, 'エラーメッセージには実際の桁数(30)が含まれるべき');
     }
 
+    // ------------------------------------------
+    // DecimalValueFactoryのtryFromメソッドのテスト
+    // ------------------------------------------
+
+    #[Test]
+    public function tryFromメソッドは未実装のため常にResult_okを返す(): void
+    {
+        // DecimalValueFactoryのtryFromメソッドは抽象メソッドなので
+        // 実装クラスで実装される必要がある
+        $value = new Number('100.50');
+        $result = TestDecimalValue::tryFrom($value);
+
+        $this->assertTrue($result->isOk());
+        $this->assertEquals('100.50', (string)$result->unwrap()->value);
+    }
+
+    #[Test]
+    public function tryFromメソッドは範囲外の値に対してエラーを返す(): void
+    {
+        // 範囲外の値をテスト
+        $result = TestDecimalValue::tryFrom(new Number('1001'));
+        $this->assertFalse($result->isOk());
+        $this->assertInstanceOf(ValueObjectError::class, $result->unwrapErr());
+    }
+
+    #[Test]
+    public function tryFromメソッドは有効桁数を超える値に対してエラーを返す(): void
+    {
+        // 範囲内で有効桁数を超える値をテスト
+        $largeDigitValue = '1.' . str_repeat('9', 29);  // 30桁の値（範囲内）
+        $result = TestDecimalValue::tryFrom(new Number($largeDigitValue));
+
+        $this->assertFalse($result->isOk());
+        $this->assertInstanceOf(ValueObjectError::class, $result->unwrapErr());
+
+        $errorMessage = $result->unwrapErr()->getMessage();
+        $this->assertStringContainsString('桁数', $errorMessage);
+    }
+
+    /**
+     * @return array<string, array{string, bool}>
+     */
+    public static function tryFrom用のテストデータを提供(): array
+    {
+        return [
+            '有効な正の値' => ['100.50', true],
+            '有効な負の値' => ['-100.50', true],
+            '有効なゼロ値' => ['0', true],
+            '有効な最小値' => ['-1000', true],
+            '有効な最大値' => ['1000', true],
+            '無効な最小値未満' => ['-1000.01', false],
+            '無効な最大値超過' => ['1000.01', false],
+            '有効桁数内の値' => ['123.456789', true],
+        ];
+    }
+
+    #[Test]
+    #[DataProvider('tryFrom用のテストデータを提供')]
+    public function tryFromメソッドのデータ駆動テスト(string $value, bool $shouldSucceed): void
+    {
+        $result = TestDecimalValue::tryFrom(new Number($value));
+
+        if ($shouldSucceed) {
+            $this->assertTrue($result->isOk(), "値 {$value} は有効であるべき");
+            $this->assertEquals($value, (string)$result->unwrap()->value);
+        } else {
+            $this->assertFalse($result->isOk(), "値 {$value} は無効であるべき");
+            $this->assertInstanceOf(ValueObjectError::class, $result->unwrapErr());
+        }
+    }
+
     #[Test]
     public function formatToNumberメソッドの動作確認(): void
     {
@@ -763,5 +858,194 @@ final class DecimalValueTest extends TestCase
         // ゼロスケール値
         $this->assertEquals('123', $value->format(0));
         $this->assertEquals('123', (string)$value->formatToNumber(0));
+    }
+
+    // ------------------------------------------
+    // DecimalValueBaseのisValidDigitsメソッドのテスト
+    // ------------------------------------------
+
+    #[Test]
+    public function isValidDigitsメソッドは有効な桁数に対してResult_okを返す(): void
+    {
+        // 有効な桁数（29桁以下）
+        $validValue = new Number('123.456');
+        $result = TestDecimalValue::tryFrom($validValue);
+        $this->assertTrue($result->isOk());
+    }
+
+    #[Test]
+    public function isValidDigitsメソッドは無効な桁数に対してResult_errを返す(): void
+    {
+        // 無効な桁数（30桁）で範囲内の値
+        $invalidValue = new Number('1.' . str_repeat('9', 29));
+        $result = TestDecimalValue::tryFrom($invalidValue);
+        $this->assertFalse($result->isOk());
+
+        $errorMessage = $result->unwrapErr()->getMessage();
+        $this->assertStringContainsString('桁数', $errorMessage);
+        $this->assertStringContainsString('29', $errorMessage);  // 許容桁数
+        $this->assertStringContainsString('30', $errorMessage);  // 実際の桁数
+    }
+
+    /**
+     * @return array<string, array{string, bool}>
+     */
+    public static function isValidDigits用のテストデータを提供(): array
+    {
+        return [
+            '有効な桁数_1桁' => ['1', true],
+            '有効な桁数_2桁' => ['12', true],
+            '有効な桁数_小数点含む' => ['123.456', true],
+            '有効な桁数_負数' => ['-123.456', true],
+            '有効な桁数_ゼロ' => ['0', true],
+            '有効な桁数_小数点のみ' => ['1.0', true],
+            '無効な桁数_大きな小数' => ['1.' . str_repeat('9', 29), false],
+            '無効な桁数_大きな負数' => ['-1.' . str_repeat('9', 29), false],
+        ];
+    }
+
+    #[Test]
+    #[DataProvider('isValidDigits用のテストデータを提供')]
+    public function isValidDigitsメソッドのデータ駆動テスト(string $value, bool $shouldSucceed): void
+    {
+        $result = TestDecimalValue::tryFrom(new Number($value));
+
+        if ($shouldSucceed) {
+            $this->assertTrue($result->isOk(), "値 {$value} は有効な桁数であるべき");
+        } else {
+            $this->assertFalse($result->isOk(), "値 {$value} は無効な桁数であるべき");
+            $this->assertInstanceOf(ValueObjectError::class, $result->unwrapErr());
+
+            $errorMessage = $result->unwrapErr()->getMessage();
+            $this->assertStringContainsString('桁数', $errorMessage);
+        }
+    }
+
+    #[Test]
+    public function isValidDigitsメソッドは小数点とマイナス記号を除外して桁数を計算する(): void
+    {
+        // 小数点とマイナス記号を除外した桁数のテスト
+        $testCases = [
+            '123.456' => 6,      // 1,2,3,4,5,6
+            '-123.456' => 6,     // 1,2,3,4,5,6 (マイナス記号は除外)
+            '0.123' => 4,        // 0,1,2,3
+            '-0.123' => 4,       // 0,1,2,3 (マイナス記号は除外)
+            '100.00' => 5,       // 1,0,0,0,0
+        ];
+
+        foreach ($testCases as $value => $expectedDigits) {
+            $result = TestDecimalValue::tryFrom(new Number($value));
+            $this->assertTrue($result->isOk(), "値 {$value} は有効であるべき（桁数: {$expectedDigits}）");
+        }
+    }
+
+    #[Test]
+    public function isValidDigitsメソッドは29桁ちょうどの値を受け入れる(): void
+    {
+        // 29桁ちょうどの値で範囲内
+        $exactValue = '1.' . str_repeat('1', 27);  // 1.111...（29桁）
+        $result = TestDecimalValue::tryFrom(new Number($exactValue));
+        $this->assertTrue($result->isOk());
+    }
+
+    #[Test]
+    public function isValidDigitsメソッドは30桁以上の値を拒否する(): void
+    {
+        // 30桁の値で範囲内
+        $overLimitValue = '1.' . str_repeat('9', 29);  // 1.999...（31桁）
+        $result = TestDecimalValue::tryFrom(new Number($overLimitValue));
+        $this->assertFalse($result->isOk());
+
+        $errorMessage = $result->unwrapErr()->getMessage();
+        $this->assertStringContainsString('桁数', $errorMessage);
+        $this->assertStringContainsString('29', $errorMessage);
+        $this->assertStringContainsString('30', $errorMessage);
+    }
+
+    // ------------------------------------------
+    // zero()メソッドのテスト
+    // ------------------------------------------
+
+    #[Test]
+    public function zero関数でゼロの値オブジェクトを生成できる(): void
+    {
+        $zeroValue = TestDecimalValue::zero();
+
+        $this->assertInstanceOf(TestDecimalValue::class, $zeroValue);
+        $this->assertEquals('0', (string)$zeroValue->value);
+        $this->assertTrue($zeroValue->isZero());
+        $this->assertFalse($zeroValue->isPositive());
+        $this->assertFalse($zeroValue->isNegative());
+    }
+
+    #[Test]
+    public function zero関数で生成したインスタンスは他のゼロ値と等価である(): void
+    {
+        $zeroValue1 = TestDecimalValue::zero();
+        $zeroValue2 = TestDecimalValue::from(new Number('0'));
+        $zeroValue3 = TestDecimalValue::from(new Number('0.0'));
+
+        $this->assertTrue($zeroValue1->equals($zeroValue2));
+        $this->assertTrue($zeroValue1->equals($zeroValue3));
+        $this->assertTrue($zeroValue2->equals($zeroValue3));
+    }
+
+    #[Test]
+    public function zero関数で生成したインスタンスは算術演算で期待通りに動作する(): void
+    {
+        $zeroValue = TestDecimalValue::zero();
+        $someValue = TestDecimalValue::from(new Number('123.45'));
+
+        // ゼロとの加算
+        $addResult = $someValue->add($zeroValue);
+        $this->assertTrue($addResult->equals($someValue));
+
+        // ゼロとの減算
+        $subResult = $someValue->sub($zeroValue);
+        $this->assertTrue($subResult->equals($someValue));
+
+        // ゼロとの乗算
+        $mulResult = $someValue->mul($zeroValue);
+        $this->assertTrue($mulResult->equals($zeroValue));
+    }
+
+    /**
+     * @return array<string, array{string, bool, bool, bool}>
+     */
+    public static function 正負判定用のテストデータを提供(): array
+    {
+        return [
+            '正の整数' => ['100', false, true, false],
+            '正の小数' => ['123.45', false, true, false],
+            '負の整数' => ['-100', false, false, true],
+            '負の小数' => ['-123.45', false, false, true],
+            'ゼロ' => ['0', true, false, false],
+            'ゼロ小数' => ['0.0', true, false, false],
+            '正の小さい値' => ['0.01', false, true, false],
+            '負の小さい値' => ['-0.01', false, false, true],
+            '大きな正の値' => ['999.99', false, true, false],
+            '大きな負の値' => ['-999.99', false, false, true],
+        ];
+    }
+
+    /**
+     * @param string $value      テスト対象の値
+     * @param bool   $expectZero isZeroの期待値
+     * @param bool   $expectPos  isPositiveの期待値
+     * @param bool   $expectNeg  isNegativeの期待値
+     */
+    #[Test]
+    #[DataProvider('正負判定用のテストデータを提供')]
+    public function 正負判定メソッドのデータ駆動テスト(
+        string $value,
+        bool $expectZero,
+        bool $expectPos,
+        bool $expectNeg
+    ): void {
+        $decimalValue = TestDecimalValue::from(new Number($value));
+
+        $this->assertSame($expectZero, $decimalValue->isZero(), "値 {$value} のisZero()結果が期待値と異なる");
+        $this->assertSame($expectPos, $decimalValue->isPositive(), "値 {$value} のisPositive()結果が期待値と異なる");
+        $this->assertSame($expectNeg, $decimalValue->isNegative(), "値 {$value} のisNegative()結果が期待値と異なる");
     }
 }

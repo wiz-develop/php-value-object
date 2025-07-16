@@ -72,6 +72,30 @@ final class IntegerValueTest extends TestCase
         $this->assertFalse($nonZeroValue->isZero());
     }
 
+    #[Test]
+    public function isPositive関数で正の値かどうかを判定できる(): void
+    {
+        $positiveValue = TestIntegerValue::from(123);
+        $negativeValue = TestIntegerValue::from(-123);
+        $zeroValue = TestIntegerValue::from(0);
+
+        $this->assertTrue($positiveValue->isPositive());
+        $this->assertFalse($negativeValue->isPositive());
+        $this->assertFalse($zeroValue->isPositive());
+    }
+
+    #[Test]
+    public function isNegative関数で負の値かどうかを判定できる(): void
+    {
+        $positiveValue = TestIntegerValue::from(123);
+        $negativeValue = TestIntegerValue::from(-123);
+        $zeroValue = TestIntegerValue::from(0);
+
+        $this->assertFalse($positiveValue->isNegative());
+        $this->assertTrue($negativeValue->isNegative());
+        $this->assertFalse($zeroValue->isNegative());
+    }
+
     /**
      * @return array<string, array{int}>
      */
@@ -526,8 +550,8 @@ final class IntegerValueTest extends TestCase
         try {
             // コンストラクタへの直接アクセスを試みる（通常これはPHPで許可されていない）
             // 以下は単にエラーが発生することを確認するだけ
-            /** @phpstan-ignore-next-line */
-            $newObj = new TestIntegerValue(100);
+            // @phpstan-ignore-next-line
+            new TestIntegerValue(100);
         } catch (Error $e) {
             $hasThrown = true;
             $this->assertStringContainsString(
@@ -583,5 +607,278 @@ final class IntegerValueTest extends TestCase
 
         $result2 = TestIntegerValue::tryFrom(-1001);  // TestIntegerValueの最小値-1
         $this->assertFalse($result2->isOk());
+    }
+
+    // ------------------------------------------
+    // IntegerValueFactoryのtryFromメソッドのテスト
+    // ------------------------------------------
+
+    #[Test]
+    public function IntegerValueFactoryのtryFromメソッドは未実装のため常にResult_okを返す(): void
+    {
+        // IntegerValueFactoryのtryFromメソッドは抽象メソッドなので
+        // 実装クラスで実装される必要がある
+        $value = 100;
+        $result = TestIntegerValue::tryFrom($value);
+
+        $this->assertTrue($result->isOk());
+        $this->assertEquals($value, $result->unwrap()->value);
+    }
+
+    #[Test]
+    public function IntegerValueFactoryのtryFromメソッドは範囲外の値に対してエラーを返す(): void
+    {
+        // 範囲外の値をテスト
+        $result = TestIntegerValue::tryFrom(1001);
+        $this->assertFalse($result->isOk());
+        $this->assertInstanceOf(ValueObjectError::class, $result->unwrapErr());
+    }
+
+    /**
+     * @return array<string, array{int, bool}>
+     */
+    public static function IntegerValueFactoryのtryFrom用のテストデータを提供(): array
+    {
+        return [
+            '有効な正の値' => [100, true],
+            '有効な負の値' => [-100, true],
+            '有効なゼロ値' => [0, true],
+            '有効な最小値' => [-1000, true],
+            '有効な最大値' => [1000, true],
+            '無効な最小値未満' => [-1001, false],
+            '無効な最大値超過' => [1001, false],
+        ];
+    }
+
+    #[Test]
+    #[DataProvider('IntegerValueFactoryのtryFrom用のテストデータを提供')]
+    public function IntegerValueFactoryのtryFromメソッドのデータ駆動テスト(int $value, bool $shouldSucceed): void
+    {
+        $result = TestIntegerValue::tryFrom($value);
+
+        if ($shouldSucceed) {
+            $this->assertTrue($result->isOk(), "値 {$value} は有効であるべき");
+            $this->assertEquals($value, $result->unwrap()->value);
+        } else {
+            $this->assertFalse($result->isOk(), "値 {$value} は無効であるべき");
+            $this->assertInstanceOf(ValueObjectError::class, $result->unwrapErr());
+        }
+    }
+
+    #[Test]
+    public function IntegerValueFactoryのtryFromメソッドはisValidRangeメソッドを呼び出す(): void
+    {
+        // 有効な値の場合
+        $validResult = TestIntegerValue::tryFrom(100);
+        $this->assertTrue($validResult->isOk());
+
+        // 無効な値の場合（範囲外）
+        $invalidResult = TestIntegerValue::tryFrom(1001);
+        $this->assertFalse($invalidResult->isOk());
+
+        $errorMessage = $invalidResult->unwrapErr()->getMessage();
+        $this->assertStringContainsString('1000', $errorMessage);
+    }
+
+    // ------------------------------------------
+    // IntegerValueBaseのisValidRangeメソッドのテスト
+    // ------------------------------------------
+
+    #[Test]
+    public function isValidRangeメソッドは有効な範囲に対してResult_okを返す(): void
+    {
+        // 有効な範囲（-1000から1000）
+        $validValue = 100;
+        $result = TestIntegerValue::tryFrom($validValue);
+        $this->assertTrue($result->isOk());
+    }
+
+    #[Test]
+    public function isValidRangeメソッドは無効な範囲に対してResult_errを返す(): void
+    {
+        // 無効な範囲（1000を超える）
+        $invalidValue = 1001;
+        $result = TestIntegerValue::tryFrom($invalidValue);
+        $this->assertFalse($result->isOk());
+
+        $errorMessage = $result->unwrapErr()->getMessage();
+        $this->assertStringContainsString('整数', $errorMessage);
+        $this->assertStringContainsString('-1000', $errorMessage);  // 最小値
+        $this->assertStringContainsString('1000', $errorMessage);   // 最大値
+        $this->assertStringContainsString('1001', $errorMessage);   // 入力値
+    }
+
+    /**
+     * @return array<string, array{int, bool}>
+     */
+    public static function isValidRange用のテストデータを提供(): array
+    {
+        return [
+            '有効な範囲_最小値' => [-1000, true],
+            '有効な範囲_最大値' => [1000, true],
+            '有効な範囲_ゼロ' => [0, true],
+            '有効な範囲_正の値' => [500, true],
+            '有効な範囲_負の値' => [-500, true],
+            '有効な範囲_1' => [1, true],
+            '有効な範囲_-1' => [-1, true],
+            '無効な範囲_最小値未満' => [-1001, false],
+            '無効な範囲_最大値超過' => [1001, false],
+            '無効な範囲_大きな正の値' => [2000, false],
+            '無効な範囲_大きな負の値' => [-2000, false],
+            '無効な範囲_PHP_INT_MAX' => [PHP_INT_MAX, false],
+            '無効な範囲_PHP_INT_MIN' => [PHP_INT_MIN, false],
+        ];
+    }
+
+    #[Test]
+    #[DataProvider('isValidRange用のテストデータを提供')]
+    public function isValidRangeメソッドのデータ駆動テスト(int $value, bool $shouldSucceed): void
+    {
+        $result = TestIntegerValue::tryFrom($value);
+
+        if ($shouldSucceed) {
+            $this->assertTrue($result->isOk(), "値 {$value} は有効な範囲であるべき");
+        } else {
+            $this->assertFalse($result->isOk(), "値 {$value} は無効な範囲であるべき");
+            $this->assertInstanceOf(ValueObjectError::class, $result->unwrapErr());
+
+            $errorMessage = $result->unwrapErr()->getMessage();
+            $this->assertStringContainsString('整数', $errorMessage);
+        }
+    }
+
+    #[Test]
+    public function isValidRangeメソッドは境界値を正しく処理する(): void
+    {
+        // 境界値のテスト
+        $boundaryTests = [
+            [-1000, true],   // 最小値
+            [-999, true],    // 最小値+1
+            [999, true],     // 最大値-1
+            [1000, true],    // 最大値
+            [-1001, false],  // 最小値-1
+            [1001, false],   // 最大値+1
+        ];
+
+        foreach ($boundaryTests as [$value, $expected]) {
+            $result = TestIntegerValue::tryFrom($value);
+            if ($expected) {
+                $this->assertTrue($result->isOk(), "境界値 {$value} は有効であるべき");
+            } else {
+                $this->assertFalse($result->isOk(), "境界値 {$value} は無効であるべき");
+            }
+        }
+    }
+
+    #[Test]
+    public function isValidRangeメソッドはエラーメッセージに適切な情報を含む(): void
+    {
+        // 範囲外の値でエラーメッセージを確認
+        $result = TestIntegerValue::tryFrom(1500);
+        $this->assertFalse($result->isOk());
+
+        $errorMessage = $result->unwrapErr()->getMessage();
+        $this->assertStringContainsString('整数', $errorMessage);
+        $this->assertStringContainsString('-1000', $errorMessage);  // 最小値
+        $this->assertStringContainsString('1000', $errorMessage);   // 最大値
+        $this->assertStringContainsString('1500', $errorMessage);   // 入力値
+    }
+
+    #[Test]
+    public function isValidRangeメソッドは負の値でも正しく動作する(): void
+    {
+        // 負の範囲外の値
+        $result = TestIntegerValue::tryFrom(-1500);
+        $this->assertFalse($result->isOk());
+
+        $errorMessage = $result->unwrapErr()->getMessage();
+        $this->assertStringContainsString('整数', $errorMessage);
+        $this->assertStringContainsString('-1000', $errorMessage);  // 最小値
+        $this->assertStringContainsString('1000', $errorMessage);   // 最大値
+        $this->assertStringContainsString('-1500', $errorMessage);  // 入力値
+    }
+
+    // ------------------------------------------
+    // zero()メソッドのテスト
+    // ------------------------------------------
+
+    #[Test]
+    public function zero関数でゼロの値オブジェクトを生成できる(): void
+    {
+        $zeroValue = TestIntegerValue::zero();
+
+        $this->assertInstanceOf(TestIntegerValue::class, $zeroValue);
+        $this->assertEquals(0, $zeroValue->value);
+        $this->assertTrue($zeroValue->isZero());
+        $this->assertFalse($zeroValue->isPositive());
+        $this->assertFalse($zeroValue->isNegative());
+    }
+
+    #[Test]
+    public function zero関数で生成したインスタンスは他のゼロ値と等価である(): void
+    {
+        $zeroValue1 = TestIntegerValue::zero();
+        $zeroValue2 = TestIntegerValue::from(0);
+
+        $this->assertTrue($zeroValue1->equals($zeroValue2));
+        $this->assertTrue($zeroValue2->equals($zeroValue1));
+    }
+
+    #[Test]
+    public function zero関数で生成したインスタンスは算術演算で期待通りに動作する(): void
+    {
+        $zeroValue = TestIntegerValue::zero();
+        $someValue = TestIntegerValue::from(123);
+
+        // ゼロとの加算
+        $addResult = $someValue->add($zeroValue);
+        $this->assertTrue($addResult->equals($someValue));
+
+        // ゼロとの減算
+        $subResult = $someValue->sub($zeroValue);
+        $this->assertTrue($subResult->equals($someValue));
+
+        // ゼロとの乗算
+        $mulResult = $someValue->mul($zeroValue);
+        $this->assertTrue($mulResult->equals($zeroValue));
+    }
+
+    /**
+     * @return array<string, array{int, bool, bool, bool}>
+     */
+    public static function 整数正負判定用のテストデータを提供(): array
+    {
+        return [
+            '正の整数' => [100, false, true, false],
+            '負の整数' => [-100, false, false, true],
+            'ゼロ' => [0, true, false, false],
+            '正の小さい値' => [1, false, true, false],
+            '負の小さい値' => [-1, false, false, true],
+            '大きな正の値' => [999, false, true, false],
+            '大きな負の値' => [-999, false, false, true],
+            '最小値' => [-1000, false, false, true],
+            '最大値' => [1000, false, true, false],
+        ];
+    }
+
+    /**
+     * @param int  $value      テスト対象の値
+     * @param bool $expectZero isZeroの期待値
+     * @param bool $expectPos  isPositiveの期待値
+     * @param bool $expectNeg  isNegativeの期待値
+     */
+    #[Test]
+    #[DataProvider('整数正負判定用のテストデータを提供')]
+    public function 整数正負判定メソッドのデータ駆動テスト(
+        int $value,
+        bool $expectZero,
+        bool $expectPos,
+        bool $expectNeg
+    ): void {
+        $integerValue = TestIntegerValue::from($value);
+
+        $this->assertSame($expectZero, $integerValue->isZero(), "値 {$value} のisZero()結果が期待値と異なる");
+        $this->assertSame($expectPos, $integerValue->isPositive(), "値 {$value} のisPositive()結果が期待値と異なる");
+        $this->assertSame($expectNeg, $integerValue->isNegative(), "値 {$value} のisNegative()結果が期待値と異なる");
     }
 }

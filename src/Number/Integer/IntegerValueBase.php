@@ -82,4 +82,20 @@ abstract readonly class IntegerValueBase implements IValueObject, Stringable, IA
     {
         return $this->value === 0;
     }
+
+    /**
+     * 正の値かどうか
+     */
+    final public function isPositive(): bool
+    {
+        return $this->value > 0;
+    }
+
+    /**
+     * 負の値かどうか
+     */
+    final public function isNegative(): bool
+    {
+        return $this->value < 0;
+    }
 }
