@@ -243,26 +243,6 @@ readonly class LocalDateRange implements IValueObject, Stringable, IteratorAggre
     }
 
     /**
-     * 境界での重なりを考慮した判定
-     *
-     * @param self<TStart,TEnd> $other
-     */
-    private function hasOverlapAt(self $other): bool
-    {
-        // 開始点での重なり判定
-        $startOverlap = $this->contains($other->from) || $other->contains($this->from);
-
-        // 終了点での重なり判定
-        $endOverlap = $this->contains($other->to) || $other->contains($this->to);
-
-        // 一方が他方を完全に含む場合
-        $containment = ($this->from->isBeforeOrEqualTo($other->from) && $this->to->isAfterOrEqualTo($other->to))
-            || ($other->from->isBeforeOrEqualTo($this->from) && $other->to->isAfterOrEqualTo($this->to));
-
-        return $startOverlap || $endOverlap || $containment;
-    }
-
-    /**
      * 範囲の日数を返す
      * 注意: 開区間の場合、実際の日数は計算結果より1日または2日少なくなる可能性があります
      */

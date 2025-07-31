@@ -4,12 +4,27 @@ declare(strict_types=1);
 
 namespace WizDevelop\PhpValueObject\Tests\Unit\DateTime;
 
+use AssertionError;
 use PHPUnit\Framework\TestCase;
 use WizDevelop\PhpValueObject\DateTime\LocalDate;
 use WizDevelop\PhpValueObject\DateTime\LocalDateRange;
 use WizDevelop\PhpValueObject\DateTime\RangeType;
 use WizDevelop\PhpValueObject\Error\ValueObjectError;
 
+/**
+ * @phpstan-import-type Year from LocalDate
+ * @phpstan-import-type Month from LocalDate
+ * @phpstan-import-type Day from LocalDate
+ *
+ * @phpstan-type RangeData array{from: array{Year, Month, Day}, to: array{Year, Month, Day}, type: RangeType}
+ *
+ * @phpstan-type OverlapsTestCase array{
+ *     range1Data: RangeData,
+ *     range2Data: RangeData,
+ *     expectedOverlap: bool,
+ *     description: string
+ * }
+ */
 final class LocalDateRangeTest extends TestCase
 {
     public function test_閉区間で有効な範囲を作成できる(): void
@@ -122,170 +137,337 @@ final class LocalDateRangeTest extends TestCase
         $this->assertFalse($rangeRight->contains($to)); // 終了境界（含まない）
     }
 
-    public function test_overlaps_重なりがある範囲(): void
-    {
+    /**
+     * overlapsメソッドの包括的なテストケース（DataProvider使用）
+     * RangeTypeの全組み合わせ（4×4 = 16パターン）と範囲の位置関係を網羅
+     *
+     * @dataProvider provideOverlaps_comprehensiveCases
+     * @param RangeData $range1Data
+     * @param RangeData $range2Data
+     */
+    public function test_overlaps_comprehensive(
+        array $range1Data,
+        array $range2Data,
+        bool $expectedOverlap,
+        string $description
+    ): void {
         // Arrange
         $range1 = LocalDateRange::from(
-            LocalDate::of(2024, 1, 1),
-            LocalDate::of(2024, 1, 15),
-            RangeType::CLOSED
+            LocalDate::of($range1Data['from'][0], $range1Data['from'][1], $range1Data['from'][2]),
+            LocalDate::of($range1Data['to'][0], $range1Data['to'][1], $range1Data['to'][2]),
+            $range1Data['type']
         );
         $range2 = LocalDateRange::from(
-            LocalDate::of(2024, 1, 10),
-            LocalDate::of(2024, 1, 20),
-            RangeType::CLOSED
+            LocalDate::of($range2Data['from'][0], $range2Data['from'][1], $range2Data['from'][2]),
+            LocalDate::of($range2Data['to'][0], $range2Data['to'][1], $range2Data['to'][2]),
+            $range2Data['type']
         );
 
         // Act & Assert
-        $this->assertTrue($range1->overlaps($range2));
-        $this->assertTrue($range2->overlaps($range1));
+        $this->assertSame($expectedOverlap, $range1->overlaps($range2), $description . ' (range1->overlaps(range2))');
+        $this->assertSame($expectedOverlap, $range2->overlaps($range1), $description . ' (range2->overlaps(range1))');
     }
 
-    public function test_overlaps_重なりがない範囲(): void
+    /**
+     * overlapsメソッドのテストデータプロバイダー
+     *
+     * @return array<string,OverlapsTestCase>
+     */
+    public static function provideOverlaps_comprehensiveCases(): iterable
     {
-        // Arrange
-        $range1 = LocalDateRange::from(
-            LocalDate::of(2024, 1, 1),
-            LocalDate::of(2024, 1, 10),
-            RangeType::CLOSED
-        );
-        $range2 = LocalDateRange::from(
-            LocalDate::of(2024, 1, 20),
-            LocalDate::of(2024, 1, 31),
-            RangeType::CLOSED
-        );
-
-        // Act & Assert
-        $this->assertFalse($range1->overlaps($range2));
-        $this->assertFalse($range2->overlaps($range1));
-    }
-
-    public function test_overlaps_境界で接する範囲_閉区間(): void
-    {
-        // Arrange
-        $range1 = LocalDateRange::from(
-            LocalDate::of(2024, 1, 1),
-            LocalDate::of(2024, 1, 15),
-            RangeType::CLOSED
-        );
-        $range2 = LocalDateRange::from(
-            LocalDate::of(2024, 1, 15),
-            LocalDate::of(2024, 1, 31),
-            RangeType::CLOSED
-        );
-
-        // Act & Assert
-        $this->assertTrue($range1->overlaps($range2)); // 境界で接触
-        $this->assertTrue($range2->overlaps($range1));
-    }
-
-    public function test_overlaps_境界で接する範囲_開区間(): void
-    {
-        // Arrange
-        $range1 = LocalDateRange::from(
-            LocalDate::of(2024, 1, 1),
-            LocalDate::of(2024, 1, 15),
-            RangeType::OPEN
-        );
-        $range2 = LocalDateRange::from(
-            LocalDate::of(2024, 1, 15),
-            LocalDate::of(2024, 1, 31),
-            RangeType::OPEN
-        );
-
-        // Act & Assert
-        $this->assertFalse($range1->overlaps($range2)); // 開区間では境界での接触は重なりとみなさない
-        $this->assertFalse($range2->overlaps($range1));
-    }
-
-    public function test_overlaps_境界で接する範囲_半開区間の組み合わせ(): void
-    {
-        // Arrange
-        // 左開区間と右開区間
-        $range1 = LocalDateRange::from(
-            LocalDate::of(2024, 1, 1),
-            LocalDate::of(2024, 1, 15),
-            RangeType::HALF_OPEN_LEFT
-        );
-        $range2 = LocalDateRange::from(
-            LocalDate::of(2024, 1, 15),
-            LocalDate::of(2024, 1, 31),
-            RangeType::HALF_OPEN_RIGHT
-        );
-
-        // Act & Assert
-        $this->assertTrue($range1->overlaps($range2)); // 1つ目の終了（含む）と2つ目の開始（含む）が重なる
-        $this->assertTrue($range2->overlaps($range1));
-
-        // 右開区間と左開区間
-        $range3 = LocalDateRange::from(
-            LocalDate::of(2024, 2, 1),
-            LocalDate::of(2024, 2, 15),
-            RangeType::HALF_OPEN_RIGHT
-        );
-        $range4 = LocalDateRange::from(
-            LocalDate::of(2024, 2, 15),
-            LocalDate::of(2024, 2, 28),
-            RangeType::HALF_OPEN_LEFT
-        );
-
-        // Act & Assert
-        $this->assertFalse($range3->overlaps($range4)); // 1つ目の終了（含まない）と2つ目の開始（含まない）で重ならない
-        $this->assertFalse($range4->overlaps($range3));
-    }
-
-    public function test_overlaps_一方が他方を完全に含む範囲(): void
-    {
-        // Arrange
-        $range1 = LocalDateRange::from(
-            LocalDate::of(2024, 1, 1),
-            LocalDate::of(2024, 1, 31),
-            RangeType::CLOSED
-        );
-        $range2 = LocalDateRange::from(
-            LocalDate::of(2024, 1, 10),
-            LocalDate::of(2024, 1, 20),
-            RangeType::CLOSED
-        );
-
-        // Act & Assert
-        $this->assertTrue($range1->overlaps($range2)); // range1がrange2を完全に含む
-        $this->assertTrue($range2->overlaps($range1));
-
-        // 開区間の場合
-        $range3 = LocalDateRange::from(
-            LocalDate::of(2024, 2, 1),
-            LocalDate::of(2024, 2, 28),
-            RangeType::OPEN
-        );
-        $range4 = LocalDateRange::from(
-            LocalDate::of(2024, 2, 10),
-            LocalDate::of(2024, 2, 20),
-            RangeType::OPEN
-        );
-
-        $this->assertTrue($range3->overlaps($range4));
-        $this->assertTrue($range4->overlaps($range3));
-    }
-
-    public function test_overlaps_同一範囲(): void
-    {
-        // Arrange
-        $from = LocalDate::of(2024, 1, 1);
-        $to = LocalDate::of(2024, 1, 31);
-        $range1 = LocalDateRange::from($from, $to, RangeType::CLOSED);
-        $range2 = LocalDateRange::from($from, $to, RangeType::CLOSED);
-
-        // Act & Assert
-        $this->assertTrue($range1->overlaps($range2));
-        $this->assertTrue($range2->overlaps($range1));
-
-        // 異なる区間タイプでも同じ期間
-        $range3 = LocalDateRange::from($from, $to, RangeType::OPEN);
-        $range4 = LocalDateRange::from($from, $to, RangeType::HALF_OPEN_RIGHT);
-
-        $this->assertTrue($range3->overlaps($range4));
-        $this->assertTrue($range4->overlaps($range3));
+        return [
+            // =========================================================================
+            // 1. 完全に離れている範囲のテストケース（全RangeType組み合わせ）
+            // =========================================================================
+            'separated_CLOSED_CLOSED' => [
+                'range1Data' => ['from' => [2024, 1, 1], 'to' => [2024, 1, 10], 'type' => RangeType::CLOSED],
+                'range2Data' => ['from' => [2024, 1, 20], 'to' => [2024, 1, 30], 'type' => RangeType::CLOSED],
+                'expectedOverlap' => false,
+                'description' => '完全に離れている範囲 (CLOSED vs CLOSED)',
+            ],
+            'separated_CLOSED_OPEN' => [
+                'range1Data' => ['from' => [2024, 1, 1], 'to' => [2024, 1, 10], 'type' => RangeType::CLOSED],
+                'range2Data' => ['from' => [2024, 1, 20], 'to' => [2024, 1, 30], 'type' => RangeType::OPEN],
+                'expectedOverlap' => false,
+                'description' => '完全に離れている範囲 (CLOSED vs OPEN)',
+            ],
+            'separated_CLOSED_HALF_OPEN_LEFT' => [
+                'range1Data' => ['from' => [2024, 1, 1], 'to' => [2024, 1, 10], 'type' => RangeType::CLOSED],
+                'range2Data' => ['from' => [2024, 1, 20], 'to' => [2024, 1, 30], 'type' => RangeType::HALF_OPEN_LEFT],
+                'expectedOverlap' => false,
+                'description' => '完全に離れている範囲 (CLOSED vs HALF_OPEN_LEFT)',
+            ],
+            'separated_CLOSED_HALF_OPEN_RIGHT' => [
+                'range1Data' => ['from' => [2024, 1, 1], 'to' => [2024, 1, 10], 'type' => RangeType::CLOSED],
+                'range2Data' => ['from' => [2024, 1, 20], 'to' => [2024, 1, 30], 'type' => RangeType::HALF_OPEN_RIGHT],
+                'expectedOverlap' => false,
+                'description' => '完全に離れている範囲 (CLOSED vs HALF_OPEN_RIGHT)',
+            ],
+            'separated_OPEN_CLOSED' => [
+                'range1Data' => ['from' => [2024, 1, 1], 'to' => [2024, 1, 10], 'type' => RangeType::OPEN],
+                'range2Data' => ['from' => [2024, 1, 20], 'to' => [2024, 1, 30], 'type' => RangeType::CLOSED],
+                'expectedOverlap' => false,
+                'description' => '完全に離れている範囲 (OPEN vs CLOSED)',
+            ],
+            'separated_OPEN_OPEN' => [
+                'range1Data' => ['from' => [2024, 1, 1], 'to' => [2024, 1, 10], 'type' => RangeType::OPEN],
+                'range2Data' => ['from' => [2024, 1, 20], 'to' => [2024, 1, 30], 'type' => RangeType::OPEN],
+                'expectedOverlap' => false,
+                'description' => '完全に離れている範囲 (OPEN vs OPEN)',
+            ],
+            'separated_OPEN_HALF_OPEN_LEFT' => [
+                'range1Data' => ['from' => [2024, 1, 1], 'to' => [2024, 1, 10], 'type' => RangeType::OPEN],
+                'range2Data' => ['from' => [2024, 1, 20], 'to' => [2024, 1, 30], 'type' => RangeType::HALF_OPEN_LEFT],
+                'expectedOverlap' => false,
+                'description' => '完全に離れている範囲 (OPEN vs HALF_OPEN_LEFT)',
+            ],
+            'separated_OPEN_HALF_OPEN_RIGHT' => [
+                'range1Data' => ['from' => [2024, 1, 1], 'to' => [2024, 1, 10], 'type' => RangeType::OPEN],
+                'range2Data' => ['from' => [2024, 1, 20], 'to' => [2024, 1, 30], 'type' => RangeType::HALF_OPEN_RIGHT],
+                'expectedOverlap' => false,
+                'description' => '完全に離れている範囲 (OPEN vs HALF_OPEN_RIGHT)',
+            ],
+            'separated_HALF_OPEN_LEFT_CLOSED' => [
+                'range1Data' => ['from' => [2024, 1, 1], 'to' => [2024, 1, 10], 'type' => RangeType::HALF_OPEN_LEFT],
+                'range2Data' => ['from' => [2024, 1, 20], 'to' => [2024, 1, 30], 'type' => RangeType::CLOSED],
+                'expectedOverlap' => false,
+                'description' => '完全に離れている範囲 (HALF_OPEN_LEFT vs CLOSED)',
+            ],
+            'separated_HALF_OPEN_LEFT_OPEN' => [
+                'range1Data' => ['from' => [2024, 1, 1], 'to' => [2024, 1, 10], 'type' => RangeType::HALF_OPEN_LEFT],
+                'range2Data' => ['from' => [2024, 1, 20], 'to' => [2024, 1, 30], 'type' => RangeType::OPEN],
+                'expectedOverlap' => false,
+                'description' => '完全に離れている範囲 (HALF_OPEN_LEFT vs OPEN)',
+            ],
+            'separated_HALF_OPEN_LEFT_HALF_OPEN_LEFT' => [
+                'range1Data' => ['from' => [2024, 1, 1], 'to' => [2024, 1, 10], 'type' => RangeType::HALF_OPEN_LEFT],
+                'range2Data' => ['from' => [2024, 1, 20], 'to' => [2024, 1, 30], 'type' => RangeType::HALF_OPEN_LEFT],
+                'expectedOverlap' => false,
+                'description' => '完全に離れている範囲 (HALF_OPEN_LEFT vs HALF_OPEN_LEFT)',
+            ],
+            'separated_HALF_OPEN_LEFT_HALF_OPEN_RIGHT' => [
+                'range1Data' => ['from' => [2024, 1, 1], 'to' => [2024, 1, 10], 'type' => RangeType::HALF_OPEN_LEFT],
+                'range2Data' => ['from' => [2024, 1, 20], 'to' => [2024, 1, 30], 'type' => RangeType::HALF_OPEN_RIGHT],
+                'expectedOverlap' => false,
+                'description' => '完全に離れている範囲 (HALF_OPEN_LEFT vs HALF_OPEN_RIGHT)',
+            ],
+            'separated_HALF_OPEN_RIGHT_CLOSED' => [
+                'range1Data' => ['from' => [2024, 1, 1], 'to' => [2024, 1, 10], 'type' => RangeType::HALF_OPEN_RIGHT],
+                'range2Data' => ['from' => [2024, 1, 20], 'to' => [2024, 1, 30], 'type' => RangeType::CLOSED],
+                'expectedOverlap' => false,
+                'description' => '完全に離れている範囲 (HALF_OPEN_RIGHT vs CLOSED)',
+            ],
+            'separated_HALF_OPEN_RIGHT_OPEN' => [
+                'range1Data' => ['from' => [2024, 1, 1], 'to' => [2024, 1, 10], 'type' => RangeType::HALF_OPEN_RIGHT],
+                'range2Data' => ['from' => [2024, 1, 20], 'to' => [2024, 1, 30], 'type' => RangeType::OPEN],
+                'expectedOverlap' => false,
+                'description' => '完全に離れている範囲 (HALF_OPEN_RIGHT vs OPEN)',
+            ],
+            'separated_HALF_OPEN_RIGHT_HALF_OPEN_LEFT' => [
+                'range1Data' => ['from' => [2024, 1, 1], 'to' => [2024, 1, 10], 'type' => RangeType::HALF_OPEN_RIGHT],
+                'range2Data' => ['from' => [2024, 1, 20], 'to' => [2024, 1, 30], 'type' => RangeType::HALF_OPEN_LEFT],
+                'expectedOverlap' => false,
+                'description' => '完全に離れている範囲 (HALF_OPEN_RIGHT vs HALF_OPEN_LEFT)',
+            ],
+            'separated_HALF_OPEN_RIGHT_HALF_OPEN_RIGHT' => [
+                'range1Data' => ['from' => [2024, 1, 1], 'to' => [2024, 1, 10], 'type' => RangeType::HALF_OPEN_RIGHT],
+                'range2Data' => ['from' => [2024, 1, 20], 'to' => [2024, 1, 30], 'type' => RangeType::HALF_OPEN_RIGHT],
+                'expectedOverlap' => false,
+                'description' => '完全に離れている範囲 (HALF_OPEN_RIGHT vs HALF_OPEN_RIGHT)',
+            ],
+            // =========================================================================
+            // 2. 境界で接触する範囲のテストケース（全RangeType組み合わせ）
+            // =========================================================================
+            'touching_CLOSED_CLOSED' => [
+                'range1Data' => ['from' => [2024, 1, 1], 'to' => [2024, 1, 15], 'type' => RangeType::CLOSED],
+                'range2Data' => ['from' => [2024, 1, 15], 'to' => [2024, 1, 30], 'type' => RangeType::CLOSED],
+                'expectedOverlap' => true,
+                'description' => '境界で接触（両方の境界値を含む） (CLOSED vs CLOSED)',
+            ],
+            'touching_CLOSED_OPEN' => [
+                'range1Data' => ['from' => [2024, 1, 1], 'to' => [2024, 1, 15], 'type' => RangeType::CLOSED],
+                'range2Data' => ['from' => [2024, 1, 15], 'to' => [2024, 1, 30], 'type' => RangeType::OPEN],
+                'expectedOverlap' => false,
+                'description' => '境界で接触（第1範囲は境界値を含み、第2範囲は含まない） (CLOSED vs OPEN)',
+            ],
+            'touching_CLOSED_HALF_OPEN_LEFT' => [
+                'range1Data' => ['from' => [2024, 1, 1], 'to' => [2024, 1, 15], 'type' => RangeType::CLOSED],
+                'range2Data' => ['from' => [2024, 1, 15], 'to' => [2024, 1, 30], 'type' => RangeType::HALF_OPEN_LEFT],
+                'expectedOverlap' => false,
+                'description' => '境界で接触（第1範囲は境界値を含み、第2範囲は含まない） (CLOSED vs HALF_OPEN_LEFT)',
+            ],
+            'touching_CLOSED_HALF_OPEN_RIGHT' => [
+                'range1Data' => ['from' => [2024, 1, 1], 'to' => [2024, 1, 15], 'type' => RangeType::CLOSED],
+                'range2Data' => ['from' => [2024, 1, 15], 'to' => [2024, 1, 30], 'type' => RangeType::HALF_OPEN_RIGHT],
+                'expectedOverlap' => true,
+                'description' => '境界で接触（両方の範囲が境界値を含む） (CLOSED vs HALF_OPEN_RIGHT)',
+            ],
+            'touching_OPEN_CLOSED' => [
+                'range1Data' => ['from' => [2024, 1, 1], 'to' => [2024, 1, 15], 'type' => RangeType::OPEN],
+                'range2Data' => ['from' => [2024, 1, 15], 'to' => [2024, 1, 30], 'type' => RangeType::CLOSED],
+                'expectedOverlap' => false,
+                'description' => '境界で接触（第1範囲は境界値を含まず、第2範囲は含む） (OPEN vs CLOSED)',
+            ],
+            'touching_OPEN_OPEN' => [
+                'range1Data' => ['from' => [2024, 1, 1], 'to' => [2024, 1, 15], 'type' => RangeType::OPEN],
+                'range2Data' => ['from' => [2024, 1, 15], 'to' => [2024, 1, 30], 'type' => RangeType::OPEN],
+                'expectedOverlap' => false,
+                'description' => '境界で接触（両方とも境界値を含まない） (OPEN vs OPEN)',
+            ],
+            'touching_OPEN_HALF_OPEN_LEFT' => [
+                'range1Data' => ['from' => [2024, 1, 1], 'to' => [2024, 1, 15], 'type' => RangeType::OPEN],
+                'range2Data' => ['from' => [2024, 1, 15], 'to' => [2024, 1, 30], 'type' => RangeType::HALF_OPEN_LEFT],
+                'expectedOverlap' => false,
+                'description' => '境界で接触（両方とも境界値を含まない） (OPEN vs HALF_OPEN_LEFT)',
+            ],
+            'touching_OPEN_HALF_OPEN_RIGHT' => [
+                'range1Data' => ['from' => [2024, 1, 1], 'to' => [2024, 1, 15], 'type' => RangeType::OPEN],
+                'range2Data' => ['from' => [2024, 1, 15], 'to' => [2024, 1, 30], 'type' => RangeType::HALF_OPEN_RIGHT],
+                'expectedOverlap' => false,
+                'description' => '境界で接触（第1範囲は境界値を含まず、第2範囲は含む） (OPEN vs HALF_OPEN_RIGHT)',
+            ],
+            'touching_HALF_OPEN_LEFT_CLOSED' => [
+                'range1Data' => ['from' => [2024, 1, 1], 'to' => [2024, 1, 15], 'type' => RangeType::HALF_OPEN_LEFT],
+                'range2Data' => ['from' => [2024, 1, 15], 'to' => [2024, 1, 30], 'type' => RangeType::CLOSED],
+                'expectedOverlap' => true,
+                'description' => '境界で接触（両方の範囲が境界値を含む） (HALF_OPEN_LEFT vs CLOSED)',
+            ],
+            'touching_HALF_OPEN_LEFT_OPEN' => [
+                'range1Data' => ['from' => [2024, 1, 1], 'to' => [2024, 1, 15], 'type' => RangeType::HALF_OPEN_LEFT],
+                'range2Data' => ['from' => [2024, 1, 15], 'to' => [2024, 1, 30], 'type' => RangeType::OPEN],
+                'expectedOverlap' => false,
+                'description' => '境界で接触（第1範囲は境界値を含み、第2範囲は含まない） (HALF_OPEN_LEFT vs OPEN)',
+            ],
+            'touching_HALF_OPEN_LEFT_HALF_OPEN_LEFT' => [
+                'range1Data' => ['from' => [2024, 1, 1], 'to' => [2024, 1, 15], 'type' => RangeType::HALF_OPEN_LEFT],
+                'range2Data' => ['from' => [2024, 1, 15], 'to' => [2024, 1, 30], 'type' => RangeType::HALF_OPEN_LEFT],
+                'expectedOverlap' => false,
+                'description' => '境界で接触（第1範囲は境界値を含み、第2範囲は含まない） (HALF_OPEN_LEFT vs HALF_OPEN_LEFT)',
+            ],
+            'touching_HALF_OPEN_LEFT_HALF_OPEN_RIGHT' => [
+                'range1Data' => ['from' => [2024, 1, 1], 'to' => [2024, 1, 15], 'type' => RangeType::HALF_OPEN_LEFT],
+                'range2Data' => ['from' => [2024, 1, 15], 'to' => [2024, 1, 30], 'type' => RangeType::HALF_OPEN_RIGHT],
+                'expectedOverlap' => true,
+                'description' => '境界で接触（両方の範囲が境界値を含む） (HALF_OPEN_LEFT vs HALF_OPEN_RIGHT)',
+            ],
+            'touching_HALF_OPEN_RIGHT_CLOSED' => [
+                'range1Data' => ['from' => [2024, 1, 1], 'to' => [2024, 1, 15], 'type' => RangeType::HALF_OPEN_RIGHT],
+                'range2Data' => ['from' => [2024, 1, 15], 'to' => [2024, 1, 30], 'type' => RangeType::CLOSED],
+                'expectedOverlap' => false,
+                'description' => '境界で接触（第1範囲は境界値を含まず、第2範囲は含む） (HALF_OPEN_RIGHT vs CLOSED)',
+            ],
+            'touching_HALF_OPEN_RIGHT_OPEN' => [
+                'range1Data' => ['from' => [2024, 1, 1], 'to' => [2024, 1, 15], 'type' => RangeType::HALF_OPEN_RIGHT],
+                'range2Data' => ['from' => [2024, 1, 15], 'to' => [2024, 1, 30], 'type' => RangeType::OPEN],
+                'expectedOverlap' => false,
+                'description' => '境界で接触（両方とも境界値を含まない） (HALF_OPEN_RIGHT vs OPEN)',
+            ],
+            'touching_HALF_OPEN_RIGHT_HALF_OPEN_LEFT' => [
+                'range1Data' => ['from' => [2024, 1, 1], 'to' => [2024, 1, 15], 'type' => RangeType::HALF_OPEN_RIGHT],
+                'range2Data' => ['from' => [2024, 1, 15], 'to' => [2024, 1, 30], 'type' => RangeType::HALF_OPEN_LEFT],
+                'expectedOverlap' => false,
+                'description' => '境界で接触（両方とも境界値を含まない） (HALF_OPEN_RIGHT vs HALF_OPEN_LEFT)',
+            ],
+            'touching_HALF_OPEN_RIGHT_HALF_OPEN_RIGHT' => [
+                'range1Data' => ['from' => [2024, 1, 1], 'to' => [2024, 1, 15], 'type' => RangeType::HALF_OPEN_RIGHT],
+                'range2Data' => ['from' => [2024, 1, 15], 'to' => [2024, 1, 30], 'type' => RangeType::HALF_OPEN_RIGHT],
+                'expectedOverlap' => false,
+                'description' => '境界で接触（第1範囲は境界値を含まず、第2範囲は含む） (HALF_OPEN_RIGHT vs HALF_OPEN_RIGHT)',
+            ],
+            // =========================================================================
+            // 3. 重なっている範囲のテストケース（代表的なRangeType組み合わせ）
+            // =========================================================================
+            'overlapping_CLOSED_CLOSED' => [
+                'range1Data' => ['from' => [2024, 1, 1], 'to' => [2024, 1, 15], 'type' => RangeType::CLOSED],
+                'range2Data' => ['from' => [2024, 1, 10], 'to' => [2024, 1, 20], 'type' => RangeType::CLOSED],
+                'expectedOverlap' => true,
+                'description' => '部分的に重なっている範囲 (CLOSED vs CLOSED)',
+            ],
+            'overlapping_OPEN_OPEN' => [
+                'range1Data' => ['from' => [2024, 1, 1], 'to' => [2024, 1, 15], 'type' => RangeType::OPEN],
+                'range2Data' => ['from' => [2024, 1, 10], 'to' => [2024, 1, 20], 'type' => RangeType::OPEN],
+                'expectedOverlap' => true,
+                'description' => '部分的に重なっている範囲 (OPEN vs OPEN)',
+            ],
+            'overlapping_HALF_OPEN_LEFT_HALF_OPEN_RIGHT' => [
+                'range1Data' => ['from' => [2024, 1, 1], 'to' => [2024, 1, 15], 'type' => RangeType::HALF_OPEN_LEFT],
+                'range2Data' => ['from' => [2024, 1, 10], 'to' => [2024, 1, 20], 'type' => RangeType::HALF_OPEN_RIGHT],
+                'expectedOverlap' => true,
+                'description' => '部分的に重なっている範囲 (HALF_OPEN_LEFT vs HALF_OPEN_RIGHT)',
+            ],
+            'overlapping_HALF_OPEN_RIGHT_HALF_OPEN_LEFT' => [
+                'range1Data' => ['from' => [2024, 1, 1], 'to' => [2024, 1, 15], 'type' => RangeType::HALF_OPEN_RIGHT],
+                'range2Data' => ['from' => [2024, 1, 10], 'to' => [2024, 1, 20], 'type' => RangeType::HALF_OPEN_LEFT],
+                'expectedOverlap' => true,
+                'description' => '部分的に重なっている範囲 (HALF_OPEN_RIGHT vs HALF_OPEN_LEFT)',
+            ],
+            // =========================================================================
+            // 4. 一方が他方を完全に含む範囲のテストケース（代表的なRangeType組み合わせ）
+            // =========================================================================
+            'contains_CLOSED_CLOSED' => [
+                'range1Data' => ['from' => [2024, 1, 1], 'to' => [2024, 1, 31], 'type' => RangeType::CLOSED],
+                'range2Data' => ['from' => [2024, 1, 10], 'to' => [2024, 1, 20], 'type' => RangeType::CLOSED],
+                'expectedOverlap' => true,
+                'description' => '第1範囲が第2範囲を完全に含む (CLOSED vs CLOSED)',
+            ],
+            'contains_OPEN_OPEN' => [
+                'range1Data' => ['from' => [2024, 1, 1], 'to' => [2024, 1, 31], 'type' => RangeType::OPEN],
+                'range2Data' => ['from' => [2024, 1, 10], 'to' => [2024, 1, 20], 'type' => RangeType::OPEN],
+                'expectedOverlap' => true,
+                'description' => '第1範囲が第2範囲を完全に含む (OPEN vs OPEN)',
+            ],
+            'contains_CLOSED_OPEN' => [
+                'range1Data' => ['from' => [2024, 1, 1], 'to' => [2024, 1, 31], 'type' => RangeType::CLOSED],
+                'range2Data' => ['from' => [2024, 1, 10], 'to' => [2024, 1, 20], 'type' => RangeType::OPEN],
+                'expectedOverlap' => true,
+                'description' => '第1範囲（閉区間）が第2範囲（開区間）を完全に含む (CLOSED vs OPEN)',
+            ],
+            'contains_OPEN_CLOSED' => [
+                'range1Data' => ['from' => [2024, 1, 1], 'to' => [2024, 1, 31], 'type' => RangeType::OPEN],
+                'range2Data' => ['from' => [2024, 1, 10], 'to' => [2024, 1, 20], 'type' => RangeType::CLOSED],
+                'expectedOverlap' => true,
+                'description' => '第1範囲（開区間）が第2範囲（閉区間）を完全に含む (OPEN vs CLOSED)',
+            ],
+            // =========================================================================
+            // 5. 同一範囲のテストケース（全RangeType組み合わせ）
+            // =========================================================================
+            'identical_CLOSED_CLOSED' => [
+                'range1Data' => ['from' => [2024, 1, 1], 'to' => [2024, 1, 31], 'type' => RangeType::CLOSED],
+                'range2Data' => ['from' => [2024, 1, 1], 'to' => [2024, 1, 31], 'type' => RangeType::CLOSED],
+                'expectedOverlap' => true,
+                'description' => '同一範囲 (CLOSED vs CLOSED)',
+            ],
+            'identical_OPEN_OPEN' => [
+                'range1Data' => ['from' => [2024, 1, 1], 'to' => [2024, 1, 31], 'type' => RangeType::OPEN],
+                'range2Data' => ['from' => [2024, 1, 1], 'to' => [2024, 1, 31], 'type' => RangeType::OPEN],
+                'expectedOverlap' => true,
+                'description' => '同一範囲 (OPEN vs OPEN)',
+            ],
+            'identical_HALF_OPEN_LEFT_HALF_OPEN_LEFT' => [
+                'range1Data' => ['from' => [2024, 1, 1], 'to' => [2024, 1, 31], 'type' => RangeType::HALF_OPEN_LEFT],
+                'range2Data' => ['from' => [2024, 1, 1], 'to' => [2024, 1, 31], 'type' => RangeType::HALF_OPEN_LEFT],
+                'expectedOverlap' => true,
+                'description' => '同一範囲 (HALF_OPEN_LEFT vs HALF_OPEN_LEFT)',
+            ],
+            'identical_HALF_OPEN_RIGHT_HALF_OPEN_RIGHT' => [
+                'range1Data' => ['from' => [2024, 1, 1], 'to' => [2024, 1, 31], 'type' => RangeType::HALF_OPEN_RIGHT],
+                'range2Data' => ['from' => [2024, 1, 1], 'to' => [2024, 1, 31], 'type' => RangeType::HALF_OPEN_RIGHT],
+                'expectedOverlap' => true,
+                'description' => '同一範囲 (HALF_OPEN_RIGHT vs HALF_OPEN_RIGHT)',
+            ],
+            'identical_mixed_CLOSED_OPEN' => [
+                'range1Data' => ['from' => [2024, 1, 1], 'to' => [2024, 1, 31], 'type' => RangeType::CLOSED],
+                'range2Data' => ['from' => [2024, 1, 1], 'to' => [2024, 1, 31], 'type' => RangeType::OPEN],
+                'expectedOverlap' => true,
+                'description' => '同じ期間だが異なる区間タイプ (CLOSED vs OPEN)',
+            ],
+            'identical_mixed_HALF_OPEN_LEFT_HALF_OPEN_RIGHT' => [
+                'range1Data' => ['from' => [2024, 1, 1], 'to' => [2024, 1, 31], 'type' => RangeType::HALF_OPEN_LEFT],
+                'range2Data' => ['from' => [2024, 1, 1], 'to' => [2024, 1, 31], 'type' => RangeType::HALF_OPEN_RIGHT],
+                'expectedOverlap' => true,
+                'description' => '同じ期間だが異なる区間タイプ (HALF_OPEN_LEFT vs HALF_OPEN_RIGHT)',
+            ],
+        ];
     }
 
     public function test_days_閉区間の日数計算(): void
@@ -446,7 +628,7 @@ final class LocalDateRangeTest extends TestCase
         $range = LocalDateRange::from($from, $to);
 
         // Act & Assert
-        $this->expectException(\AssertionError::class);
+        $this->expectException(AssertionError::class);
         $range->withFrom($newFrom);
     }
 
@@ -479,7 +661,7 @@ final class LocalDateRangeTest extends TestCase
         $range = LocalDateRange::from($from, $to);
 
         // Act & Assert
-        $this->expectException(\AssertionError::class);
+        $this->expectException(AssertionError::class);
         $range->withTo($newTo);
     }
 

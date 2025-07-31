@@ -16,6 +16,11 @@ use WizDevelop\PhpValueObject\IValueObject;
 use WizDevelop\PhpValueObject\ValueObjectMeta;
 
 /**
+ * @phpstan-type Hour int<0, 23>
+ * @phpstan-type Minute int<0, 59>
+ * @phpstan-type Second int<0, 59>
+ * @phpstan-type Micro int<0, 999999>
+ *
  * ローカル時刻を表す値オブジェクト
  */
 #[ValueObjectMeta(name: 'ローカル時刻')]
@@ -33,10 +38,10 @@ readonly class LocalTime implements IValueObject, Stringable
 
     /**
      * Avoid new() operator.
-     * @param int<0,23>     $hour   the hour, from 0 to 23
-     * @param int<0,59>     $minute the minute, from 0 to 59
-     * @param int<0,59>     $second the second, from 0 to 59
-     * @param int<0,999999> $micro  the micro-of-second, from 0 to 999,999
+     * @param Hour   $hour   the hour, from 0 to 23
+     * @param Minute $minute the minute, from 0 to 59
+     * @param Second $second the second, from 0 to 59
+     * @param Micro  $micro  the micro-of-second, from 0 to 999,999
      */
     final private function __construct(
         private int $hour,
@@ -77,10 +82,10 @@ readonly class LocalTime implements IValueObject, Stringable
     // MARK: factory methods
     // -------------------------------------------------------------------------
     /**
-     * @param int<0, 23>     $hour   the hour, from 0 to 23
-     * @param int<0, 59>     $minute the minute, from 0 to 59
-     * @param int<0, 59>     $second the second, from 0 to 59
-     * @param int<0, 999999> $micro  the micro-of-second, from 0 to 999,999
+     * @param Hour   $hour   the hour, from 0 to 23
+     * @param Minute $minute the minute, from 0 to 59
+     * @param Second $second the second, from 0 to 59
+     * @param Micro  $micro  the micro-of-second, from 0 to 999,999
      */
     final public static function of(int $hour, int $minute, int $second = 0, int $micro = 0): static
     {
@@ -90,8 +95,8 @@ readonly class LocalTime implements IValueObject, Stringable
     /**
      * Creates a LocalTime instance from a number of seconds since midnight.
      *
-     * @param int<0, 86399>  $secondOfDay   the second-of-day, from 0 to 86,399
-     * @param int<0, 999999> $microOfSecond the micro-of-second, from 0 to 999,999
+     * @param int<0, 86399> $secondOfDay   the second-of-day, from 0 to 86,399
+     * @param Micro         $microOfSecond the micro-of-second, from 0 to 999,999
      */
     final public static function ofSecondOfDay(int $secondOfDay, int $microOfSecond = 0): static
     {
@@ -99,16 +104,16 @@ readonly class LocalTime implements IValueObject, Stringable
         // @phpstan-ignore-next-line
         assert($secondOfDay >= 0 && $secondOfDay < self::SECONDS_PER_DAY);
 
-        /** @var int<0, 23> */
+        /** @var Hour */
         $hours = intdiv($secondOfDay, self::SECONDS_PER_HOUR);
 
         /** @var int<0, 3599> */
         $remainingSeconds = $secondOfDay - ($hours * self::SECONDS_PER_HOUR);
 
-        /** @var int<0, 59> */
+        /** @var Minute */
         $minutes = intdiv($remainingSeconds, self::SECONDS_PER_MINUTE);
 
-        /** @var int<0, 59> */
+        /** @var Second */
         $seconds = $remainingSeconds - ($minutes * self::SECONDS_PER_MINUTE);
 
         return new static($hours, $minutes, $seconds, $microOfSecond);
@@ -307,7 +312,7 @@ readonly class LocalTime implements IValueObject, Stringable
     }
 
     /**
-     * @return int<0,23>
+     * @return Hour
      */
     final public function getHour(): int
     {
@@ -315,7 +320,7 @@ readonly class LocalTime implements IValueObject, Stringable
     }
 
     /**
-     * @return int<0,59>
+     * @return Minute
      */
     final public function getMinute(): int
     {
@@ -323,7 +328,7 @@ readonly class LocalTime implements IValueObject, Stringable
     }
 
     /**
-     * @return int<0,59>
+     * @return Second
      */
     final public function getSecond(): int
     {
@@ -331,7 +336,7 @@ readonly class LocalTime implements IValueObject, Stringable
     }
 
     /**
-     * @return int<0,999999>
+     * @return Micro
      */
     final public function getMicro(): int
     {
@@ -448,7 +453,7 @@ readonly class LocalTime implements IValueObject, Stringable
             return $this;
         }
 
-        /** @var int<0, 23> */
+        /** @var Hour */
         $hour = intdiv($newMofd, self::MINUTES_PER_HOUR);
         $minute = $newMofd % self::MINUTES_PER_HOUR;
 
@@ -475,10 +480,10 @@ readonly class LocalTime implements IValueObject, Stringable
             return $this;
         }
 
-        /** @var int<0, 23> */
+        /** @var Hour */
         $hour = intdiv($newSofd, self::SECONDS_PER_HOUR);
 
-        /** @var int<0, 59> */
+        /** @var Minute */
         $minute = intdiv($newSofd, self::SECONDS_PER_MINUTE) % self::MINUTES_PER_HOUR;
         $second = $newSofd % self::SECONDS_PER_MINUTE;
 
@@ -567,20 +572,20 @@ readonly class LocalTime implements IValueObject, Stringable
     // MARK: private methods
     // -------------------------------------------------------------------------
     /**
-     * @return array{0:int<0,23>, 1:int<0,59>, 2:int<0,59>, 3:int<0,999999>}
+     * @return array{0:Hour, 1:Minute, 2:Second, 3:Micro}
      */
     private static function extractTime(DateTimeInterface $value): array
     {
-        /** @var int<0,23> */
+        /** @var Hour */
         $hour = (int)$value->format('G');
 
-        /** @var int<0,59> */
+        /** @var Minute */
         $minute = (int)$value->format('i');
 
-        /** @var int<0,59> */
+        /** @var Second */
         $second = (int)$value->format('s');
 
-        /** @var int<0,999999> */
+        /** @var Micro */
         $micro = (int)$value->format('u'); // @phpstan-ignore varTag.type
 
         return [$hour, $minute, $second, $micro];

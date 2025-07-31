@@ -16,6 +16,15 @@ use WizDevelop\PhpValueObject\IValueObject;
 use WizDevelop\PhpValueObject\ValueObjectMeta;
 
 /**
+ * @phpstan-import-type Hour from LocalTime
+ * @phpstan-import-type Minute from LocalTime
+ * @phpstan-import-type Second from LocalTime
+ * @phpstan-import-type Micro from LocalTime
+ *
+ * @phpstan-import-type Year from LocalDate
+ * @phpstan-import-type Month from LocalDate
+ * @phpstan-import-type Day from LocalDate
+ *
  * ローカル日時を表す値オブジェクト
  */
 #[ValueObjectMeta(name: 'ローカル日時')]
@@ -161,7 +170,7 @@ readonly class LocalDateTime implements IValueObject, Stringable
     }
 
     /**
-     * @return int<-9999, 9999>
+     * @return Year
      */
     final public function getYear(): int
     {
@@ -169,7 +178,7 @@ readonly class LocalDateTime implements IValueObject, Stringable
     }
 
     /**
-     * @return int<1, 12>
+     * @return Month
      */
     final public function getMonth(): int
     {
@@ -177,7 +186,7 @@ readonly class LocalDateTime implements IValueObject, Stringable
     }
 
     /**
-     * @return int<1, 31>
+     * @return Day
      */
     final public function getDay(): int
     {
@@ -185,7 +194,7 @@ readonly class LocalDateTime implements IValueObject, Stringable
     }
 
     /**
-     * @return int<0, 23>
+     * @return Hour
      */
     final public function getHour(): int
     {
@@ -193,7 +202,7 @@ readonly class LocalDateTime implements IValueObject, Stringable
     }
 
     /**
-     * @return int<0, 59>
+     * @return Minute
      */
     final public function getMinute(): int
     {
@@ -201,7 +210,7 @@ readonly class LocalDateTime implements IValueObject, Stringable
     }
 
     /**
-     * @return int<0, 59>
+     * @return Second
      */
     final public function getSecond(): int
     {
@@ -209,7 +218,7 @@ readonly class LocalDateTime implements IValueObject, Stringable
     }
 
     /**
-     * @return int<0, 999999>
+     * @return Micro
      */
     final public function getMicro(): int
     {
@@ -517,7 +526,7 @@ readonly class LocalDateTime implements IValueObject, Stringable
         $totMicros = $micros * $sign + $this->time->getMicro();
         $totSeconds += Math::floorDiv($totMicros, LocalTime::MICROS_PER_SECOND);
 
-        /** @var int<0, 999999> */
+        /** @var Micro */
         $newMicro = Math::floorMod($totMicros, LocalTime::MICROS_PER_SECOND);
 
         $totDays += Math::floorDiv($totSeconds, LocalTime::SECONDS_PER_DAY);
