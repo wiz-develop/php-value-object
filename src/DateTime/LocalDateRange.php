@@ -4,34 +4,34 @@ declare(strict_types=1);
 
 namespace WizDevelop\PhpValueObject\DateTime;
 
+use Countable;
 use Generator;
+use IteratorAggregate;
 use Override;
 use Stringable;
-use WizDevelop\PhpMonad\Option;
 use WizDevelop\PhpMonad\Result;
 use WizDevelop\PhpValueObject\Error\ValueObjectError;
 use WizDevelop\PhpValueObject\IValueObject;
-use WizDevelop\PhpValueObject\ValueObjectMeta;
 
 /**
+ * @template TStart of LocalDate
+ * @template TEnd of LocalDate
+ *
+ * @implements IteratorAggregate<LocalDate>
+ *
  * ローカル日付範囲を表す値オブジェクト
  */
-#[ValueObjectMeta(name: 'ローカル日付範囲')]
-readonly class LocalDateRange implements IValueObject, Stringable
+readonly class LocalDateRange implements IValueObject, Stringable, IteratorAggregate, Countable
 {
     /**
-     * 最大日付（9999-12-31）
-     */
-    private const MAX_DATE_YEAR = 9999;
-    private const MAX_DATE_MONTH = 12;
-    private const MAX_DATE_DAY = 31;
-
-    /**
      * Avoid new() operator.
+     *
+     * @param TStart $from 開始日付
+     * @param TEnd   $to   終了日付
      */
     final private function __construct(
-        private LocalDate $from,
-        private LocalDate $to,
+        private mixed $from,
+        private mixed $to,
         private RangeType $rangeType
     ) {
         // NOTE: 不変条件（invariant）
@@ -44,7 +44,6 @@ readonly class LocalDateRange implements IValueObject, Stringable
     #[Override]
     final public function equals(IValueObject $other): bool
     {
-
         return $this->from->equals($other->from)
             && $this->to->equals($other->to)
             && $this->rangeType === $other->rangeType;
@@ -67,93 +66,33 @@ readonly class LocalDateRange implements IValueObject, Stringable
     // -------------------------------------------------------------------------
     /**
      * 指定された開始日付、終了日付、範囲タイプでインスタンスを生成
+     *
+     * @param TStart $from 開始日付
+     * @param TEnd   $to   終了日付
+     *
+     * @return static<TStart,TEnd>
      */
     final public static function from(
-        LocalDate $from,
-        ?LocalDate $to = null,
-        RangeType $rangeType = RangeType::CLOSED
+        mixed $from,
+        mixed $to,
+        RangeType $rangeType = RangeType::HALF_OPEN_RIGHT
     ): static {
-        $to ??= LocalDate::of(self::MAX_DATE_YEAR, self::MAX_DATE_MONTH, self::MAX_DATE_DAY);
-
         return new static($from, $to, $rangeType);
     }
 
     /**
-     * 閉区間でインスタンスを生成
-     */
-    final public static function closed(LocalDate $from, ?LocalDate $to = null): static
-    {
-        return static::from($from, $to, RangeType::CLOSED);
-    }
-
-    /**
-     * 開区間でインスタンスを生成
-     */
-    final public static function open(LocalDate $from, ?LocalDate $to = null): static
-    {
-        return static::from($from, $to, RangeType::OPEN);
-    }
-
-    /**
-     * 左開区間でインスタンスを生成
-     */
-    final public static function halfOpenLeft(LocalDate $from, ?LocalDate $to = null): static
-    {
-        return static::from($from, $to, RangeType::HALF_OPEN_LEFT);
-    }
-
-    /**
-     * 右開区間でインスタンスを生成
-     */
-    final public static function halfOpenRight(LocalDate $from, ?LocalDate $to = null): static
-    {
-        return static::from($from, $to, RangeType::HALF_OPEN_RIGHT);
-    }
-
-    /**
-     * @return Result<static,ValueObjectError>
+     * @param TStart $from 開始日付
+     * @param TEnd   $to   終了日付
+     *
+     * @return Result<static<TStart,TEnd>,ValueObjectError>
      */
     final public static function tryFrom(
-        LocalDate $from,
-        ?LocalDate $to = null,
-        RangeType $rangeType = RangeType::CLOSED
+        mixed $from,
+        mixed $to,
+        RangeType $rangeType = RangeType::HALF_OPEN_RIGHT
     ): Result {
-        $to ??= LocalDate::of(self::MAX_DATE_YEAR, self::MAX_DATE_MONTH, self::MAX_DATE_DAY);
-
         return static::isValid($from, $to)
             ->andThen(static fn () => Result\ok(static::from($from, $to, $rangeType)));
-    }
-
-    /**
-     * @return Option<static>
-     */
-    final public static function fromNullable(
-        ?LocalDate $from,
-        ?LocalDate $to = null,
-        RangeType $rangeType = RangeType::CLOSED
-    ): Option {
-        if ($from === null) {
-            return Option\none();
-        }
-
-        return Option\some(static::from($from, $to, $rangeType));
-    }
-
-    /**
-     * @return Result<Option<static>,ValueObjectError>
-     */
-    final public static function tryFromNullable(
-        ?LocalDate $from,
-        ?LocalDate $to = null,
-        RangeType $rangeType = RangeType::CLOSED
-    ): Result {
-        if ($from === null) {
-            // @phpstan-ignore return.type
-            return Result\ok(Option\none());
-        }
-
-        // @phpstan-ignore return.type
-        return static::tryFrom($from, $to, $rangeType)->map(static fn ($result) => Option\some($result));
     }
 
     // -------------------------------------------------------------------------
@@ -161,9 +100,13 @@ readonly class LocalDateRange implements IValueObject, Stringable
     // -------------------------------------------------------------------------
     /**
      * 有効な値かどうか
+     *
+     * @param TStart $from 開始日付
+     * @param TEnd   $to   終了日付
+     *
      * @return Result<bool,ValueObjectError>
      */
-    protected static function isValid(LocalDate $from, LocalDate $to): Result
+    protected static function isValid(mixed $from, mixed $to): Result
     {
         if ($from->isAfter($to)) {
             return Result\err(ValueObjectError::of(
@@ -212,6 +155,46 @@ readonly class LocalDateRange implements IValueObject, Stringable
     }
 
     /**
+     * @param TStart $from 開始日付
+     *
+     * @return static<TStart,TEnd>
+     */
+    final public function withFrom(mixed $from): static
+    {
+        return static::from($from, $this->to, $this->rangeType);
+    }
+
+    /**
+     * @param TEnd $to 終了日付
+     *
+     * @return static<TStart,TEnd>
+     */
+    final public function withTo(mixed $to): static
+    {
+        return static::from($this->from, $to, $this->rangeType);
+    }
+
+    /**
+     * @param TStart $from 開始日付
+     *
+     * @return Result<static<TStart,TEnd>,ValueObjectError>
+     */
+    final public function tryWithFrom(mixed $from): Result
+    {
+        return static::tryFrom($from, $this->to, $this->rangeType);
+    }
+
+    /**
+     * @param TEnd $to 終了日付
+     *
+     * @return Result<static<TStart,TEnd>,ValueObjectError>
+     */
+    final public function tryWithTo(mixed $to): Result
+    {
+        return static::tryFrom($this->from, $to, $this->rangeType);
+    }
+
+    /**
      * 指定された日付が範囲内に含まれるかを判定
      */
     final public function contains(LocalDate $date): bool
@@ -231,49 +214,32 @@ readonly class LocalDateRange implements IValueObject, Stringable
 
     /**
      * 他の範囲と重なりがあるかを判定
+     *
+     * @param self<TStart,TEnd> $other
      */
     final public function overlaps(self $other): bool
     {
         // 一方の範囲の終了が他方の開始より前の場合、重なりなし
-        if ($this->strictlyBefore($other) || $other->strictlyBefore($this)) {
-            return false;
-        }
-
+        return !($this->strictlyBefore($other) || $other->strictlyBefore($this));
         // 境界での接触を考慮
-        return $this->hasOverlapAt($other);
+        // return $this->hasOverlapAt($other);
     }
 
     /**
      * この範囲が他の範囲より完全に前にあるかを判定
+     *
+     * @param self<TStart,TEnd> $other
      */
-    private function strictlyBefore(self $other): bool
+    final public function strictlyBefore(self $other): bool
     {
         return $this->to->isBefore($other->from) || (
-            $this->to->equals($other->from) && (
+            $this->to->is($other->from) && (
                 $this->rangeType === RangeType::OPEN
                 || $this->rangeType === RangeType::HALF_OPEN_RIGHT
                 || $other->rangeType === RangeType::OPEN
                 || $other->rangeType === RangeType::HALF_OPEN_LEFT
             )
         );
-    }
-
-    /**
-     * 境界での重なりを考慮した判定
-     */
-    private function hasOverlapAt(self $other): bool
-    {
-        // 開始点での重なり判定
-        $startOverlap = $this->contains($other->from) || $other->contains($this->from);
-
-        // 終了点での重なり判定
-        $endOverlap = $this->contains($other->to) || $other->contains($this->to);
-
-        // 一方が他方を完全に含む場合
-        $containment = ($this->from->isBeforeOrEqualTo($other->from) && $this->to->isAfterOrEqualTo($other->to))
-            || ($other->from->isBeforeOrEqualTo($this->from) && $other->to->isAfterOrEqualTo($this->to));
-
-        return $startOverlap || $endOverlap || $containment;
     }
 
     /**
@@ -299,7 +265,8 @@ readonly class LocalDateRange implements IValueObject, Stringable
      * 範囲に含まれる各日付を順に返すイテレータを取得
      * @return Generator<LocalDate>
      */
-    final public function iterate(): Generator
+    #[Override]
+    final public function getIterator(): Generator
     {
         $current = match ($this->rangeType) {
             RangeType::CLOSED, RangeType::HALF_OPEN_RIGHT => $this->from,
@@ -315,5 +282,18 @@ readonly class LocalDateRange implements IValueObject, Stringable
             yield $current;
             $current = $current->addDays(1);
         }
+    }
+
+    /**
+     * Returns the number of days in this range.
+     */
+    #[Override]
+    final public function count(): int
+    {
+        $count = $this->to->toEpochDay() - $this->from->toEpochDay() + 1;
+
+        assert($count >= 0, 'Count must be non-negative');
+
+        return $count;
     }
 }

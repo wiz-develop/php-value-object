@@ -16,6 +16,10 @@ use WizDevelop\PhpValueObject\IValueObject;
 use WizDevelop\PhpValueObject\ValueObjectMeta;
 
 /**
+ * @phpstan-type Year int<LocalDate::MIN_YEAR, LocalDate::MAX_YEAR>
+ * @phpstan-type Month int<1, 12>
+ * @phpstan-type Day int<1, 31>
+ *
  * ローカル日付を表す値オブジェクト
  */
 #[ValueObjectMeta(name: 'ローカル日付')]
@@ -43,9 +47,9 @@ readonly class LocalDate implements IValueObject, Stringable
 
     /**
      * Avoid new() operator.
-     * @param int        $year  the year to represent, validated from MIN_YEAR to MAX_YEAR
-     * @param int<1, 12> $month the month, from 1 to 12
-     * @param int<1, 31> $day   the day, from 1 to 31
+     * @param int   $year  the year to represent, validated from MIN_YEAR to MAX_YEAR
+     * @param Month $month the month, from 1 to 12
+     * @param Day   $day   the day, from 1 to 31
      */
     final private function __construct(
         private int $year,
@@ -85,9 +89,9 @@ readonly class LocalDate implements IValueObject, Stringable
     // MARK: factory methods
     // -------------------------------------------------------------------------
     /**
-     * @param int        $year  the year to represent, validated from MIN_YEAR to MAX_YEAR
-     * @param int<1, 12> $month the month, from 1 to 12
-     * @param int<1, 31> $day   the day, from 1 to 31
+     * @param int   $year  the year to represent, validated from MIN_YEAR to MAX_YEAR
+     * @param Month $month the month, from 1 to 12
+     * @param Day   $day   the day, from 1 to 31
      */
     final public static function of(int $year, int $month, int $day): static
     {
@@ -146,13 +150,18 @@ readonly class LocalDate implements IValueObject, Stringable
         return static::tryFrom($value)->map(static fn ($result) => Option\some($result));
     }
 
-    final public static function now(DateTimeZone $timeZone): static
+    final public static function now(DateTimeZone $timeZone = new DateTimeZone('Asia/Tokyo')): static
     {
         $value = new DateTimeImmutable('now', $timeZone);
 
         [$year, $month, $day] = self::extractDate($value);
 
         return static::of($year, $month, $day);
+    }
+
+    final public static function max(): static
+    {
+        return static::of(self::MAX_YEAR, 12, 31);
     }
 
     /**
@@ -186,10 +195,10 @@ readonly class LocalDate implements IValueObject, Stringable
         // Convert march-based values back to January-based.
         $marchMonth0 = intdiv($marchDoy0 * 5 + 2, 153);
 
-        /** @var int<1, 12> $month */
+        /** @var Month $month */
         $month = ($marchMonth0 + 2) % 12 + 1;
 
-        /** @var int<1, 31> $dom */
+        /** @var Day $dom */
         $dom = $marchDoy0 - intdiv($marchMonth0 * 306 + 5, 10) + 1;
 
         $yearEst += intdiv($marchMonth0, 10);
@@ -260,16 +269,14 @@ readonly class LocalDate implements IValueObject, Stringable
             );
         }
 
-
-
         return Result\ok(true);
     }
 
     /**
      * 有効な日かどうかを判定
      * @param  int                           $year        年
-     * @param  int<1, 12>                    $monthOfYear 月
-     * @param  int<1, 31>                    $dayOfMonth  日
+     * @param  Month                         $monthOfYear 月
+     * @param  Day                           $dayOfMonth  日
      * @return Result<bool,ValueObjectError>
      */
     final protected static function isValidDate(int $year, int $monthOfYear, int $dayOfMonth): Result
@@ -337,7 +344,7 @@ readonly class LocalDate implements IValueObject, Stringable
     }
 
     /**
-     * @return int<self::MIN_YEAR, self::MAX_YEAR>
+     * @return Year
      */
     final public function getYear(): int
     {
@@ -346,7 +353,7 @@ readonly class LocalDate implements IValueObject, Stringable
     }
 
     /**
-     * @return int<1, 12>
+     * @return Month
      */
     final public function getMonth(): int
     {
@@ -354,7 +361,7 @@ readonly class LocalDate implements IValueObject, Stringable
     }
 
     /**
-     * @return int<1, 31>
+     * @return Day
      */
     final public function getDay(): int
     {
@@ -407,6 +414,11 @@ readonly class LocalDate implements IValueObject, Stringable
         }
 
         return 0;
+    }
+
+    final public function is(self $that): bool
+    {
+        return $this->compareTo($that) === 0;
     }
 
     final public function isBefore(self $that): bool
@@ -463,7 +475,7 @@ readonly class LocalDate implements IValueObject, Stringable
 
         $yearDiff = Math::floorDiv($month, 12);
 
-        /** @var int<1, 12> $month */
+        /** @var Month $month */
         $month = Math::floorMod($month, 12) + 1;
 
         $year = $this->year + $yearDiff;
@@ -591,17 +603,17 @@ readonly class LocalDate implements IValueObject, Stringable
     // MARK: private methods
     // -------------------------------------------------------------------------
     /**
-     * @return array{0:int<self::MIN_YEAR, self::MAX_YEAR>, 1:int<1, 12>, 2:int<1, 31>}
+     * @return array{0:Year, 1:Month, 2:Day}
      */
     private static function extractDate(DateTimeInterface $value): array
     {
-        /** @var int<self::MIN_YEAR, self::MAX_YEAR> */
+        /** @var Year */
         $year = (int)$value->format('Y');
 
-        /** @var int<1, 12> */
+        /** @var Month */
         $month = (int)$value->format('n');
 
-        /** @var int<1, 31> */
+        /** @var Day */
         $day = (int)$value->format('j');
 
         return [$year, $month, $day];
@@ -610,9 +622,9 @@ readonly class LocalDate implements IValueObject, Stringable
     /**
      * Resolves the date, resolving days past the end of month.
      *
-     * @param int        $year  the year to represent, validated from MIN_YEAR to MAX_YEAR
-     * @param int<1, 12> $month the month-of-year to represent
-     * @param int<1, 31> $day   the day-of-month to represent, validated from 1 to 31
+     * @param int   $year  the year to represent, validated from MIN_YEAR to MAX_YEAR
+     * @param Month $month the month-of-year to represent
+     * @param Day   $day   the day-of-month to represent, validated from 1 to 31
      */
     private static function resolvePreviousValid(int $year, int $month, int $day): static
     {
@@ -632,7 +644,7 @@ readonly class LocalDate implements IValueObject, Stringable
     }
 
     /**
-     * @param  int<1, 12>  $month
+     * @param  Month       $month
      * @return int<28, 31>
      */
     private static function lengthOfMonth(int $year, int $month): int
@@ -646,8 +658,8 @@ readonly class LocalDate implements IValueObject, Stringable
 
     /**
      * Returns whether this date is the last day of the month.
-     * @param int<1, 12> $month
-     * @param int<1, 31> $day
+     * @param Month $month
+     * @param Day   $day
      */
     private static function isEndOfMonth(int $year, int $month, int $day): bool
     {
