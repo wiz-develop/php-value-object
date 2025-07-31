@@ -146,13 +146,18 @@ readonly class LocalDate implements IValueObject, Stringable
         return static::tryFrom($value)->map(static fn ($result) => Option\some($result));
     }
 
-    final public static function now(DateTimeZone $timeZone): static
+    final public static function now(DateTimeZone $timeZone = new DateTimeZone('Asia/Tokyo')): static
     {
         $value = new DateTimeImmutable('now', $timeZone);
 
         [$year, $month, $day] = self::extractDate($value);
 
         return static::of($year, $month, $day);
+    }
+
+    final public static function max(): static
+    {
+        return static::of(self::MAX_YEAR, 12, 31);
     }
 
     /**
@@ -259,8 +264,6 @@ readonly class LocalDate implements IValueObject, Stringable
                 )
             );
         }
-
-
 
         return Result\ok(true);
     }
@@ -407,6 +410,11 @@ readonly class LocalDate implements IValueObject, Stringable
         }
 
         return 0;
+    }
+
+    final public function is(self $that): bool
+    {
+        return $this->compareTo($that) === 0;
     }
 
     final public function isBefore(self $that): bool
