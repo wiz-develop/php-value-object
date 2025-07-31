@@ -220,12 +220,9 @@ readonly class LocalDateRange implements IValueObject, Stringable, IteratorAggre
     final public function overlaps(self $other): bool
     {
         // 一方の範囲の終了が他方の開始より前の場合、重なりなし
-        if ($this->strictlyBefore($other) || $other->strictlyBefore($this)) {
-            return false;
-        }
-
+        return !($this->strictlyBefore($other) || $other->strictlyBefore($this));
         // 境界での接触を考慮
-        return $this->hasOverlapAt($other);
+        // return $this->hasOverlapAt($other);
     }
 
     /**
