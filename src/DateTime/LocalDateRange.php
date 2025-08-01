@@ -139,12 +139,18 @@ readonly class LocalDateRange implements IValueObject, Stringable, IteratorAggre
         return sprintf('%s%s, %s%s', $leftBracket, $this->from->toISOString(), $this->to->toISOString(), $rightBracket);
     }
 
-    final public function getFrom(): LocalDate
+    /**
+     * @return TStart
+     */
+    final public function getFrom(): mixed
     {
         return $this->from;
     }
 
-    final public function getTo(): LocalDate
+    /**
+     * @return TEnd
+     */
+    final public function getTo(): mixed
     {
         return $this->to;
     }
