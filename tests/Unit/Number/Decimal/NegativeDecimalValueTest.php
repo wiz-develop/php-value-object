@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace WizDevelop\PhpValueObject\Tests\Unit\Number\Decimal;
 
+use AssertionError;
 use BcMath\Number;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -58,26 +59,11 @@ final class NegativeDecimalValueTest extends TestCase
     }
 
     /**
-     * @return array<string, array{0: string, 1: bool}>
-     */
-    public static function 境界値のテストデータを提供(): array
-    {
-        return [
-            'ゼロ' => ['0.00', false],
-            '最大値' => ['-0.01', true],
-            '最大値+0.01' => ['0.00', false],
-            '最小値' => ['-1000.00', true],
-            '最小値-0.01' => ['-1000.01', false],
-            '正の値' => ['0.01', false],
-        ];
-    }
-
-    /**
      * @param string $value      テスト対象の値
      * @param bool   $shouldBeOk 成功するべきかどうか
      */
     #[Test]
-    #[DataProvider('境界値のテストデータを提供')]
+    #[DataProvider('provide境界値テストCases')]
     public function 境界値テスト(string $value, bool $shouldBeOk): void
     {
         $result = TestNegativeDecimalValue::tryFrom(new Number($value));
@@ -89,6 +75,21 @@ final class NegativeDecimalValueTest extends TestCase
             $this->assertFalse($result->isOk(), "値:{$value} は失敗するべき");
             $this->assertInstanceOf(ValueObjectError::class, $result->unwrapErr());
         }
+    }
+
+    /**
+     * @return array<string, array{0: string, 1: bool}>
+     */
+    public static function provide境界値テストCases(): iterable
+    {
+        return [
+            'ゼロ' => ['0.00', false],
+            '最大値' => ['-0.01', true],
+            '最大値+0.01' => ['0.00', false],
+            '最小値' => ['-1000.00', true],
+            '最小値-0.01' => ['-1000.01', false],
+            '正の値' => ['0.01', false],
+        ];
     }
 
     #[Test]
@@ -185,13 +186,8 @@ final class NegativeDecimalValueTest extends TestCase
         $this->assertFalse($negativeValue->isZero());
 
         // 仮にゼロを作れたとしても、テストのために
-        try {
-            $zero = TestNegativeDecimalValue::from(new Number('0.00'));
-            $this->assertFalse($zero->isZero());
-        } catch (Throwable $e) {
-            // 例外が発生する場合はスキップ
-            $this->markTestSkipped('ゼロの値を持つNegativeDecimalValueは作成できません');
-        }
+        $this->expectException(AssertionError::class);
+        $zero = TestNegativeDecimalValue::from(new Number('0.00')); // AssertionErrorが発生する想定
     }
 
     #[Test]

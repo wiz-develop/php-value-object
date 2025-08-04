@@ -9,8 +9,8 @@ use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
 use WizDevelop\PhpValueObject\IValueObject;
-use WizDevelop\PhpValueObject\String\StringValue;
 use WizDevelop\PhpValueObject\Number\IntegerValue;
+use WizDevelop\PhpValueObject\String\StringValue;
 use WizDevelop\PhpValueObject\ValueObjectList;
 
 #[TestDox('ValueObjectListクラスのテスト')]
@@ -19,7 +19,7 @@ final class ValueObjectListTest extends TestCase
 {
     #[Test]
     #[TestDox('has(): 値オブジェクトが存在する場合にtrueを返すこと')]
-    public function test_has_値オブジェクトが存在する場合にtrueを返すこと(): void
+    public function has_値オブジェクトが存在する場合にtrueを返すこと(): void
     {
         // Arrange
         $list = ValueObjectList::from([
@@ -37,7 +37,7 @@ final class ValueObjectListTest extends TestCase
 
     #[Test]
     #[TestDox('has(): 値オブジェクトが存在しない場合にfalseを返すこと')]
-    public function test_has_値オブジェクトが存在しない場合にfalseを返すこと(): void
+    public function has_値オブジェクトが存在しない場合にfalseを返すこと(): void
     {
         // Arrange
         $list = ValueObjectList::from([
@@ -55,7 +55,7 @@ final class ValueObjectListTest extends TestCase
 
     #[Test]
     #[TestDox('has(): 空のリストの場合にfalseを返すこと')]
-    public function test_has_空のリストの場合にfalseを返すこと(): void
+    public function has_空のリストの場合にfalseを返すこと(): void
     {
         // Arrange
         $list = ValueObjectList::from([]);
@@ -69,7 +69,7 @@ final class ValueObjectListTest extends TestCase
 
     #[Test]
     #[TestDox('remove(): 値オブジェクトを削除した新しいリストを返すこと')]
-    public function test_remove_値オブジェクトを削除した新しいリストを返すこと(): void
+    public function remove_値オブジェクトを削除した新しいリストを返すこと(): void
     {
         // Arrange
         $list = ValueObjectList::from([
@@ -90,7 +90,7 @@ final class ValueObjectListTest extends TestCase
 
     #[Test]
     #[TestDox('remove(): 存在しない値オブジェクトを削除しても元のリストと同じになること')]
-    public function test_remove_存在しない値オブジェクトを削除しても元のリストと同じになること(): void
+    public function remove_存在しない値オブジェクトを削除しても元のリストと同じになること(): void
     {
         // Arrange
         $list = ValueObjectList::from([
@@ -109,7 +109,7 @@ final class ValueObjectListTest extends TestCase
 
     #[Test]
     #[TestDox('remove(): 複数の同じ値オブジェクトが存在する場合、すべて削除されること')]
-    public function test_remove_複数の同じ値オブジェクトが存在する場合すべて削除されること(): void
+    public function remove_複数の同じ値オブジェクトが存在する場合すべて削除されること(): void
     {
         // Arrange
         $list = ValueObjectList::from([
@@ -131,7 +131,7 @@ final class ValueObjectListTest extends TestCase
 
     #[Test]
     #[TestDox('put(): 既存の値オブジェクトを新しいインスタンスで置換すること')]
-    public function test_put_既存の値オブジェクトを新しいインスタンスで置換すること(): void
+    public function put_既存の値オブジェクトを新しいインスタンスで置換すること(): void
     {
         // Arrange
         $original20 = IntegerValue::from(20);
@@ -147,7 +147,7 @@ final class ValueObjectListTest extends TestCase
 
         // Assert
         $this->assertCount(3, $result);
-        $values = array_map(fn(IValueObject $v) => $v->value, $result->toArray());
+        $values = array_map(static fn (IValueObject $v) => $v->value, $result->toArray());
         $this->assertEquals([10, 20, 30], $values);
         // 新しいインスタンスに置き換わっていることを確認
         $this->assertNotSame($original20, $result->toArray()[1]);
@@ -156,7 +156,7 @@ final class ValueObjectListTest extends TestCase
 
     #[Test]
     #[TestDox('put(): 複数の同じ値オブジェクトが存在する場合、すべて置換されること')]
-    public function test_put_複数の同じ値オブジェクトが存在する場合すべて置換されること(): void
+    public function put_複数の同じ値オブジェクトが存在する場合すべて置換されること(): void
     {
         // Arrange
         $original10_1 = IntegerValue::from(10);
@@ -174,7 +174,7 @@ final class ValueObjectListTest extends TestCase
 
         // Assert
         $this->assertCount(4, $result);
-        $values = array_map(fn(IValueObject $v) => $v->value, $result->toArray());
+        $values = array_map(static fn (IValueObject $v) => $v->value, $result->toArray());
         $this->assertEquals([10, 20, 10, 30], $values);
         // すべて新しいインスタンスに置き換わっていることを確認
         $this->assertSame($new10, $result->toArray()[0]);
@@ -183,7 +183,7 @@ final class ValueObjectListTest extends TestCase
 
     #[Test]
     #[TestDox('put(): 存在しない値オブジェクトの場合、リストは変更されないこと')]
-    public function test_put_存在しない値オブジェクトの場合リストは変更されないこと(): void
+    public function put_存在しない値オブジェクトの場合リストは変更されないこと(): void
     {
         // Arrange
         $list = ValueObjectList::from([
@@ -197,13 +197,13 @@ final class ValueObjectListTest extends TestCase
 
         // Assert
         $this->assertCount(3, $result);
-        $values = array_map(fn(IValueObject $v) => $v->value, $result->toArray());
+        $values = array_map(static fn (IValueObject $v) => $v->value, $result->toArray());
         $this->assertEquals([10, 20, 30], $values);
     }
 
     #[Test]
     #[TestDox('diff(): 2つのリストの差分を返すこと')]
-    public function test_diff_2つのリストの差分を返すこと(): void
+    public function diff_2つのリストの差分を返すこと(): void
     {
         // Arrange
         $list1 = ValueObjectList::from([
@@ -231,7 +231,7 @@ final class ValueObjectListTest extends TestCase
 
     #[Test]
     #[TestDox('diff(): 空のリストとの差分は元のリストと同じになること')]
-    public function test_diff_空のリストとの差分は元のリストと同じになること(): void
+    public function diff_空のリストとの差分は元のリストと同じになること(): void
     {
         // Arrange
         $list1 = ValueObjectList::from([
@@ -251,7 +251,7 @@ final class ValueObjectListTest extends TestCase
 
     #[Test]
     #[TestDox('diff(): 同じリストとの差分は空のリストになること')]
-    public function test_diff_同じリストとの差分は空のリストになること(): void
+    public function diff_同じリストとの差分は空のリストになること(): void
     {
         // Arrange
         $list1 = ValueObjectList::from([
@@ -272,7 +272,7 @@ final class ValueObjectListTest extends TestCase
 
     #[Test]
     #[TestDox('diff(): 異なる型の値オブジェクトを含むリストでも正しく動作すること')]
-    public function test_diff_異なる型の値オブジェクトを含むリストでも正しく動作すること(): void
+    public function diff_異なる型の値オブジェクトを含むリストでも正しく動作すること(): void
     {
         // Arrange
         $list1 = ValueObjectList::from([
