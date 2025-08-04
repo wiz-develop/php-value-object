@@ -15,6 +15,7 @@ use WizDevelop\PhpValueObject\Collection\Base\ArrayAccessDefault;
 use WizDevelop\PhpValueObject\Collection\Base\CollectionBase;
 use WizDevelop\PhpValueObject\Collection\Base\CollectionDefault;
 use WizDevelop\PhpValueObject\Collection\Base\CountableDefault;
+use WizDevelop\PhpValueObject\Collection\Base\ICollection;
 use WizDevelop\PhpValueObject\Collection\Exception\CollectionNotFoundException;
 use WizDevelop\PhpValueObject\Collection\Exception\MultipleCollectionsFoundException;
 use WizDevelop\PhpValueObject\Collection\List\IArrayList;
@@ -345,17 +346,71 @@ readonly class ArrayList extends CollectionBase implements IArrayList, IArrayLis
     #[Override]
     final public function flatMap(Closure $closure): self
     {
+        return $this->map($closure)->collapse(); // @phpstan-ignore-line
+    }
+
+    /**
+     * @return self<mixed>
+     */
+    #[Override]
+    final public function flatten(int $depth = PHP_INT_MAX): self
+    {
+        $elements = $this->elements;
+        $flattened = self::flattenInner($elements, $depth);
+
+        return new self($flattened); // @phpstan-ignore-line
+    }
+
+    /**
+     * 多次元配列を単一レベルに平坦化する。
+     *
+     * @param  iterable<mixed> $array
+     * @return array<mixed>
+     */
+    private static function flattenInner(iterable $array, int $depth = PHP_INT_MAX): array
+    {
         $result = [];
 
-        foreach ($this->elements as $index => $item) {
-            $mapped = $closure($item, $index);
+        foreach ($array as $item) {
+            $item = $item instanceof ICollection ? $item->toArray() : $item;
 
-            foreach ($mapped as $subItem) {
-                $result[] = $subItem;
+            if (! is_array($item)) {
+                $result[] = $item;
+            } else {
+                $values = $depth === 1
+                    ? array_values($item)
+                    : self::flattenInner($item, $depth - 1);
+
+                foreach ($values as $value) {
+                    $result[] = $value;
+                }
             }
         }
 
-        return new self($result);
+        return $result;
+    }
+
+    /**
+     * 配列の配列を 1 つの配列に折りたたむ。
+     *
+     * @return self<mixed>
+     */
+    private function collapse(): self
+    {
+        $elements = $this->elements;
+        $results = [];
+
+        foreach ($elements as $values) {
+            if ($values instanceof ICollection) {
+                $values = $values->toArray();
+            } elseif (! is_array($values)) {
+                continue;
+            }
+
+            $results[] = $values;
+        }
+
+        return new self(array_values(array_merge([], ...$results)));
     }
 
     /**

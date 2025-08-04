@@ -134,6 +134,13 @@ interface IArrayList extends ICollection
     public function flatMap(Closure $closure): self;
 
     /**
+     * 多次元配列を単一レベルに平坦化する。
+     *
+     * @return self<mixed>
+     */
+    public function flatten(int $depth = PHP_INT_MAX): self;
+
+    /**
      * @param  Closure(TValue,int): TValue $closure
      * @return static<TValue>
      */
