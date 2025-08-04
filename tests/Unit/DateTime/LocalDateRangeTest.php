@@ -8,6 +8,10 @@ use AssertionError;
 use PHPUnit\Framework\TestCase;
 use WizDevelop\PhpValueObject\DateTime\LocalDate;
 use WizDevelop\PhpValueObject\DateTime\LocalDateRange;
+use WizDevelop\PhpValueObject\DateTime\LocalDateRange\LocalDateRangeClosed;
+use WizDevelop\PhpValueObject\DateTime\LocalDateRange\LocalDateRangeHalfOpenLeft;
+use WizDevelop\PhpValueObject\DateTime\LocalDateRange\LocalDateRangeHalfOpenRight;
+use WizDevelop\PhpValueObject\DateTime\LocalDateRange\LocalDateRangeOpen;
 use WizDevelop\PhpValueObject\DateTime\RangeType;
 use WizDevelop\PhpValueObject\Error\ValueObjectError;
 
@@ -34,12 +38,12 @@ final class LocalDateRangeTest extends TestCase
         $to = LocalDate::of(2024, 1, 31);
 
         // Act
-        $range = LocalDateRange::from($from, $to, RangeType::CLOSED);
+        $range = LocalDateRangeClosed::from($from, $to);
 
         // Assert
         $this->assertSame($from, $range->getFrom());
         $this->assertSame($to, $range->getTo());
-        $this->assertSame(RangeType::CLOSED, $range->getRangeType());
+        $this->assertSame(RangeType::CLOSED, $range->rangeType());
         $this->assertSame('[2024-01-01, 2024-01-31]', $range->toISOString());
     }
 
@@ -50,10 +54,10 @@ final class LocalDateRangeTest extends TestCase
         $to = LocalDate::of(2024, 1, 31);
 
         // Act
-        $range = LocalDateRange::from($from, $to, RangeType::OPEN);
+        $range = LocalDateRangeOpen::from($from, $to);
 
         // Assert
-        $this->assertSame(RangeType::OPEN, $range->getRangeType());
+        $this->assertSame(RangeType::OPEN, $range->rangeType());
         $this->assertSame('(2024-01-01, 2024-01-31)', $range->toISOString());
     }
 
@@ -64,13 +68,13 @@ final class LocalDateRangeTest extends TestCase
         $to = LocalDate::of(2024, 1, 31);
 
         // Act
-        $rangeLeft = LocalDateRange::from($from, $to, RangeType::HALF_OPEN_LEFT);
-        $rangeRight = LocalDateRange::from($from, $to, RangeType::HALF_OPEN_RIGHT);
+        $rangeLeft = LocalDateRangeHalfOpenLeft::from($from, $to);
+        $rangeRight = LocalDateRangeHalfOpenRight::from($from, $to);
 
         // Assert
-        $this->assertSame(RangeType::HALF_OPEN_LEFT, $rangeLeft->getRangeType());
+        $this->assertSame(RangeType::HALF_OPEN_LEFT, $rangeLeft->rangeType());
         $this->assertSame('(2024-01-01, 2024-01-31]', $rangeLeft->toISOString());
-        $this->assertSame(RangeType::HALF_OPEN_RIGHT, $rangeRight->getRangeType());
+        $this->assertSame(RangeType::HALF_OPEN_RIGHT, $rangeRight->rangeType());
         $this->assertSame('[2024-01-01, 2024-01-31)', $rangeRight->toISOString());
     }
 
@@ -96,7 +100,7 @@ final class LocalDateRangeTest extends TestCase
         // Arrange
         $from = LocalDate::of(2024, 1, 1);
         $to = LocalDate::of(2024, 1, 31);
-        $range = LocalDateRange::from($from, $to, RangeType::CLOSED);
+        $range = LocalDateRangeClosed::from($from, $to);
 
         // Act & Assert
         $this->assertTrue($range->contains($from)); // 開始境界
@@ -111,7 +115,7 @@ final class LocalDateRangeTest extends TestCase
         // Arrange
         $from = LocalDate::of(2024, 1, 1);
         $to = LocalDate::of(2024, 1, 31);
-        $range = LocalDateRange::from($from, $to, RangeType::OPEN);
+        $range = LocalDateRangeOpen::from($from, $to);
 
         // Act & Assert
         $this->assertFalse($range->contains($from)); // 開始境界
@@ -127,12 +131,12 @@ final class LocalDateRangeTest extends TestCase
 
         // Act & Assert
         // 左開区間
-        $rangeLeft = LocalDateRange::from($from, $to, RangeType::HALF_OPEN_LEFT);
+        $rangeLeft = LocalDateRangeHalfOpenLeft::from($from, $to);
         $this->assertFalse($rangeLeft->contains($from)); // 開始境界（含まない）
         $this->assertTrue($rangeLeft->contains($to)); // 終了境界（含む）
 
         // 右開区間
-        $rangeRight = LocalDateRange::from($from, $to, RangeType::HALF_OPEN_RIGHT);
+        $rangeRight = LocalDateRangeHalfOpenRight::from($from, $to);
         $this->assertTrue($rangeRight->contains($from)); // 開始境界（含む）
         $this->assertFalse($rangeRight->contains($to)); // 終了境界（含まない）
     }
@@ -152,15 +156,25 @@ final class LocalDateRangeTest extends TestCase
         string $description
     ): void {
         // Arrange
-        $range1 = LocalDateRange::from(
+        $range1Class = match ($range1Data['type']) {
+            RangeType::CLOSED => LocalDateRangeClosed::class,
+            RangeType::OPEN => LocalDateRangeOpen::class,
+            RangeType::HALF_OPEN_LEFT => LocalDateRangeHalfOpenLeft::class,
+            RangeType::HALF_OPEN_RIGHT => LocalDateRangeHalfOpenRight::class,
+        };
+        $range1 = $range1Class::from(
             LocalDate::of($range1Data['from'][0], $range1Data['from'][1], $range1Data['from'][2]),
             LocalDate::of($range1Data['to'][0], $range1Data['to'][1], $range1Data['to'][2]),
-            $range1Data['type']
         );
-        $range2 = LocalDateRange::from(
+        $range2Class = match ($range2Data['type']) {
+            RangeType::CLOSED => LocalDateRangeClosed::class,
+            RangeType::OPEN => LocalDateRangeOpen::class,
+            RangeType::HALF_OPEN_LEFT => LocalDateRangeHalfOpenLeft::class,
+            RangeType::HALF_OPEN_RIGHT => LocalDateRangeHalfOpenRight::class,
+        };
+        $range2 = $range2Class::from(
             LocalDate::of($range2Data['from'][0], $range2Data['from'][1], $range2Data['from'][2]),
             LocalDate::of($range2Data['to'][0], $range2Data['to'][1], $range2Data['to'][2]),
-            $range2Data['type']
         );
 
         // Act & Assert
@@ -475,7 +489,7 @@ final class LocalDateRangeTest extends TestCase
         // Arrange
         $from = LocalDate::of(2024, 1, 1);
         $to = LocalDate::of(2024, 1, 5);
-        $range = LocalDateRange::from($from, $to, RangeType::CLOSED);
+        $range = LocalDateRangeClosed::from($from, $to);
 
         // Act
         $days = $range->days();
@@ -489,7 +503,7 @@ final class LocalDateRangeTest extends TestCase
         // Arrange
         $from = LocalDate::of(2024, 1, 1);
         $to = LocalDate::of(2024, 1, 5);
-        $range = LocalDateRange::from($from, $to, RangeType::OPEN);
+        $range = LocalDateRangeOpen::from($from, $to);
 
         // Act
         $days = $range->days();
@@ -505,8 +519,8 @@ final class LocalDateRangeTest extends TestCase
         $to = LocalDate::of(2024, 1, 5);
 
         // Act
-        $daysLeft = LocalDateRange::from($from, $to, RangeType::HALF_OPEN_LEFT)->days();
-        $daysRight = LocalDateRange::from($from, $to, RangeType::HALF_OPEN_RIGHT)->days();
+        $daysLeft = LocalDateRangeHalfOpenLeft::from($from, $to)->days();
+        $daysRight = LocalDateRangeHalfOpenRight::from($from, $to)->days();
 
         // Assert
         $this->assertSame(4, $daysLeft); // 1日を含まず、5日を含む = 4日間
@@ -518,7 +532,7 @@ final class LocalDateRangeTest extends TestCase
         // Arrange
         $from = LocalDate::of(2024, 1, 1);
         $to = LocalDate::of(2024, 1, 3);
-        $range = LocalDateRange::from($from, $to, RangeType::CLOSED);
+        $range = LocalDateRangeClosed::from($from, $to);
 
         // Act
         $dates = [];
@@ -535,7 +549,7 @@ final class LocalDateRangeTest extends TestCase
         // Arrange
         $from = LocalDate::of(2024, 1, 1);
         $to = LocalDate::of(2024, 1, 5);
-        $range = LocalDateRange::from($from, $to, RangeType::OPEN);
+        $range = LocalDateRangeOpen::from($from, $to);
 
         // Act
         $dates = [];
@@ -552,8 +566,8 @@ final class LocalDateRangeTest extends TestCase
         // Arrange
         $from = LocalDate::of(2024, 1, 1);
         $to = LocalDate::of(2024, 1, 31);
-        $range1 = LocalDateRange::from($from, $to, RangeType::CLOSED);
-        $range2 = LocalDateRange::from($from, $to, RangeType::CLOSED);
+        $range1 = LocalDateRangeClosed::from($from, $to);
+        $range2 = LocalDateRangeClosed::from($from, $to);
 
         // Act & Assert
         $this->assertTrue($range1->equals($range2));
@@ -564,10 +578,11 @@ final class LocalDateRangeTest extends TestCase
         // Arrange
         $from = LocalDate::of(2024, 1, 1);
         $to = LocalDate::of(2024, 1, 31);
-        $range1 = LocalDateRange::from($from, $to, RangeType::CLOSED);
-        $range2 = LocalDateRange::from($from, $to, RangeType::OPEN);
+        $range1 = LocalDateRangeClosed::from($from, $to);
+        $range2 = LocalDateRangeOpen::from($from, $to);
 
         // Act & Assert
+        // @phpstan-ignore-next-line
         $this->assertFalse($range1->equals($range2)); // 範囲タイプが異なる
     }
 
@@ -576,7 +591,7 @@ final class LocalDateRangeTest extends TestCase
         // Arrange
         $from = LocalDate::of(2024, 1, 1);
         $to = LocalDate::of(2024, 1, 31);
-        $range = LocalDateRange::from($from, $to, RangeType::CLOSED);
+        $range = LocalDateRangeClosed::from($from, $to);
 
         // Act
         $json = $range->jsonSerialize();
@@ -595,7 +610,7 @@ final class LocalDateRangeTest extends TestCase
         $range = LocalDateRange::from($from, $to);
 
         // Assert
-        $this->assertSame(RangeType::HALF_OPEN_RIGHT, $range->getRangeType());
+        $this->assertSame(RangeType::HALF_OPEN_RIGHT, $range->rangeType());
         $this->assertSame('[2024-01-01, 2024-01-31)', $range->toISOString());
     }
 
@@ -605,7 +620,7 @@ final class LocalDateRangeTest extends TestCase
         $from = LocalDate::of(2024, 1, 1);
         $to = LocalDate::of(2024, 1, 31);
         $newFrom = LocalDate::of(2024, 1, 15);
-        $range = LocalDateRange::from($from, $to, RangeType::CLOSED);
+        $range = LocalDateRangeClosed::from($from, $to);
 
         // Act
         $newRange = $range->withFrom($newFrom);
@@ -613,7 +628,7 @@ final class LocalDateRangeTest extends TestCase
         // Assert
         $this->assertSame($newFrom, $newRange->getFrom());
         $this->assertSame($to, $newRange->getTo());
-        $this->assertSame(RangeType::CLOSED, $newRange->getRangeType());
+        $this->assertSame(RangeType::CLOSED, $newRange->rangeType());
         $this->assertSame('[2024-01-15, 2024-01-31]', $newRange->toISOString());
         // 元の範囲は変更されていない
         $this->assertSame($from, $range->getFrom());
@@ -638,7 +653,7 @@ final class LocalDateRangeTest extends TestCase
         $from = LocalDate::of(2024, 1, 1);
         $to = LocalDate::of(2024, 1, 31);
         $newTo = LocalDate::of(2024, 1, 15);
-        $range = LocalDateRange::from($from, $to, RangeType::CLOSED);
+        $range = LocalDateRangeClosed::from($from, $to);
 
         // Act
         $newRange = $range->withTo($newTo);
@@ -646,7 +661,7 @@ final class LocalDateRangeTest extends TestCase
         // Assert
         $this->assertSame($from, $newRange->getFrom());
         $this->assertSame($newTo, $newRange->getTo());
-        $this->assertSame(RangeType::CLOSED, $newRange->getRangeType());
+        $this->assertSame(RangeType::CLOSED, $newRange->rangeType());
         $this->assertSame('[2024-01-01, 2024-01-15]', $newRange->toISOString());
         // 元の範囲は変更されていない
         $this->assertSame($to, $range->getTo());
@@ -671,7 +686,7 @@ final class LocalDateRangeTest extends TestCase
         $from = LocalDate::of(2024, 1, 1);
         $to = LocalDate::of(2024, 1, 31);
         $newFrom = LocalDate::of(2024, 1, 15);
-        $range = LocalDateRange::from($from, $to, RangeType::CLOSED);
+        $range = LocalDateRangeClosed::from($from, $to);
 
         // Act
         $result = $range->tryWithFrom($newFrom);
@@ -681,7 +696,7 @@ final class LocalDateRangeTest extends TestCase
         $newRange = $result->unwrap();
         $this->assertSame($newFrom, $newRange->getFrom());
         $this->assertSame($to, $newRange->getTo());
-        $this->assertSame(RangeType::CLOSED, $newRange->getRangeType());
+        $this->assertSame(RangeType::CLOSED, $newRange->rangeType());
     }
 
     public function test_tryWithFrom_無効な開始日付の場合エラー(): void
@@ -709,7 +724,7 @@ final class LocalDateRangeTest extends TestCase
         $from = LocalDate::of(2024, 1, 1);
         $to = LocalDate::of(2024, 1, 31);
         $newTo = LocalDate::of(2024, 1, 15);
-        $range = LocalDateRange::from($from, $to, RangeType::CLOSED);
+        $range = LocalDateRangeClosed::from($from, $to);
 
         // Act
         $result = $range->tryWithTo($newTo);
@@ -719,7 +734,7 @@ final class LocalDateRangeTest extends TestCase
         $newRange = $result->unwrap();
         $this->assertSame($from, $newRange->getFrom());
         $this->assertSame($newTo, $newRange->getTo());
-        $this->assertSame(RangeType::CLOSED, $newRange->getRangeType());
+        $this->assertSame(RangeType::CLOSED, $newRange->rangeType());
     }
 
     public function test_tryWithTo_無効な終了日付の場合エラー(): void
@@ -744,15 +759,13 @@ final class LocalDateRangeTest extends TestCase
     public function test_strictlyBefore_完全に前にある範囲(): void
     {
         // Arrange
-        $range1 = LocalDateRange::from(
+        $range1 = LocalDateRangeClosed::from(
             LocalDate::of(2024, 1, 1),
             LocalDate::of(2024, 1, 10),
-            RangeType::CLOSED
         );
-        $range2 = LocalDateRange::from(
+        $range2 = LocalDateRangeClosed::from(
             LocalDate::of(2024, 1, 20),
             LocalDate::of(2024, 1, 31),
-            RangeType::CLOSED
         );
 
         // Act & Assert
@@ -763,15 +776,13 @@ final class LocalDateRangeTest extends TestCase
     public function test_strictlyBefore_境界で接する範囲_閉区間(): void
     {
         // Arrange
-        $range1 = LocalDateRange::from(
+        $range1 = LocalDateRangeClosed::from(
             LocalDate::of(2024, 1, 1),
             LocalDate::of(2024, 1, 15),
-            RangeType::CLOSED
         );
-        $range2 = LocalDateRange::from(
+        $range2 = LocalDateRangeClosed::from(
             LocalDate::of(2024, 1, 15),
             LocalDate::of(2024, 1, 31),
-            RangeType::CLOSED
         );
 
         // Act & Assert
@@ -782,15 +793,13 @@ final class LocalDateRangeTest extends TestCase
     public function test_strictlyBefore_境界で接する範囲_開区間(): void
     {
         // Arrange
-        $range1 = LocalDateRange::from(
+        $range1 = LocalDateRangeOpen::from(
             LocalDate::of(2024, 1, 1),
             LocalDate::of(2024, 1, 15),
-            RangeType::OPEN
         );
-        $range2 = LocalDateRange::from(
+        $range2 = LocalDateRangeOpen::from(
             LocalDate::of(2024, 1, 15),
             LocalDate::of(2024, 1, 31),
-            RangeType::OPEN
         );
 
         // Act & Assert
@@ -801,15 +810,13 @@ final class LocalDateRangeTest extends TestCase
     public function test_strictlyBefore_境界で接する範囲_右開区間と左開区間(): void
     {
         // Arrange
-        $range1 = LocalDateRange::from(
+        $range1 = LocalDateRangeHalfOpenRight::from(
             LocalDate::of(2024, 1, 1),
             LocalDate::of(2024, 1, 15),
-            RangeType::HALF_OPEN_RIGHT
         );
-        $range2 = LocalDateRange::from(
+        $range2 = LocalDateRangeHalfOpenRight::from(
             LocalDate::of(2024, 1, 15),
             LocalDate::of(2024, 1, 31),
-            RangeType::HALF_OPEN_LEFT
         );
 
         // Act & Assert
@@ -820,15 +827,13 @@ final class LocalDateRangeTest extends TestCase
     public function test_strictlyBefore_重なる範囲(): void
     {
         // Arrange
-        $range1 = LocalDateRange::from(
+        $range1 = LocalDateRangeClosed::from(
             LocalDate::of(2024, 1, 1),
             LocalDate::of(2024, 1, 20),
-            RangeType::CLOSED
         );
-        $range2 = LocalDateRange::from(
+        $range2 = LocalDateRangeClosed::from(
             LocalDate::of(2024, 1, 10),
             LocalDate::of(2024, 1, 31),
-            RangeType::CLOSED
         );
 
         // Act & Assert
@@ -839,15 +844,13 @@ final class LocalDateRangeTest extends TestCase
     public function test_strictlyBefore_境界で接する範囲_左開区間と右開区間の逆パターン(): void
     {
         // Arrange
-        $range1 = LocalDateRange::from(
+        $range1 = LocalDateRangeHalfOpenLeft::from(
             LocalDate::of(2024, 1, 1),
             LocalDate::of(2024, 1, 15),
-            RangeType::HALF_OPEN_LEFT
         );
-        $range2 = LocalDateRange::from(
+        $range2 = LocalDateRangeHalfOpenRight::from(
             LocalDate::of(2024, 1, 15),
             LocalDate::of(2024, 1, 31),
-            RangeType::HALF_OPEN_RIGHT
         );
 
         // Act & Assert
@@ -859,15 +862,13 @@ final class LocalDateRangeTest extends TestCase
     {
         // Arrange
         // 閉区間の後に開区間
-        $range1 = LocalDateRange::from(
+        $range1 = LocalDateRangeClosed::from(
             LocalDate::of(2024, 1, 1),
             LocalDate::of(2024, 1, 15),
-            RangeType::CLOSED
         );
-        $range2 = LocalDateRange::from(
+        $range2 = LocalDateRangeOpen::from(
             LocalDate::of(2024, 1, 15),
             LocalDate::of(2024, 1, 31),
-            RangeType::OPEN
         );
 
         // Act & Assert
@@ -875,15 +876,13 @@ final class LocalDateRangeTest extends TestCase
         $this->assertFalse($range2->strictlyBefore($range1));
 
         // 開区間の後に閉区間
-        $range3 = LocalDateRange::from(
+        $range3 = LocalDateRangeOpen::from(
             LocalDate::of(2024, 2, 1),
             LocalDate::of(2024, 2, 15),
-            RangeType::OPEN
         );
-        $range4 = LocalDateRange::from(
+        $range4 = LocalDateRangeClosed::from(
             LocalDate::of(2024, 2, 15),
             LocalDate::of(2024, 2, 28),
-            RangeType::CLOSED
         );
 
         // Act & Assert
@@ -895,15 +894,13 @@ final class LocalDateRangeTest extends TestCase
     {
         // Arrange
         // 閉区間の後に左開区間
-        $range1 = LocalDateRange::from(
+        $range1 = LocalDateRangeClosed::from(
             LocalDate::of(2024, 1, 1),
             LocalDate::of(2024, 1, 15),
-            RangeType::CLOSED
         );
-        $range2 = LocalDateRange::from(
+        $range2 = LocalDateRangeHalfOpenLeft::from(
             LocalDate::of(2024, 1, 15),
             LocalDate::of(2024, 1, 31),
-            RangeType::HALF_OPEN_LEFT
         );
 
         // Act & Assert
@@ -911,15 +908,13 @@ final class LocalDateRangeTest extends TestCase
         $this->assertFalse($range2->strictlyBefore($range1));
 
         // 右開区間の後に閉区間
-        $range3 = LocalDateRange::from(
+        $range3 = LocalDateRangeHalfOpenRight::from(
             LocalDate::of(2024, 2, 1),
             LocalDate::of(2024, 2, 15),
-            RangeType::HALF_OPEN_RIGHT
         );
-        $range4 = LocalDateRange::from(
+        $range4 = LocalDateRangeClosed::from(
             LocalDate::of(2024, 2, 15),
             LocalDate::of(2024, 2, 28),
-            RangeType::CLOSED
         );
 
         // Act & Assert
@@ -932,7 +927,7 @@ final class LocalDateRangeTest extends TestCase
         // Arrange
         $from = LocalDate::of(2024, 1, 1);
         $to = LocalDate::of(2024, 1, 5);
-        $range = LocalDateRange::from($from, $to, RangeType::CLOSED);
+        $range = LocalDateRangeClosed::from($from, $to);
 
         // Act
         $count = $range->count();
@@ -945,7 +940,7 @@ final class LocalDateRangeTest extends TestCase
     {
         // Arrange
         $date = LocalDate::of(2024, 1, 1);
-        $range = LocalDateRange::from($date, $date, RangeType::CLOSED);
+        $range = LocalDateRangeClosed::from($date, $date);
 
         // Act
         $count = $range->count();
@@ -959,7 +954,7 @@ final class LocalDateRangeTest extends TestCase
         // Arrange
         $from = LocalDate::of(2023, 12, 30);
         $to = LocalDate::of(2024, 1, 2);
-        $range = LocalDateRange::from($from, $to, RangeType::CLOSED);
+        $range = LocalDateRangeClosed::from($from, $to);
 
         // Act
         $count = $range->count();
@@ -973,12 +968,75 @@ final class LocalDateRangeTest extends TestCase
         // Arrange
         $from = LocalDate::of(2024, 1, 1);
         $to = LocalDate::of(2024, 12, 31);
-        $range = LocalDateRange::from($from, $to, RangeType::CLOSED);
+        $range = LocalDateRangeClosed::from($from, $to);
 
         // Act
         $count = $range->count();
 
         // Assert
         $this->assertSame(366, $count); // 2024年は閏年で366日
+    }
+
+    /**
+     * @dataProvider provideGetAsClosedCases
+     * @param LocalDateRange<LocalDate,LocalDate> $range
+     */
+    public function test_getAsClosed(
+        LocalDateRange $range,
+        LocalDate $expectedFrom,
+        LocalDate $expectedTo
+    ): void {
+        // Arrange
+
+        // Act
+        $fromAsClosed = $range->getFromAsClosed();
+        $toAsClosed = $range->getToAsClosed();
+
+        // Assert
+        $this->assertEquals($expectedFrom->toDateTimeImmutable(), $fromAsClosed->toDateTimeImmutable());
+        $this->assertEquals($expectedTo->toDateTimeImmutable(), $toAsClosed->toDateTimeImmutable());
+    }
+
+    /**
+     * overlapsメソッドのテストデータプロバイダー
+     *
+     * @return array<string,array{range: LocalDateRange<LocalDate,LocalDate>, expectedFrom: LocalDate, expectedTo: LocalDate}>
+     */
+    public static function provideGetAsClosedCases(): iterable
+    {
+        return [
+            '閉区間の場合' => [
+                'range' => LocalDateRangeClosed::from(
+                    LocalDate::of(2024, 1, 1),
+                    LocalDate::of(2024, 1, 31)
+                ),
+                'expectedFrom' => LocalDate::of(2024, 1, 1),
+                'expectedTo' => LocalDate::of(2024, 1, 31),
+            ],
+            '開区間の場合' => [
+                'range' => LocalDateRangeOpen::from(
+                    LocalDate::of(2024, 1, 1),
+                    LocalDate::of(2024, 1, 31)
+                ),
+                'expectedFrom' => LocalDate::of(2024, 1, 2),
+                'expectedTo' => LocalDate::of(2024, 1, 30),
+            ],
+            '左開区間の場合' => [
+                'range' => LocalDateRangeHalfOpenLeft::from(
+                    LocalDate::of(2024, 1, 1),
+                    LocalDate::of(2024, 1, 31)
+                ),
+                'expectedFrom' => LocalDate::of(2024, 1, 2),
+                'expectedTo' => LocalDate::of(2024, 1, 31),
+            ],
+            '右開区間の場合' => [
+                'range' => LocalDateRangeHalfOpenRight::from(
+                    LocalDate::of(2024, 1, 1),
+                    LocalDate::of(2024, 1, 31)
+                ),
+                'expectedFrom' => LocalDate::of(2024, 1, 1),
+                'expectedTo' => LocalDate::of(2024, 1, 30),
+            ],
+        ];
     }
 }

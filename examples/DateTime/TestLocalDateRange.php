@@ -6,7 +6,9 @@ namespace WizDevelop\PhpValueObject\Examples\DateTime;
 
 use WizDevelop\PhpValueObject\DateTime\LocalDate;
 use WizDevelop\PhpValueObject\DateTime\LocalDateRange;
-use WizDevelop\PhpValueObject\DateTime\RangeType;
+use WizDevelop\PhpValueObject\DateTime\LocalDateRange\LocalDateRangeClosed;
+use WizDevelop\PhpValueObject\DateTime\LocalDateRange\LocalDateRangeHalfOpenRight;
+use WizDevelop\PhpValueObject\DateTime\LocalDateRange\LocalDateRangeOpen;
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
@@ -21,15 +23,13 @@ echo "日数: {$january->days()} 日\n\n";
 
 // 2. 開区間と閉区間の違い
 echo "=== 開区間と閉区間の違い ===\n";
-$closedWeek = LocalDateRange::from(
+$closedWeek = LocalDateRangeClosed::from(
     LocalDate::of(2024, 1, 1),
     LocalDate::of(2024, 1, 7),
-    RangeType::CLOSED,
 );
-$openWeek = LocalDateRange::from(
+$openWeek = LocalDateRangeOpen::from(
     LocalDate::of(2024, 1, 1),
     LocalDate::of(2024, 1, 7),
-    RangeType::OPEN,
 );
 
 echo "閉区間（両端含む）: {$closedWeek->toISOString()} = {$closedWeek->days()} 日\n";
@@ -38,10 +38,9 @@ echo "開区間（両端含まない）: {$openWeek->toISOString()} = {$openWeek
 // 3. 半開区間の使用例（一般的な日付範囲の表現）
 echo "=== 半開区間の使用例 ===\n";
 // 月初から月末まで（月末を含まない一般的なパターン）
-$month = LocalDateRange::from(
+$month = LocalDateRangeHalfOpenRight::from(
     LocalDate::of(2024, 1, 1),
     LocalDate::of(2024, 2, 1),
-    RangeType::HALF_OPEN_RIGHT,
 );
 
 echo "1月（右半開区間）: {$month->toISOString()}\n";
@@ -50,10 +49,9 @@ echo '2月1日を含む: ' . ($month->contains(LocalDate::of(2024, 2, 1)) ? 'は
 
 // 4. 日付の反復処理
 echo "=== 日付の反復処理 ===\n";
-$weekRange = LocalDateRange::from(
+$weekRange = LocalDateRangeClosed::from(
     LocalDate::of(2024, 1, 1),
     LocalDate::of(2024, 1, 7),
-    RangeType::CLOSED,
 );
 
 echo "1週間の日付:\n";
@@ -64,20 +62,17 @@ echo "\n";
 
 // 5. 期間の重なり判定
 echo "=== 期間の重なり判定 ===\n";
-$q1 = LocalDateRange::from(
+$q1 = LocalDateRangeClosed::from(
     LocalDate::of(2024, 1, 1),
     LocalDate::of(2024, 3, 31),
-    RangeType::CLOSED,
 );
-$q2 = LocalDateRange::from(
+$q2 = LocalDateRangeClosed::from(
     LocalDate::of(2024, 4, 1),
     LocalDate::of(2024, 6, 30),
-    RangeType::CLOSED,
 );
-$marchToMay = LocalDateRange::from(
+$marchToMay = LocalDateRangeClosed::from(
     LocalDate::of(2024, 3, 1),
     LocalDate::of(2024, 5, 31),
-    RangeType::CLOSED,
 );
 
 echo "第1四半期: {$q1->toISOString()}\n";
@@ -100,10 +95,9 @@ echo "{$checkDate->toISOString()} は休暇中: " . ($vacation->contains($checkD
 
 // 7. エラーハンドリング
 echo "=== エラーハンドリング ===\n";
-$invalidResult = LocalDateRange::tryFrom(
+$invalidResult = LocalDateRangeClosed::tryFrom(
     LocalDate::of(2024, 12, 31),
     LocalDate::of(2024, 1, 1),
-    RangeType::CLOSED,
 );
 
 if ($invalidResult->isErr()) {
@@ -119,10 +113,9 @@ $endDate = null;
 
 // 9. 年間カレンダーの例
 echo "\n=== 年間カレンダーの例 ===\n";
-$year2024 = LocalDateRange::from(
+$year2024 = LocalDateRangeClosed::from(
     LocalDate::of(2024, 1, 1),
     LocalDate::of(2024, 12, 31),
-    RangeType::CLOSED,
 );
 
 echo "2024年: {$year2024->toISOString()}\n";

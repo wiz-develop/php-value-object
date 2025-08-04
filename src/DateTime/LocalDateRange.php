@@ -24,6 +24,14 @@ use WizDevelop\PhpValueObject\IValueObject;
 readonly class LocalDateRange implements IValueObject, Stringable, IteratorAggregate, Countable
 {
     /**
+     * NOTE: 範囲種別（子クラスでオーバーライド可能）
+     */
+    public static function rangeType(): RangeType
+    {
+        return RangeType::HALF_OPEN_RIGHT; // デフォルトの範囲タイプ
+    }
+
+    /**
      * Avoid new() operator.
      *
      * @param TStart $from 開始日付
@@ -32,7 +40,6 @@ readonly class LocalDateRange implements IValueObject, Stringable, IteratorAggre
     final private function __construct(
         private mixed $from,
         private mixed $to,
-        private RangeType $rangeType
     ) {
         // NOTE: 不変条件（invariant）
         assert(static::isValid($from, $to)->isOk());
@@ -46,7 +53,7 @@ readonly class LocalDateRange implements IValueObject, Stringable, IteratorAggre
     {
         return $this->from->equals($other->from)
             && $this->to->equals($other->to)
-            && $this->rangeType === $other->rangeType;
+            && static::rangeType() === $other->rangeType();
     }
 
     #[Override]
@@ -75,9 +82,8 @@ readonly class LocalDateRange implements IValueObject, Stringable, IteratorAggre
     final public static function from(
         mixed $from,
         mixed $to,
-        RangeType $rangeType = RangeType::HALF_OPEN_RIGHT
     ): static {
-        return new static($from, $to, $rangeType);
+        return new static($from, $to);
     }
 
     /**
@@ -89,10 +95,9 @@ readonly class LocalDateRange implements IValueObject, Stringable, IteratorAggre
     final public static function tryFrom(
         mixed $from,
         mixed $to,
-        RangeType $rangeType = RangeType::HALF_OPEN_RIGHT
     ): Result {
         return static::isValid($from, $to)
-            ->andThen(static fn () => Result\ok(static::from($from, $to, $rangeType)));
+            ->andThen(static fn () => Result\ok(static::from($from, $to)));
     }
 
     // -------------------------------------------------------------------------
@@ -126,12 +131,12 @@ readonly class LocalDateRange implements IValueObject, Stringable, IteratorAggre
      */
     final public function toISOString(): string
     {
-        $leftBracket = match ($this->rangeType) {
+        $leftBracket = match (static::rangeType()) {
             RangeType::CLOSED, RangeType::HALF_OPEN_RIGHT => '[',
             RangeType::OPEN, RangeType::HALF_OPEN_LEFT => '(',
         };
 
-        $rightBracket = match ($this->rangeType) {
+        $rightBracket = match (static::rangeType()) {
             RangeType::CLOSED, RangeType::HALF_OPEN_LEFT => ']',
             RangeType::OPEN, RangeType::HALF_OPEN_RIGHT => ')',
         };
@@ -155,9 +160,26 @@ readonly class LocalDateRange implements IValueObject, Stringable, IteratorAggre
         return $this->to;
     }
 
-    final public function getRangeType(): RangeType
+    /**
+     * @return TStart
+     */
+    final public function getFromAsClosed(): mixed
     {
-        return $this->rangeType;
+        return match (static::rangeType()) {
+            RangeType::CLOSED, RangeType::HALF_OPEN_RIGHT => $this->from,
+            RangeType::OPEN, RangeType::HALF_OPEN_LEFT => $this->from->addDays(1),
+        };
+    }
+
+    /**
+     * @return TEnd
+     */
+    final public function getToAsClosed(): mixed
+    {
+        return match (static::rangeType()) {
+            RangeType::CLOSED, RangeType::HALF_OPEN_LEFT => $this->to,
+            RangeType::OPEN, RangeType::HALF_OPEN_RIGHT => $this->to->addDays(-1),
+        };
     }
 
     /**
@@ -167,7 +189,7 @@ readonly class LocalDateRange implements IValueObject, Stringable, IteratorAggre
      */
     final public function withFrom(mixed $from): static
     {
-        return static::from($from, $this->to, $this->rangeType);
+        return static::from($from, $this->to);
     }
 
     /**
@@ -177,7 +199,7 @@ readonly class LocalDateRange implements IValueObject, Stringable, IteratorAggre
      */
     final public function withTo(mixed $to): static
     {
-        return static::from($this->from, $to, $this->rangeType);
+        return static::from($this->from, $to);
     }
 
     /**
@@ -187,7 +209,7 @@ readonly class LocalDateRange implements IValueObject, Stringable, IteratorAggre
      */
     final public function tryWithFrom(mixed $from): Result
     {
-        return static::tryFrom($from, $this->to, $this->rangeType);
+        return static::tryFrom($from, $this->to);
     }
 
     /**
@@ -197,7 +219,7 @@ readonly class LocalDateRange implements IValueObject, Stringable, IteratorAggre
      */
     final public function tryWithTo(mixed $to): Result
     {
-        return static::tryFrom($this->from, $to, $this->rangeType);
+        return static::tryFrom($this->from, $to);
     }
 
     /**
@@ -205,12 +227,12 @@ readonly class LocalDateRange implements IValueObject, Stringable, IteratorAggre
      */
     final public function contains(LocalDate $date): bool
     {
-        $afterFrom = match ($this->rangeType) {
+        $afterFrom = match (static::rangeType()) {
             RangeType::CLOSED, RangeType::HALF_OPEN_RIGHT => $date->isAfterOrEqualTo($this->from),
             RangeType::OPEN, RangeType::HALF_OPEN_LEFT => $date->isAfter($this->from),
         };
 
-        $beforeTo = match ($this->rangeType) {
+        $beforeTo = match (static::rangeType()) {
             RangeType::CLOSED, RangeType::HALF_OPEN_LEFT => $date->isBeforeOrEqualTo($this->to),
             RangeType::OPEN, RangeType::HALF_OPEN_RIGHT => $date->isBefore($this->to),
         };
@@ -240,10 +262,10 @@ readonly class LocalDateRange implements IValueObject, Stringable, IteratorAggre
     {
         return $this->to->isBefore($other->from) || (
             $this->to->is($other->from) && (
-                $this->rangeType === RangeType::OPEN
-                || $this->rangeType === RangeType::HALF_OPEN_RIGHT
-                || $other->rangeType === RangeType::OPEN
-                || $other->rangeType === RangeType::HALF_OPEN_LEFT
+                static::rangeType() === RangeType::OPEN
+                || static::rangeType() === RangeType::HALF_OPEN_RIGHT
+                || $other->rangeType() === RangeType::OPEN
+                || $other->rangeType() === RangeType::HALF_OPEN_LEFT
             )
         );
     }
@@ -260,7 +282,7 @@ readonly class LocalDateRange implements IValueObject, Stringable, IteratorAggre
         $days = (int)(($toTimestamp - $fromTimestamp) / 86400);
 
         // 区間タイプによる調整
-        return match ($this->rangeType) {
+        return match (static::rangeType()) {
             RangeType::CLOSED => $days + 1,  // 両端を含む
             RangeType::OPEN => max(0, $days - 1),  // 両端を含まない
             RangeType::HALF_OPEN_LEFT, RangeType::HALF_OPEN_RIGHT => $days,  // 片方の端を含む
@@ -274,12 +296,12 @@ readonly class LocalDateRange implements IValueObject, Stringable, IteratorAggre
     #[Override]
     final public function getIterator(): Generator
     {
-        $current = match ($this->rangeType) {
+        $current = match (static::rangeType()) {
             RangeType::CLOSED, RangeType::HALF_OPEN_RIGHT => $this->from,
             RangeType::OPEN, RangeType::HALF_OPEN_LEFT => $this->from->addDays(1),
         };
 
-        $endCondition = match ($this->rangeType) {
+        $endCondition = match (static::rangeType()) {
             RangeType::CLOSED, RangeType::HALF_OPEN_LEFT => fn (LocalDate $date) => $date->isBeforeOrEqualTo($this->to),
             RangeType::OPEN, RangeType::HALF_OPEN_RIGHT => fn (LocalDate $date) => $date->isBefore($this->to),
         };
