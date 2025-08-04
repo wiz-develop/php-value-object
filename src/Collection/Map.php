@@ -83,6 +83,7 @@ readonly class Map extends CollectionBase implements IMap, IMapFactory, ArrayAcc
     }
 
     /**
+     * @return TValue
      * @throws OutOfBoundsException
      */
     #[Override]
@@ -431,6 +432,26 @@ readonly class Map extends CollectionBase implements IMap, IMapFactory, ArrayAcc
         }
 
         return new static($elements);
+    }
+
+    /**
+     * @template TFilterValue of TValue
+     * @param  class-string<TFilterValue> $innerClass
+     * @return static<TKey,TFilterValue>
+     */
+    #[Override]
+    final public function filterAs(string $innerClass): static
+    {
+        /** @var array<int,Pair<TKey,TFilterValue>> */
+        $elements = [];
+
+        foreach ($this->elements as $index => $pair) {
+            if ($pair->value instanceof $innerClass) {
+                $elements[$index] = Pair::of($pair->key, $pair->value);
+            }
+        }
+
+        return new static($elements); // @phpstan-ignore-line
     }
 
     #[Override]

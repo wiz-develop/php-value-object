@@ -22,22 +22,35 @@ use WizDevelop\PhpValueObject\String\StringValue;
 final class ArrayListTest extends TestCase
 {
     /**
-     * @return array<string, array{array<mixed>}>
+     * @param array<int,mixed> $elements
      */
-    public static function 様々な要素のコレクションを提供(): array
+    #[Test]
+    #[DataProvider('様々な要素のコレクションを提供')]
+    public function from静的メソッドでインスタンスが作成できる(array $elements): void
     {
-        return [
-            'プリミティブ値の配列' => [[1, 2, 3, 4, 5]],
-            '文字列の配列' => [['apple', 'banana', 'cherry']],
-            '空の配列' => [[]],
-            '混合型の配列' => [[1, 'string', true, 3.14]],
-        ];
+        $collection = ArrayList::from($elements);
+
+        $this->assertInstanceOf(ArrayList::class, $collection);
+        $this->assertEquals($elements, $collection->toArray());
+    }
+
+    /**
+     * @param array<int,mixed> $elements
+     */
+    #[Test]
+    #[DataProvider('provide独自クラスのコレクションが作成できるCases')]
+    public function 独自クラスのコレクションが作成できる(array $elements): void
+    {
+        $collection = ArrayList::from($elements);
+
+        $this->assertInstanceOf(ArrayList::class, $collection);
+        $this->assertEquals($elements, $collection->toArray());
     }
 
     /**
      * @return array<string, array{array<mixed>}>
      */
-    public static function 独自クラスを含むコレクションを提供(): array
+    public static function provide独自クラスのコレクションが作成できるCases(): iterable
     {
         return [
             'StringValue配列' => [[
@@ -61,32 +74,6 @@ final class ArrayListTest extends TestCase
                 DecimalValue::from(new Number('1.5')),
             ]],
         ];
-    }
-
-    /**
-     * @param array<int,mixed> $elements
-     */
-    #[Test]
-    #[DataProvider('様々な要素のコレクションを提供')]
-    public function from静的メソッドでインスタンスが作成できる(array $elements): void
-    {
-        $collection = ArrayList::from($elements);
-
-        $this->assertInstanceOf(ArrayList::class, $collection);
-        $this->assertEquals($elements, $collection->toArray());
-    }
-
-    /**
-     * @param array<int,mixed> $elements
-     */
-    #[Test]
-    #[DataProvider('独自クラスを含むコレクションを提供')]
-    public function 独自クラスのコレクションが作成できる(array $elements): void
-    {
-        $collection = ArrayList::from($elements);
-
-        $this->assertInstanceOf(ArrayList::class, $collection);
-        $this->assertEquals($elements, $collection->toArray());
     }
 
     #[Test]
@@ -135,6 +122,19 @@ final class ArrayListTest extends TestCase
         $collection = $result->unwrap();
         $this->assertInstanceOf(ArrayList::class, $collection);
         $this->assertEquals($elements, $collection->toArray());
+    }
+
+    /**
+     * @return array<string, array{array<mixed>}>
+     */
+    public static function 様々な要素のコレクションを提供(): iterable
+    {
+        return [
+            'プリミティブ値の配列' => [[1, 2, 3, 4, 5]],
+            '文字列の配列' => [['apple', 'banana', 'cherry']],
+            '空の配列' => [[]],
+            '混合型の配列' => [[1, 'string', true, 3.14]],
+        ];
     }
 
     #[Test]
@@ -538,5 +538,43 @@ final class ArrayListTest extends TestCase
         $this->assertEquals([1, 2, 3, 4, 5, 6], $flattenedObjects->toArray());
         // 元のコレクションは変更されない（イミュータブル）
         $this->assertEquals([ArrayList::from([1, 2]), ArrayList::from([3, 4]), ArrayList::from([5, 6])], $collection5->toArray());
+    }
+
+    #[Test]
+    public function filterAs関数で特定のクラスのインスタンスのみを含むコレクションが取得できる(): void
+    {
+        $collection = ArrayList::from([
+            StringValue::from('apple'),
+            IntegerValue::from(10),
+            StringValue::from('banana'),
+            DecimalValue::from(new Number('2.5')),
+        ]);
+
+        $filtered = $collection
+            ->filterAs(StringValue::class)
+            ->values();
+
+        // @phpstan-ignore-next-line
+        $this->assertContainsOnlyInstancesOf(StringValue::class, $filtered);
+
+        $this->assertCount(2, $filtered);
+        $this->assertEquals('apple', $filtered[0]->value);
+        $this->assertEquals('banana', $filtered[1]->value);
+    }
+
+    #[Test]
+    public function values関数でキーが連続した整数にリセットされた新しいコレクションが取得できる(): void
+    {
+        $collection = ArrayList::from([10, 20, 30]);
+
+        $filteredCollection = $collection->filter(static fn ($x) => $x >= 20);
+        $this->assertCount(2, $filteredCollection);
+        $this->assertEquals($filteredCollection[1], 20);
+        $this->assertEquals($filteredCollection[2], 30);
+
+        $valuesCollection = $filteredCollection->values();
+        $this->assertCount(2, $valuesCollection);
+        $this->assertEquals($valuesCollection[0], 20);
+        $this->assertEquals($valuesCollection[1], 30);
     }
 }
