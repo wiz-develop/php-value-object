@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace WizDevelop\PhpValueObject\Tests\Unit\DateTime;
 
 use DateTimeImmutable;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use WizDevelop\PhpValueObject\DateTime\LocalDateTime;
 use WizDevelop\PhpValueObject\DateTime\LocalDateTimeRange;
@@ -13,7 +14,8 @@ use WizDevelop\PhpValueObject\Error\ValueObjectError;
 
 final class LocalDateTimeRangeTest extends TestCase
 {
-    public function test_閉区間で有効な範囲を作成できる(): void
+    #[Test]
+    public function 閉区間で有効な範囲を作成できる(): void
     {
         // Arrange
         $from = LocalDateTime::from(new DateTimeImmutable('2024-01-01 10:00:00'));
@@ -29,7 +31,8 @@ final class LocalDateTimeRangeTest extends TestCase
         $this->assertSame('[2024-01-01T10:00, 2024-01-31T18:00]', $range->toISOString());
     }
 
-    public function test_開区間で有効な範囲を作成できる(): void
+    #[Test]
+    public function 開区間で有効な範囲を作成できる(): void
     {
         // Arrange
         $from = LocalDateTime::from(new DateTimeImmutable('2024-01-01 10:00:00'));
@@ -43,7 +46,8 @@ final class LocalDateTimeRangeTest extends TestCase
         $this->assertSame('(2024-01-01T10:00, 2024-01-31T18:00)', $range->toISOString());
     }
 
-    public function test_半開区間で有効な範囲を作成できる(): void
+    #[Test]
+    public function 半開区間で有効な範囲を作成できる(): void
     {
         // Arrange
         $from = LocalDateTime::from(new DateTimeImmutable('2024-01-01 10:00:00'));
@@ -60,7 +64,8 @@ final class LocalDateTimeRangeTest extends TestCase
         $this->assertSame('[2024-01-01T10:00, 2024-01-31T18:00)', $rangeRight->toISOString());
     }
 
-    public function test_開始日時が終了日時より後の場合エラーになる(): void
+    #[Test]
+    public function 開始日時が終了日時より後の場合エラーになる(): void
     {
         // Arrange
         $from = LocalDateTime::from(new DateTimeImmutable('2024-01-31 18:00:00'));
@@ -77,7 +82,8 @@ final class LocalDateTimeRangeTest extends TestCase
         $this->assertSame('開始日時は終了日時以前である必要があります', $error->getMessage());
     }
 
-    public function test_contains_閉区間の境界値を含む(): void
+    #[Test]
+    public function contains_閉区間の境界値を含む(): void
     {
         // Arrange
         $from = LocalDateTime::from(new DateTimeImmutable('2024-01-01 10:00:00'));
@@ -92,7 +98,8 @@ final class LocalDateTimeRangeTest extends TestCase
         $this->assertFalse($range->contains(LocalDateTime::from(new DateTimeImmutable('2024-02-01 00:00:00')))); // 範囲後
     }
 
-    public function test_contains_開区間の境界値を含まない(): void
+    #[Test]
+    public function contains_開区間の境界値を含まない(): void
     {
         // Arrange
         $from = LocalDateTime::from(new DateTimeImmutable('2024-01-01 10:00:00'));
@@ -105,7 +112,8 @@ final class LocalDateTimeRangeTest extends TestCase
         $this->assertTrue($range->contains(LocalDateTime::from(new DateTimeImmutable('2024-01-15 12:00:00')))); // 中間
     }
 
-    public function test_contains_半開区間の境界値(): void
+    #[Test]
+    public function contains_半開区間の境界値(): void
     {
         // Arrange
         $from = LocalDateTime::from(new DateTimeImmutable('2024-01-01 10:00:00'));
@@ -123,7 +131,8 @@ final class LocalDateTimeRangeTest extends TestCase
         $this->assertFalse($rangeRight->contains($to)); // 終了境界（含まない）
     }
 
-    public function test_overlaps_重なりがある範囲(): void
+    #[Test]
+    public function overlaps_重なりがある範囲(): void
     {
         // Arrange
         $range1 = LocalDateTimeRange::closed(
@@ -140,7 +149,8 @@ final class LocalDateTimeRangeTest extends TestCase
         $this->assertTrue($range2->overlaps($range1));
     }
 
-    public function test_overlaps_重なりがない範囲(): void
+    #[Test]
+    public function overlaps_重なりがない範囲(): void
     {
         // Arrange
         $range1 = LocalDateTimeRange::closed(
@@ -157,7 +167,8 @@ final class LocalDateTimeRangeTest extends TestCase
         $this->assertFalse($range2->overlaps($range1));
     }
 
-    public function test_overlaps_境界で接する範囲_閉区間(): void
+    #[Test]
+    public function overlaps_境界で接する範囲_閉区間(): void
     {
         // Arrange
         $range1 = LocalDateTimeRange::closed(
@@ -174,7 +185,8 @@ final class LocalDateTimeRangeTest extends TestCase
         $this->assertTrue($range2->overlaps($range1));
     }
 
-    public function test_overlaps_境界で接する範囲_開区間(): void
+    #[Test]
+    public function overlaps_境界で接する範囲_開区間(): void
     {
         // Arrange
         $range1 = LocalDateTimeRange::open(
@@ -191,7 +203,8 @@ final class LocalDateTimeRangeTest extends TestCase
         $this->assertFalse($range2->overlaps($range1));
     }
 
-    public function test_duration_計算(): void
+    #[Test]
+    public function duration_計算(): void
     {
         // Arrange
         $from = LocalDateTime::from(new DateTimeImmutable('2024-01-01 10:00:00'));
@@ -205,7 +218,8 @@ final class LocalDateTimeRangeTest extends TestCase
         $this->assertSame(1.0, $range->durationInDays()); // 1日
     }
 
-    public function test_equals_同じ範囲(): void
+    #[Test]
+    public function equals_同じ範囲(): void
     {
         // Arrange
         $from = LocalDateTime::from(new DateTimeImmutable('2024-01-01 10:00:00'));
@@ -217,7 +231,8 @@ final class LocalDateTimeRangeTest extends TestCase
         $this->assertTrue($range1->equals($range2));
     }
 
-    public function test_equals_異なる範囲(): void
+    #[Test]
+    public function equals_異なる範囲(): void
     {
         // Arrange
         $from = LocalDateTime::from(new DateTimeImmutable('2024-01-01 10:00:00'));
@@ -229,7 +244,8 @@ final class LocalDateTimeRangeTest extends TestCase
         $this->assertFalse($range1->equals($range2)); // 範囲タイプが異なる
     }
 
-    public function test_fromNullable_両方の値がnullでない場合(): void
+    #[Test]
+    public function fromNullable_両方の値がnullでない場合(): void
     {
         // Arrange
         $from = LocalDateTime::from(new DateTimeImmutable('2024-01-01 10:00:00'));
@@ -245,7 +261,8 @@ final class LocalDateTimeRangeTest extends TestCase
         $this->assertTrue($range->getTo()->equals($to));
     }
 
-    public function test_fromNullable_いずれかの値がnullの場合(): void
+    #[Test]
+    public function fromNullable_いずれかの値がnullの場合(): void
     {
         // Arrange
         $from = LocalDateTime::from(new DateTimeImmutable('2024-01-01 10:00:00'));
@@ -261,7 +278,8 @@ final class LocalDateTimeRangeTest extends TestCase
         $this->assertTrue($option3->isNone());
     }
 
-    public function test_jsonSerialize(): void
+    #[Test]
+    public function jsonSerialize(): void
     {
         // Arrange
         $from = LocalDateTime::from(new DateTimeImmutable('2024-01-01 10:00:00'));
@@ -275,7 +293,8 @@ final class LocalDateTimeRangeTest extends TestCase
         $this->assertSame('[2024-01-01T10:00, 2024-01-31T18:00]', $json);
     }
 
-    public function test_from_デフォルトは閉区間(): void
+    #[Test]
+    public function from_デフォルトは閉区間(): void
     {
         // Arrange
         $from = LocalDateTime::from(new DateTimeImmutable('2024-01-01 10:00:00'));
@@ -289,7 +308,8 @@ final class LocalDateTimeRangeTest extends TestCase
         $this->assertSame('[2024-01-01T10:00, 2024-01-31T18:00]', $range->toISOString());
     }
 
-    public function test_from_to引数省略時は最大日時になる(): void
+    #[Test]
+    public function from_to引数省略時は最大日時になる(): void
     {
         // Arrange
         $from = LocalDateTime::from(new DateTimeImmutable('2024-01-01 10:00:00'));
@@ -303,7 +323,8 @@ final class LocalDateTimeRangeTest extends TestCase
         $this->assertSame(RangeType::CLOSED, $range->getRangeType());
     }
 
-    public function test_tryFrom_to引数省略時も正常に動作(): void
+    #[Test]
+    public function tryFrom_to引数省略時も正常に動作(): void
     {
         // Arrange
         $from = LocalDateTime::from(new DateTimeImmutable('2024-01-01 10:00:00'));

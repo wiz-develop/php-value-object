@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace WizDevelop\PhpValueObject\Tests\Unit\Number\Integer;
 
+use AssertionError;
 use Error;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -11,7 +12,6 @@ use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestDox;
 use ReflectionClass;
-use Throwable;
 use WizDevelop\PhpValueObject\Error\ValueObjectError;
 use WizDevelop\PhpValueObject\Examples\Number\Integer\TestPositiveIntegerValue;
 use WizDevelop\PhpValueObject\Number\PositiveIntegerValue;
@@ -58,25 +58,11 @@ final class PositiveIntegerValueTest extends TestCase
     }
 
     /**
-     * @phpstan-ignore-next-line
-     */
-    public static function 境界値のテストデータを提供(): array
-    {
-        return [
-            'ゼロ' => [0, false],
-            '1' => [1, true],
-            '最大値' => [1000, true],
-            '最大値+1' => [1001, false],
-            '-1' => [-1, false],
-        ];
-    }
-
-    /**
      * @param int  $value      テスト対象の値
      * @param bool $shouldBeOk 成功するべきかどうか
      */
     #[Test]
-    #[DataProvider('境界値のテストデータを提供')]
+    #[DataProvider('provide境界値テストCases')]
     public function 境界値テスト(int $value, bool $shouldBeOk): void
     {
         $result = TestPositiveIntegerValue::tryFrom($value);
@@ -88,6 +74,20 @@ final class PositiveIntegerValueTest extends TestCase
             $this->assertFalse($result->isOk(), "値:{$value} は失敗するべき");
             $this->assertInstanceOf(ValueObjectError::class, $result->unwrapErr());
         }
+    }
+
+    /**
+     * @phpstan-ignore-next-line
+     */
+    public static function provide境界値テストCases(): iterable
+    {
+        return [
+            'ゼロ' => [0, false],
+            '1' => [1, true],
+            '最大値' => [1000, true],
+            '最大値+1' => [1001, false],
+            '-1' => [-1, false],
+        ];
     }
 
     #[Test]
@@ -208,13 +208,8 @@ final class PositiveIntegerValueTest extends TestCase
         $this->assertFalse($positiveValue->isZero());
 
         // 仮にゼロを作れたとしても、テストのために
-        try {
-            $zero = TestPositiveIntegerValue::from(0);
-            $this->assertFalse($zero->isZero());
-        } catch (Throwable $e) {
-            // 例外が発生する場合はスキップ
-            $this->markTestSkipped('ゼロの値を持つPositiveIntegerValueは作成できません');
-        }
+        $this->expectException(AssertionError::class);
+        $zero = TestPositiveIntegerValue::from(0); // AssertionErrorが発生する想定
     }
 
     #[Test]

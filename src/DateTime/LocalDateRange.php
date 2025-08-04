@@ -43,6 +43,7 @@ readonly class LocalDateRange implements IValueObject, Stringable, IteratorAggre
     ) {
         // NOTE: 不変条件（invariant）
         assert(static::isValid($from, $to)->isOk());
+        assert(static::isValidRange($from, $to)->isOk());
     }
 
     // -------------------------------------------------------------------------
@@ -97,6 +98,7 @@ readonly class LocalDateRange implements IValueObject, Stringable, IteratorAggre
         mixed $to,
     ): Result {
         return static::isValid($from, $to)
+            ->andThen(static fn () => self::isValidRange($from, $to))
             ->andThen(static fn () => Result\ok(static::from($from, $to)));
     }
 
@@ -104,7 +106,40 @@ readonly class LocalDateRange implements IValueObject, Stringable, IteratorAggre
     // MARK: validation methods
     // -------------------------------------------------------------------------
     /**
+     * 日付範囲が有効であることを検証
+     *
+     * @param TStart $from 開始日付
+     * @param TEnd   $to   終了日付
+     *
+     * @return Result<bool,ValueObjectError>
+     */
+    final protected static function isValidRange(mixed $from, mixed $to): Result
+    {
+        [$isValidRange, $errorCode, $message] = match (static::rangeType()) {
+            RangeType::CLOSED => [
+                $from->isBeforeOrEqualTo($to),
+                'value_object.date_range.invalid_range',
+                '開始日付は終了日付以前である必要があります',
+            ],
+            RangeType::OPEN,
+            RangeType::HALF_OPEN_RIGHT,
+            RangeType::HALF_OPEN_LEFT => [
+                $from->isBefore($to),
+                'value_object.date_range.invalid_range',
+                '開始日付は終了日付より前である必要があります',
+            ],
+        };
+
+        if (!$isValidRange) {
+            return Result\err(ValueObjectError::of(code: $errorCode, message: $message));
+        }
+
+        return Result\ok(true);
+    }
+
+    /**
      * 有効な値かどうか
+     * NOTE: 実装クラスでのオーバーライド用メソッド
      *
      * @param TStart $from 開始日付
      * @param TEnd   $to   終了日付
@@ -113,13 +148,6 @@ readonly class LocalDateRange implements IValueObject, Stringable, IteratorAggre
      */
     protected static function isValid(mixed $from, mixed $to): Result
     {
-        if ($from->isAfter($to)) {
-            return Result\err(ValueObjectError::of(
-                code: 'value_object.date_range.invalid_range',
-                message: '開始日付は終了日付以前である必要があります'
-            ));
-        }
-
         return Result\ok(true);
     }
 
