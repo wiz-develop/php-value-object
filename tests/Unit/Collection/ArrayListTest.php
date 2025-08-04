@@ -541,6 +541,49 @@ final class ArrayListTest extends TestCase
     }
 
     #[Test]
+    public function flatMap関数で空配列を含む場合も正しく平坦化できる(): void
+    {
+        $collection = ArrayList::from([1, 2, 3]);
+
+        // 空配列を返す場合
+        $flatMapped = $collection->flatMap(static fn ($value) => $value % 2 === 0 ? [] : [$value * 2]);
+
+        $this->assertInstanceOf(ArrayList::class, $flatMapped);
+        $this->assertEquals([2, 6], $flatMapped->toArray());
+
+        // 元のコレクションは変更されない（イミュータブル）
+        $this->assertEquals([1, 2, 3], $collection->toArray());
+    }
+
+    #[Test]
+    public function flatten関数でネストされたコレクションを平坦化できる(): void
+    {
+        $collection = ArrayList::from([[1, 2], [3, 4, [5, 6, [7]]]]);
+
+        $flattened = $collection->flatten();
+
+        $this->assertInstanceOf(ArrayList::class, $flattened);
+        $this->assertEquals([1, 2, 3, 4, 5, 6, 7], $flattened->toArray());
+
+        // 元のコレクションは変更されない（イミュータブル）
+        $this->assertEquals([[1, 2], [3, 4, [5, 6, [7]]]], $collection->toArray());
+    }
+
+    #[Test]
+    public function flatten関数で空のコレクションも正しく平坦化できる(): void
+    {
+        $collection = ArrayList::from([[], [1, 2], [], [3, 4]]);
+
+        $flattened = $collection->flatten();
+
+        $this->assertInstanceOf(ArrayList::class, $flattened);
+        $this->assertEquals([1, 2, 3, 4], $flattened->toArray());
+
+        // 元のコレクションは変更されない（イミュータブル）
+        $this->assertEquals([[], [1, 2], [], [3, 4]], $collection->toArray());
+    }
+
+    #[Test]
     public function filterAs関数で特定のクラスのインスタンスのみを含むコレクションが取得できる(): void
     {
         $collection = ArrayList::from([
