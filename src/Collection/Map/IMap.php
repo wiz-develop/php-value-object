@@ -156,6 +156,15 @@ interface IMap extends ICollection
     public function filter(Closure $closure): static;
 
     /**
+     * 与えられたクラスのインスタンスのみを含むコレクションを作成する。
+     *
+     * @template TFilterValue of TValue
+     * @param  class-string<TFilterValue> $innerClass
+     * @return static<TKey,TFilterValue>
+     */
+    public function filterAs(string $innerClass): static;
+
+    /**
      * 与えられた真理判定に合格しないすべての要素のコレクションを作成する。
      * @param  Closure(TValue,TKey): bool $closure
      * @return static<TKey,TValue>

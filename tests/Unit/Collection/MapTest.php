@@ -27,76 +27,6 @@ use WizDevelop\PhpValueObject\String\StringValue;
 final class MapTest extends TestCase
 {
     /**
-     * @return array<string, array{array<mixed>}>
-     */
-    public static function 様々な要素を持つPairの配列を提供(): array
-    {
-        return [
-            'プリミティブ値のPair' => [[
-                Pair::of('key1', 1),
-                Pair::of('key2', 2),
-                Pair::of('key3', 3),
-            ]],
-            '文字列値のPair' => [[
-                Pair::of('name1', 'Alice'),
-                Pair::of('name2', 'Bob'),
-                Pair::of('name3', 'Charlie'),
-            ]],
-            '数値キーのPair' => [[
-                Pair::of(1, 'value1'),
-                Pair::of(2, 'value2'),
-                Pair::of(3, 'value3'),
-            ]],
-            '混合型のPair' => [[
-                Pair::of('key1', 1),
-                Pair::of('key2', 'string'),
-                Pair::of('key3', true),
-                Pair::of('key4', 3.14),
-            ]],
-            '空の配列' => [[]],
-        ];
-    }
-
-    /**
-     * @return array<string, array{array<mixed>}>
-     */
-    public static function 独自クラスを含むPairの配列を提供(): array
-    {
-        return [
-            'StringValueキーのPair' => [[
-                Pair::of(StringValue::from('key1'), 'value1'),
-                Pair::of(StringValue::from('key2'), 'value2'),
-                Pair::of(StringValue::from('key3'), 'value3'),
-            ]],
-            'IntegerValueキーのPair' => [[
-                Pair::of(IntegerValue::from(1), 'value1'),
-                Pair::of(IntegerValue::from(2), 'value2'),
-                Pair::of(IntegerValue::from(3), 'value3'),
-            ]],
-            'StringValue値のPair' => [[
-                Pair::of('key1', StringValue::from('value1')),
-                Pair::of('key2', StringValue::from('value2')),
-                Pair::of('key3', StringValue::from('value3')),
-            ]],
-            'IntegerValue値のPair' => [[
-                Pair::of('key1', IntegerValue::from(1)),
-                Pair::of('key2', IntegerValue::from(2)),
-                Pair::of('key3', IntegerValue::from(3)),
-            ]],
-            'DecimalValue値のPair' => [[
-                Pair::of('key1', DecimalValue::from(new Number('1.5'))),
-                Pair::of('key2', DecimalValue::from(new Number('2.5'))),
-                Pair::of('key3', DecimalValue::from(new Number('3.5'))),
-            ]],
-            '混合ValueObjectのPair' => [[
-                Pair::of(StringValue::from('key1'), IntegerValue::from(1)),
-                Pair::of(IntegerValue::from(2), StringValue::from('value2')),
-                Pair::of(StringValue::from('key3'), DecimalValue::from(new Number('3.5'))),
-            ]],
-        ];
-    }
-
-    /**
      * @param Pair<mixed,mixed>[] $pairs
      */
     #[Test]
@@ -200,6 +130,37 @@ final class MapTest extends TestCase
     }
 
     /**
+     * @return array<string, array{array<mixed>}>
+     */
+    public static function 様々な要素を持つPairの配列を提供(): iterable
+    {
+        return [
+            'プリミティブ値のPair' => [[
+                Pair::of('key1', 1),
+                Pair::of('key2', 2),
+                Pair::of('key3', 3),
+            ]],
+            '文字列値のPair' => [[
+                Pair::of('name1', 'Alice'),
+                Pair::of('name2', 'Bob'),
+                Pair::of('name3', 'Charlie'),
+            ]],
+            '数値キーのPair' => [[
+                Pair::of(1, 'value1'),
+                Pair::of(2, 'value2'),
+                Pair::of(3, 'value3'),
+            ]],
+            '混合型のPair' => [[
+                Pair::of('key1', 1),
+                Pair::of('key2', 'string'),
+                Pair::of('key3', true),
+                Pair::of('key4', 3.14),
+            ]],
+            '空の配列' => [[]],
+        ];
+    }
+
+    /**
      * @param Pair<mixed,mixed>[] $pairs
      */
     #[Test]
@@ -225,6 +186,45 @@ final class MapTest extends TestCase
         }
 
         $this->assertEquals($expected, $collection->toArray());
+    }
+
+    /**
+     * @return array<string, array{array<mixed>}>
+     */
+    public static function 独自クラスを含むPairの配列を提供(): iterable
+    {
+        return [
+            'StringValueキーのPair' => [[
+                Pair::of(StringValue::from('key1'), 'value1'),
+                Pair::of(StringValue::from('key2'), 'value2'),
+                Pair::of(StringValue::from('key3'), 'value3'),
+            ]],
+            'IntegerValueキーのPair' => [[
+                Pair::of(IntegerValue::from(1), 'value1'),
+                Pair::of(IntegerValue::from(2), 'value2'),
+                Pair::of(IntegerValue::from(3), 'value3'),
+            ]],
+            'StringValue値のPair' => [[
+                Pair::of('key1', StringValue::from('value1')),
+                Pair::of('key2', StringValue::from('value2')),
+                Pair::of('key3', StringValue::from('value3')),
+            ]],
+            'IntegerValue値のPair' => [[
+                Pair::of('key1', IntegerValue::from(1)),
+                Pair::of('key2', IntegerValue::from(2)),
+                Pair::of('key3', IntegerValue::from(3)),
+            ]],
+            'DecimalValue値のPair' => [[
+                Pair::of('key1', DecimalValue::from(new Number('1.5'))),
+                Pair::of('key2', DecimalValue::from(new Number('2.5'))),
+                Pair::of('key3', DecimalValue::from(new Number('3.5'))),
+            ]],
+            '混合ValueObjectのPair' => [[
+                Pair::of(StringValue::from('key1'), IntegerValue::from(1)),
+                Pair::of(IntegerValue::from(2), StringValue::from('value2')),
+                Pair::of(StringValue::from('key3'), DecimalValue::from(new Number('3.5'))),
+            ]],
+        ];
     }
 
     #[Test]
@@ -639,5 +639,28 @@ final class MapTest extends TestCase
 
         // 元のコレクションは変更されない（イミュータブル）
         $this->assertEquals(['a' => 1, 'b' => 2, 'c' => 3], $collection->toArray());
+    }
+
+    #[Test]
+    public function filterAs関数で特定のクラスのインスタンスのみを含むコレクションが取得できる(): void
+    {
+        $collection = Map::make([
+            'a' => StringValue::from('Hello'),
+            'b' => IntegerValue::from(42),
+            'c' => StringValue::from('World'),
+        ]);
+
+        // StringValueのインスタンスのみをフィルタリング
+        $filteredAsString = $collection->filterAs(StringValue::class);
+        $this->assertContainsOnlyInstancesOf(StringValue::class, $filteredAsString); // @phpstan-ignore-line
+        $this->assertCount(2, $filteredAsString);
+        $this->assertEquals('Hello', $filteredAsString['a']->value);
+        $this->assertEquals('World', $filteredAsString['c']->value);
+
+        // IntegerValueのインスタンスのみをフィルタリング
+        $filteredAsInt = $collection->filterAs(IntegerValue::class);
+        $this->assertContainsOnlyInstancesOf(IntegerValue::class, $filteredAsInt); // @phpstan-ignore-line
+        $this->assertCount(1, $filteredAsInt);
+        $this->assertEquals(42, $filteredAsInt['b']->value);
     }
 }

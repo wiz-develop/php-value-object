@@ -147,6 +147,21 @@ interface IArrayList extends ICollection
     public function filter(Closure $closure): self;
 
     /**
+     * 与えられたクラスのインスタンスのみを含むコレクションを作成する。
+     *
+     * @template TFilterValue of TValue
+     * @param  class-string<TFilterValue> $innerClass
+     * @return self<TFilterValue>
+     */
+    public function filterAs(string $innerClass): self;
+
+    /**
+     * キーが連続した整数にリセットされた新しいコレクションを作成する。
+     * @return self<TValue>
+     */
+    public function values(): self;
+
+    /**
      * 与えられた真理判定に合格するすべての要素のコレクションを作成する。
      * (strict version - 正確な型を保持)
      * @param  Closure(TValue,int): bool $closure

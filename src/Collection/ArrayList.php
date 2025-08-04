@@ -368,6 +368,31 @@ readonly class ArrayList extends CollectionBase implements IArrayList, IArrayLis
         return new self(array_filter($this->elements, $closure, ARRAY_FILTER_USE_BOTH));
     }
 
+    /**
+     * @template TFilterValue of TValue
+     * @param  class-string<TFilterValue> $innerClass
+     * @return self<TFilterValue>
+     */
+    #[Override]
+    final public function filterAs(string $innerClass): self
+    {
+        // @phpstan-ignore-next-line
+        return new self(array_filter(
+            $this->elements,
+            static fn ($value) => $value instanceof $innerClass,
+            ARRAY_FILTER_USE_BOTH,
+        ));
+    }
+
+    /**
+     * @return self<TValue>
+     */
+    #[Override]
+    final public function values(): self
+    {
+        return new self(array_values($this->elements));
+    }
+
     #[Override]
     final public function filterStrict(Closure $closure): static
     {
