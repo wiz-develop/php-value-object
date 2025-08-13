@@ -3,7 +3,7 @@
     "description": "📦 The PHP Value Object library offers immutable, type-safe, and self-validating objects to model domain values using the Value Object pattern.",
     "require": {
         "php": ">=8.4",
-        "wiz-develop/php-monad": "^2.2"
+        "wiz-develop/php-monad": "^2.6"
     },
     "type": "library",
     "license": "MIT",
