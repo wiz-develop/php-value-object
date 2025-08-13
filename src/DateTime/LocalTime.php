@@ -13,6 +13,7 @@ use WizDevelop\PhpMonad\Option;
 use WizDevelop\PhpMonad\Result;
 use WizDevelop\PhpValueObject\Error\ValueObjectError;
 use WizDevelop\PhpValueObject\IValueObject;
+use WizDevelop\PhpValueObject\Utils;
 use WizDevelop\PhpValueObject\ValueObjectMeta;
 
 /**
@@ -50,11 +51,11 @@ readonly class LocalTime implements IValueObject, Stringable
         private int $micro
     ) {
         // NOTE: 不変条件（invariant）
-        assert(static::isValid($hour, $minute, $second, $micro)->isOk());
-        assert(static::isValidHour($hour)->isOk());
-        assert(static::isValidMinute($minute)->isOk());
-        assert(static::isValidSecond($second)->isOk());
-        assert(static::isValidMicro($micro)->isOk());
+        Utils::assertResultIsOk(static::isValid($hour, $minute, $second, $micro));
+        Utils::assertResultIsOk(static::isValidHour($hour));
+        Utils::assertResultIsOk(static::isValidMinute($minute));
+        Utils::assertResultIsOk(static::isValidSecond($second));
+        Utils::assertResultIsOk(static::isValidMicro($micro));
     }
 
     // -------------------------------------------------------------------------
@@ -586,7 +587,7 @@ readonly class LocalTime implements IValueObject, Stringable
         $second = (int)$value->format('s');
 
         /** @var Micro */
-        $micro = (int)$value->format('u'); // @phpstan-ignore varTag.type
+        $micro = (int)$value->format('u');
 
         return [$hour, $minute, $second, $micro];
     }

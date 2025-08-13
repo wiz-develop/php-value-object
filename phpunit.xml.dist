@@ -12,6 +12,7 @@
   timeoutForMediumTests="10"
   timeoutForLargeTests="60"
   displayDetailsOnPhpunitDeprecations="true"
+  displayDetailsOnTestsThatTriggerWarnings="true"
 >
   <testsuites>
     <testsuite name="Unit">

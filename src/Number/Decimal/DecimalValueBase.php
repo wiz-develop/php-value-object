@@ -10,6 +10,7 @@ use Stringable;
 use WizDevelop\PhpMonad\Result;
 use WizDevelop\PhpValueObject\Error\ValueObjectError;
 use WizDevelop\PhpValueObject\IValueObject;
+use WizDevelop\PhpValueObject\Utils;
 
 /**
  * 少数の値オブジェクトの基底クラス
@@ -26,11 +27,9 @@ abstract readonly class DecimalValueBase implements IValueObject, Stringable, IA
     {
         // NOTE: 不変条件（invariant）
         assert(static::min() <= static::max());
-        // assert(static::min()->scale <= static::scale());
-        // assert(static::max()->scale <= static::scale());
-        assert(static::isValidRange($value)->isOk());
-        assert(static::isValidDigits($value)->isOk());
-        assert(static::isValid($value)->isOk());
+        Utils::assertResultIsOk(static::isValidRange($value));
+        Utils::assertResultIsOk(static::isValidDigits($value));
+        Utils::assertResultIsOk(static::isValid($value));
     }
 
     #[Override]

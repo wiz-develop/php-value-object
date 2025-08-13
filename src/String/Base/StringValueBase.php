@@ -9,6 +9,7 @@ use Stringable;
 use WizDevelop\PhpMonad\Result;
 use WizDevelop\PhpValueObject\Error\ValueObjectError;
 use WizDevelop\PhpValueObject\IValueObject;
+use WizDevelop\PhpValueObject\Utils;
 
 use function assert;
 
@@ -25,9 +26,9 @@ abstract readonly class StringValueBase implements IValueObject, Stringable, ISt
     {
         // NOTE: 不変条件（invariant）
         assert(static::minLength() <= static::maxLength());
-        assert(static::isValid($value)->isOk());
-        assert(static::isValidLength($value)->isOk());
-        assert(static::isValidRegex($value)->isOk());
+        Utils::assertResultIsOk(static::isValid($value));
+        Utils::assertResultIsOk(static::isValidLength($value));
+        Utils::assertResultIsOk(static::isValidRegex($value));
     }
 
     #[Override]

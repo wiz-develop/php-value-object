@@ -122,15 +122,15 @@ readonly class ArrayList extends CollectionBase implements IArrayList, IArrayLis
     {
         $elements = is_array($results) ? $results : iterator_to_array($results);
 
-        $elementsResult = Result\combineWithErrorValue(...$elements);
+        $elementsResult = Result\combine(...$elements);
         if ($elementsResult->isErr()) {
             $flattenErrs = [];
             foreach ($elementsResult->unwrapErr() as $err) {
-                if ($err instanceof IErrorValue) { // @phpstan-ignore-line
+                if ($err instanceof IErrorValue) {
                     $flattenErrs[] = $err;
                 } elseif (is_array($err)) {
                     foreach ($err as $e) {
-                        if ($e instanceof IErrorValue) { // @phpstan-ignore-line
+                        if ($e instanceof IErrorValue) {
                             $flattenErrs[] = $e;
                         } else {
                             throw new LogicException(

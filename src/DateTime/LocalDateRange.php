@@ -12,6 +12,7 @@ use Stringable;
 use WizDevelop\PhpMonad\Result;
 use WizDevelop\PhpValueObject\Error\ValueObjectError;
 use WizDevelop\PhpValueObject\IValueObject;
+use WizDevelop\PhpValueObject\Utils;
 
 /**
  * @template TStart of LocalDate
@@ -42,8 +43,8 @@ readonly class LocalDateRange implements IValueObject, Stringable, IteratorAggre
         private mixed $to,
     ) {
         // NOTE: 不変条件（invariant）
-        assert(static::isValid($from, $to)->isOk());
-        assert(static::isValidRange($from, $to)->isOk());
+        Utils::assertResultIsOk(static::isValid($from, $to));
+        Utils::assertResultIsOk(static::isValidRange($from, $to));
     }
 
     // -------------------------------------------------------------------------

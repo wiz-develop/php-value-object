@@ -10,6 +10,7 @@ use WizDevelop\PhpMonad\Option;
 use WizDevelop\PhpMonad\Result;
 use WizDevelop\PhpValueObject\Error\ValueObjectError;
 use WizDevelop\PhpValueObject\IValueObject;
+use WizDevelop\PhpValueObject\Utils;
 use WizDevelop\PhpValueObject\ValueObjectMeta;
 
 /**
@@ -37,7 +38,7 @@ readonly class LocalDateTimeRange implements IValueObject, Stringable
         private RangeType $rangeType
     ) {
         // NOTE: 不変条件（invariant）
-        assert(static::isValid($from, $to)->isOk());
+        Utils::assertResultIsOk(static::isValid($from, $to));
     }
 
     // -------------------------------------------------------------------------
