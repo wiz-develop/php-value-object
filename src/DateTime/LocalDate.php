@@ -13,6 +13,7 @@ use WizDevelop\PhpMonad\Option;
 use WizDevelop\PhpMonad\Result;
 use WizDevelop\PhpValueObject\Error\ValueObjectError;
 use WizDevelop\PhpValueObject\IValueObject;
+use WizDevelop\PhpValueObject\Utils;
 use WizDevelop\PhpValueObject\ValueObjectMeta;
 
 /**
@@ -57,11 +58,11 @@ readonly class LocalDate implements IValueObject, Stringable
         private int $day
     ) {
         // NOTE: 不変条件（invariant）
-        assert(static::isValid($year, $month, $day)->isOk());
-        assert(static::isValidYear($year)->isOk());
-        assert(static::isValidMonth($month)->isOk());
-        assert(static::isValidDay($day)->isOk());
-        assert(static::isValidDate($year, $month, $day)->isOk());
+        Utils::assertResultIsOk(static::isValid($year, $month, $day));
+        Utils::assertResultIsOk(static::isValidYear($year));
+        Utils::assertResultIsOk(static::isValidMonth($month));
+        Utils::assertResultIsOk(static::isValidDay($day));
+        Utils::assertResultIsOk(static::isValidDate($year, $month, $day));
     }
 
     // -------------------------------------------------------------------------

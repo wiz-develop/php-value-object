@@ -13,6 +13,7 @@ use WizDevelop\PhpMonad\Option;
 use WizDevelop\PhpMonad\Result;
 use WizDevelop\PhpValueObject\Error\ValueObjectError;
 use WizDevelop\PhpValueObject\IValueObject;
+use WizDevelop\PhpValueObject\Utils;
 use WizDevelop\PhpValueObject\ValueObjectMeta;
 
 /**
@@ -38,7 +39,7 @@ readonly class LocalDateTime implements IValueObject, Stringable
         private LocalTime $time,
     ) {
         // NOTE: 不変条件（invariant）
-        assert(static::isValid($date, $time)->isOk());
+        Utils::assertResultIsOk(static::isValid($date, $time));
     }
 
     // -------------------------------------------------------------------------

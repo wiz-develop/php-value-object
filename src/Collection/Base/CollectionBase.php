@@ -9,6 +9,7 @@ use Stringable;
 use WizDevelop\PhpMonad\Result;
 use WizDevelop\PhpValueObject\Error\ValueObjectError;
 use WizDevelop\PhpValueObject\IValueObject;
+use WizDevelop\PhpValueObject\Utils;
 
 use function count;
 
@@ -27,8 +28,8 @@ abstract readonly class CollectionBase implements IValueObject, Stringable
      */
     protected function __construct(protected array $elements)
     {
-        assert(static::isValid($elements)->isOk());
-        assert(static::isValidCount($elements)->isOk());
+        Utils::assertResultIsOk(static::isValid($elements));
+        Utils::assertResultIsOk(static::isValidCount($elements));
     }
 
     #[Override]
