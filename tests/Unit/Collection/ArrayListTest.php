@@ -620,4 +620,149 @@ final class ArrayListTest extends TestCase
         $this->assertEquals($valuesCollection[0], 20);
         $this->assertEquals($valuesCollection[1], 30);
     }
+
+    #[Test]
+    public function mapToDictionary関数で要素をキーごとにグループ化できる(): void
+    {
+        // 基本的なケース：文字列の長さでグループ化
+        $collection = ArrayList::from(['one', 'two', 'three', 'four', 'five']);
+        $dictionary = $collection->mapToDictionary(static fn ($value) => [mb_strlen($value) => $value]);
+
+        $this->assertArrayHasKey(3, $dictionary);
+        $this->assertArrayHasKey(4, $dictionary);
+        $this->assertArrayHasKey(5, $dictionary);
+        $this->assertEquals(['one', 'two'], $dictionary[3]);
+        $this->assertEquals(['four', 'five'], $dictionary[4]);
+        $this->assertEquals(['three'], $dictionary[5]);
+
+        // 数値の偶数・奇数でグループ化
+        $numbers = ArrayList::from([1, 2, 3, 4, 5, 6]);
+        $evenOddDict = $numbers->mapToDictionary(static fn ($value) => [$value % 2 === 0 ? 'even' : 'odd' => $value]);
+
+        $this->assertArrayHasKey('odd', $evenOddDict);
+        $this->assertArrayHasKey('even', $evenOddDict);
+        $this->assertEquals([1, 3, 5], $evenOddDict['odd']);
+        $this->assertEquals([2, 4, 6], $evenOddDict['even']);
+
+        // インデックスを使用した場合
+        $indexed = ArrayList::from(['a', 'b', 'c']);
+        $indexedDict = $indexed->mapToDictionary(static fn ($value, $index) => [$index % 2 => $value]);
+
+        $this->assertEquals(['a', 'c'], $indexedDict[0]);
+        $this->assertEquals(['b'], $indexedDict[1]);
+    }
+
+    #[Test]
+    public function mapToDictionary関数で空のコレクションを処理できる(): void
+    {
+        $empty = ArrayList::empty();
+        $dictionary = $empty->mapToDictionary(static fn ($value) => ['key' => $value]);
+
+        $this->assertEmpty($dictionary);
+    }
+
+    #[Test]
+    public function mapToDictionary関数でValueObjectを使用できる(): void
+    {
+        $collection = ArrayList::from([
+            StringValue::from('apple'),
+            StringValue::from('banana'),
+            StringValue::from('avocado'),
+            StringValue::from('blueberry'),
+        ]);
+
+        // 最初の文字でグループ化
+        $dictionary = $collection->mapToDictionary(
+            static fn (StringValue $value) => [mb_substr($value->value, 0, 1) => $value]
+        );
+
+        $this->assertCount(2, $dictionary);
+        $this->assertArrayHasKey('a', $dictionary);
+        $this->assertArrayHasKey('b', $dictionary);
+
+        $this->assertCount(2, $dictionary['a']);
+        $this->assertEquals('apple', $dictionary['a'][0]->value);
+        $this->assertEquals('avocado', $dictionary['a'][1]->value);
+
+        $this->assertCount(2, $dictionary['b']);
+        $this->assertEquals('banana', $dictionary['b'][0]->value);
+        $this->assertEquals('blueberry', $dictionary['b'][1]->value);
+    }
+
+    #[Test]
+    public function mapToGroups関数で要素をキーごとにArrayListのグループにできる(): void
+    {
+        // 基本的なケース：文字列の長さでグループ化
+        $collection = ArrayList::from(['one', 'two', 'three', 'four', 'five']);
+        $groups = $collection->mapToGroups(static fn ($value) => [mb_strlen($value) => $value]);
+
+        $this->assertArrayHasKey(3, $groups);
+        $this->assertArrayHasKey(4, $groups);
+        $this->assertArrayHasKey(5, $groups);
+
+        // 各グループがArrayListインスタンスであることを確認
+        $this->assertInstanceOf(ArrayList::class, $groups[3]);
+        $this->assertInstanceOf(ArrayList::class, $groups[4]);
+        $this->assertInstanceOf(ArrayList::class, $groups[5]);
+
+        // グループの内容を確認
+        $this->assertEquals(['one', 'two'], $groups[3]->toArray());
+        $this->assertEquals(['four', 'five'], $groups[4]->toArray());
+        $this->assertEquals(['three'], $groups[5]->toArray());
+
+        // 数値の偶数・奇数でグループ化
+        $numbers = ArrayList::from([1, 2, 3, 4, 5, 6]);
+        $evenOddGroups = $numbers->mapToGroups(static fn ($value) => [$value % 2 === 0 ? 'even' : 'odd' => $value]);
+
+        $this->assertInstanceOf(ArrayList::class, $evenOddGroups['odd']);
+        $this->assertInstanceOf(ArrayList::class, $evenOddGroups['even']);
+        $this->assertEquals([1, 3, 5], $evenOddGroups['odd']->toArray());
+        $this->assertEquals([2, 4, 6], $evenOddGroups['even']->toArray());
+    }
+
+    #[Test]
+    public function mapToGroups関数で空のコレクションを処理できる(): void
+    {
+        $empty = ArrayList::empty();
+        $groups = $empty->mapToGroups(static fn ($value) => ['key' => $value]);
+
+        $this->assertEmpty($groups);
+    }
+
+    #[Test]
+    public function mapToGroups関数でインデックスを使用できる(): void
+    {
+        $collection = ArrayList::from(['a', 'b', 'c', 'd']);
+        $groups = $collection->mapToGroups(static fn ($value, $index) => [$index % 2 === 0 ? 'even_index' : 'odd_index' => $value]);
+
+        $this->assertInstanceOf(ArrayList::class, $groups['even_index']);
+        $this->assertInstanceOf(ArrayList::class, $groups['odd_index']);
+
+        $this->assertEquals(['a', 'c'], $groups['even_index']->toArray());
+        $this->assertEquals(['b', 'd'], $groups['odd_index']->toArray());
+    }
+
+    #[Test]
+    public function mapToGroups関数で作成されたグループはArrayListの全機能を使用できる(): void
+    {
+        $collection = ArrayList::from([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+        $groups = $collection->mapToGroups(static fn ($value) => [$value % 3 => $value]);
+
+        // 余り0のグループ
+        $this->assertInstanceOf(ArrayList::class, $groups[0]);
+        $remainder0 = $groups[0];
+        $this->assertEquals([3, 6, 9], $remainder0->toArray());
+
+        // グループに対してArrayListのメソッドが使用できる
+        $doubled = $remainder0->map(static fn ($v) => $v * 2);
+        $this->assertEquals([6, 12, 18], $doubled->toArray());
+
+        $sum = $remainder0->reduce(static fn ($carry, $v) => $carry + $v, 0);
+        $this->assertEquals(18, $sum);
+
+        // 余り1のグループ
+        $remainder1 = $groups[1];
+        $filtered = $remainder1->filter(static fn ($v) => $v > 5);
+        $this->assertEquals([7, 10], $filtered->values()->toArray());
+    }
 }
