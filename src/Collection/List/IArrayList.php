@@ -199,6 +199,32 @@ interface IArrayList extends ICollection
     public function reduce(Closure $closure, $initial = null);
 
     /**
+     * Run a dictionary map over the items.
+     *
+     * The callback should return an associative array with a single key/value pair.
+     *
+     * @template TMapToDictionaryKey of array-key
+     * @template TMapToDictionaryValue
+     *
+     * @param  Closure(TValue, int): array<TMapToDictionaryKey, TMapToDictionaryValue> $closure
+     * @return array<TMapToDictionaryKey, array<int, TMapToDictionaryValue>>
+     */
+    public function mapToDictionary(Closure $closure): array;
+
+    /**
+     * Run a grouping map over the items.
+     *
+     * The callback should return an associative array with a single key/value pair.
+     *
+     * @template TMapToGroupsKey of array-key
+     * @template TMapToGroupsValue
+     *
+     * @param  Closure(TValue, int): array<TMapToGroupsKey, TMapToGroupsValue> $closure
+     * @return array<TMapToGroupsKey, static<TMapToGroupsKey>>
+     */
+    public function mapToGroups(Closure $closure): array;
+
+    /**
      * コレクションに指定した要素が含まれているかどうかを判定する
      * @param (Closure(TValue,int): bool)|TValue $key
      */
