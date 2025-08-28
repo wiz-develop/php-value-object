@@ -496,6 +496,52 @@ readonly class ArrayList extends CollectionBase implements IArrayList, IArrayLis
         return $carry;
     }
 
+    /**
+     * @template TMapToDictionaryKey of array-key
+     * @template TMapToDictionaryValue
+     *
+     * @param  Closure(TValue, int): array<TMapToDictionaryKey, TMapToDictionaryValue> $closure
+     * @return array<TMapToDictionaryKey, array<int, TMapToDictionaryValue>>
+     */
+    #[Override]
+    final public function mapToDictionary(Closure $closure): array
+    {
+        $dictionary = [];
+
+        foreach ($this->elements as $key => $item) {
+            $pair = $closure($item, $key);
+
+            /** @var TMapToDictionaryKey */
+            $key = key($pair);
+
+            /** @var TMapToDictionaryValue */
+            $value = reset($pair);
+
+            if (! isset($dictionary[$key])) {
+                $dictionary[$key] = [];
+            }
+
+            $dictionary[$key][] = $value;
+        }
+
+        return $dictionary;
+    }
+
+    /**
+     * @template TMapToGroupsKey of array-key
+     * @template TMapToGroupsValue
+     *
+     * @param  Closure(TValue, int): array<TMapToGroupsKey, TMapToGroupsValue> $closure
+     * @return array<TMapToGroupsKey, static<TMapToGroupsKey>>
+     */
+    #[Override]
+    final public function mapToGroups(Closure $closure): array
+    {
+        $groups = $this->mapToDictionary($closure);
+
+        return array_map(static fn ($items) => new static($items), $groups);
+    }
+
     #[Override]
     final public function contains($key): bool
     {
