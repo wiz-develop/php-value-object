@@ -18,7 +18,7 @@ use function assert;
  */
 abstract readonly class StringValueBase implements IValueObject, Stringable, IStringValueFactory
 {
-    final protected const int MIN_LENGTH = 1;
+    final protected const int MIN_LENGTH = 0;
     final protected const int MAX_LENGTH = 4194303;
     final protected const string REGEX = '/^.*$/u';
 
