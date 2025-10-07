@@ -532,14 +532,14 @@ readonly class ArrayList extends CollectionBase implements IArrayList, IArrayLis
      * @template TMapToGroupsValue
      *
      * @param  Closure(TValue, int): array<TMapToGroupsKey, TMapToGroupsValue> $closure
-     * @return array<TMapToGroupsKey, static<TMapToGroupsKey>>
+     * @return array<TMapToGroupsKey, IArrayList<TMapToGroupsValue>>
      */
     #[Override]
     final public function mapToGroups(Closure $closure): array
     {
         $groups = $this->mapToDictionary($closure);
 
-        return array_map(static fn ($items) => new static($items), $groups);
+        return array_map(static fn ($items) => new self($items), $groups);
     }
 
     #[Override]

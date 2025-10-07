@@ -220,7 +220,7 @@ interface IArrayList extends ICollection
      * @template TMapToGroupsValue
      *
      * @param  Closure(TValue, int): array<TMapToGroupsKey, TMapToGroupsValue> $closure
-     * @return array<TMapToGroupsKey, static<TMapToGroupsKey>>
+     * @return array<TMapToGroupsKey, IArrayList<TMapToGroupsValue>>
      */
     public function mapToGroups(Closure $closure): array;
 
