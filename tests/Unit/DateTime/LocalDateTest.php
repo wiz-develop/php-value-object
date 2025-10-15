@@ -440,4 +440,23 @@ final class LocalDateTest extends TestCase
         /** @phpstan-ignore-next-line */
         $date = new LocalDate(2023, 5, 15);
     }
+
+    #[Test]
+    public function maxメソッドで正常にインスタンスが作成できる(): void
+    {
+        $date = LocalDate::max();
+
+        $this->assertSame(LocalDate::MAX_YEAR, $date->getYear());
+        $this->assertSame(LocalDate::MAX_MONTH, $date->getMonth());
+        $this->assertSame(LocalDate::MAX_DAY, $date->getDay());
+    }
+
+    #[Test]
+    public function minメソッドで正常にインスタンスが作成できる(): void
+    {
+        $date = LocalDate::min();
+        $this->assertSame(LocalDate::MIN_YEAR, $date->getYear());
+        $this->assertSame(LocalDate::MIN_MONTH, $date->getMonth());
+        $this->assertSame(LocalDate::MIN_DAY, $date->getDay());
+    }
 }
