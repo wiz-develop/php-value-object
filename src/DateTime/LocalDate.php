@@ -32,9 +32,73 @@ readonly class LocalDate implements IValueObject, Stringable
     final public const int MIN_YEAR = -9999;
 
     /**
+     * NOTE: 実装クラスでのオーバーライド用メソッド
+     */
+    protected static function minYear(): int
+    {
+        return self::MIN_YEAR;
+    }
+
+    final public const int MIN_MONTH = 1;
+
+    /**
+     * NOTE: 実装クラスでのオーバーライド用メソッド
+     *
+     * @return int<1,12>
+     */
+    protected static function minMonth(): int
+    {
+        return self::MIN_MONTH;
+    }
+
+    final public const int MIN_DAY = 1;
+
+    /**
+     * NOTE: 実装クラスでのオーバーライド用メソッド
+     *
+     * @return int<1,31>
+     */
+    protected static function minDay(): int
+    {
+        return self::MIN_DAY;
+    }
+
+    /**
      * The maximum supported year for instances of `LocalDate`.
      */
     final public const int MAX_YEAR = 9999;
+
+    /**
+     * NOTE: 実装クラスでのオーバーライド用メソッド
+     */
+    protected static function maxYear(): int
+    {
+        return self::MAX_YEAR;
+    }
+
+    final public const int MAX_MONTH = 12;
+
+    /**
+     * NOTE: 実装クラスでのオーバーライド用メソッド
+     *
+     * @return int<1,12>
+     */
+    protected static function maxMonth(): int
+    {
+        return self::MAX_MONTH;
+    }
+
+    final public const int MAX_DAY = 31;
+
+    /**
+     * NOTE: 実装クラスでのオーバーライド用メソッド
+     *
+     * @return int<1,31>
+     */
+    protected static function maxDay(): int
+    {
+        return self::MAX_DAY;
+    }
 
     /**
      * The number of days from year zero to year 1970.
@@ -162,7 +226,12 @@ readonly class LocalDate implements IValueObject, Stringable
 
     final public static function max(): static
     {
-        return static::of(self::MAX_YEAR, 12, 31);
+        return static::of(static::maxYear(), static::maxMonth(), static::maxDay());
+    }
+
+    final public static function min(): static
+    {
+        return static::of(static::minYear(), static::minMonth(), static::minDay());
     }
 
     /**
@@ -216,14 +285,17 @@ readonly class LocalDate implements IValueObject, Stringable
      */
     final protected static function isValidYear(int $year): Result
     {
-        if ($year < self::MIN_YEAR || $year > self::MAX_YEAR) {
+        $minYear = static::minYear() > self::MIN_YEAR ? static::minYear() : self::MIN_YEAR;
+        $maxYear = static::maxYear() < self::MAX_YEAR ? static::maxYear() : self::MAX_YEAR;
+
+        if ($year < $minYear || $year > $maxYear) {
             return Result\err(
                 ValueObjectError::dateTime()->invalidRange(
                     className: static::class,
                     attributeName: '年',
                     value: (string)$year,
-                    minValue: (string)self::MIN_YEAR,
-                    maxValue: (string)self::MAX_YEAR,
+                    minValue: (string)$minYear,
+                    maxValue: (string)$maxYear,
                 )
             );
         }
@@ -237,14 +309,17 @@ readonly class LocalDate implements IValueObject, Stringable
      */
     final protected static function isValidMonth(int $month): Result
     {
-        if ($month < 1 || $month > 12) {
+        $minMonth = static::minMonth() > self::MIN_MONTH ? static::minMonth() : self::MIN_MONTH;
+        $maxMonth = static::maxMonth() < self::MAX_MONTH ? static::maxMonth() : self::MAX_MONTH;
+
+        if ($month < $minMonth || $month > $maxMonth) {
             return Result\err(
                 ValueObjectError::dateTime()->invalidRange(
                     className: static::class,
                     attributeName: '月',
                     value: (string)$month,
-                    minValue: '1',
-                    maxValue: '12',
+                    minValue: (string)$minMonth,
+                    maxValue: (string)$maxMonth,
                 )
             );
         }
@@ -258,14 +333,17 @@ readonly class LocalDate implements IValueObject, Stringable
      */
     final protected static function isValidDay(int $day): Result
     {
-        if ($day < 1 || $day > 31) {
+        $minDay = static::minDay() > self::MIN_DAY ? static::minDay() : self::MIN_DAY;
+        $maxDay = static::maxDay() < self::MAX_DAY ? static::maxDay() : self::MAX_DAY;
+
+        if ($day < $minDay || $day > $maxDay) {
             return Result\err(
                 ValueObjectError::dateTime()->invalidRange(
                     className: static::class,
                     attributeName: '日',
                     value: (string)$day,
-                    minValue: '1',
-                    maxValue: '31',
+                    minValue: (string)$minDay,
+                    maxValue: (string)$maxDay,
                 )
             );
         }
